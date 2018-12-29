@@ -88,7 +88,8 @@ Name:   www.baidu.com
 Address: 119.75.218.70
  
 [root@lixin ~]#
-host
+```
+__`host`__
 [root@lixin ~]# host www.baidu.com
 www.baidu.com has address 119.75.218.70
 www.baidu.com has address 119.75.217.109
