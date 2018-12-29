@@ -14,9 +14,9 @@
 ```bash
 [root@lixin ~]# ls
 1   123.txt      1.txt  4           persion.txt
-12  123.txt.bak  3      oldboy.txt  sshd_config
+12  123.txt.bak  3      daxin.txt  sshd_config
 [root@lixin ~]# ls *.txt
-123.txt  1.txt  oldboy.txt  persion.txt
+123.txt  1.txt  daxin.txt  persion.txt
 [root@lixin ~]#
 ```
 ## 3.2   ?号
@@ -80,36 +80,36 @@ __~号表示当前用户的家目录，不管在在任何路径下使用cd ~都�
 [root@lixin ~]# pwd
 /root
 [root@lixin ~]# ls /home
-admins  lixin  oldboy  oldgirl  tmpdir  tmpdir1
-[root@lixin ~]# cd ~oldboy     #进入到oldboy用户的家目录下
-[root@lixin oldboy]# pwd
-/home/oldboy
-[root@lixin oldboy]#
+admins  lixin  daxin  dachenzi  tmpdir  tmpdir1
+[root@lixin ~]# cd ~daxin     #进入到daxin用户的家目录下
+[root@lixin daxin]# pwd
+/home/daxin
+[root@lixin daxin]#
 ```
 __-号表示上一次切换前的路径，同时由OLDPWD这个变量记录。__
 ```bash
-[root@lixin oldboy]# pwd
-/home/oldboy
-[root@lixin oldboy]# cd /etc/sysconfig
+[root@lixin daxin]# pwd
+/home/daxin
+[root@lixin daxin]# cd /etc/sysconfig
 [root@lixin sysconfig]# pwd
 /etc/sysconfig
 [root@lixin sysconfig]# cd -
-/home/oldboy
-[root@lixin oldboy]# echo $OLDPWD    # -调用的就是OLDPWD变量的值
+/home/daxin
+[root@lixin daxin]# echo $OLDPWD    # -调用的就是OLDPWD变量的值
 /etc/sysconfig
-[root@lixin oldboy]#
+[root@lixin daxin]#
 ```
 __$号，表示引用一个变量的值。__
 ```bash
-[root@lixin oldboy]# echo $OLDPWD    # 记录上一次切换目录的变量
+[root@lixin daxin]# echo $OLDPWD    # 记录上一次切换目录的变量
 /etc/sysconfig
-[root@lixin oldboy]# echo $LANG             # 记录字符集的变量
+[root@lixin daxin]# echo $LANG             # 记录字符集的变量
 en_US.UTF-8
-[root@lixin oldboy]#     
+[root@lixin daxin]#     
 ```
 __/号，路径的分隔符，同时也表示根目录__
 ```bash
-[root@lixin oldboy]# cd /etc/sysconfig
+[root@lixin daxin]# cd /etc/sysconfig
 [root@lixin sysconfig]# ls -l /
 total 110
 drwxr-xr-x   3 root root  4096 Mar 15 12:32 app
@@ -235,16 +235,16 @@ __.号表示当前目录，..号表示上一级目录。__
 下面以grep为实例，使用grep的—color=auto参数把匹配到的字符以红色显示便于观察。
 测试文本为：
 ```js
-I am oldboy teacher!
+I am daxin teacher!
 I teach linux.
 
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
 my qq num is 49000448.
 
 not 4900000448.
-my god ,i am not oldbey,but OLDBOY!
+my god ,i am not dachenzi,but daxin!
 gd
 good
 gooood
@@ -252,8 +252,8 @@ gooood
 ### 4.1.1 ^word
 匹配以word开头的内容。vi/vim 里面^代表一行的开头。
 ```bash
-[root@lixin ~]# grep -i '^i' oldboy.txt 
-I am oldboy teacher!
+[root@lixin ~]# grep -i '^i' daxin.txt 
+I am daxin teacher!
 I teach linux.
 I like badminton ball ,billiard ball and chinese chess!
 [root@lixin ~]#                   # grep –I 表示忽略大小写
@@ -261,14 +261,14 @@ I like badminton ball ,billiard ball and chinese chess!
 ### 4.1.2  word$
 word$ 匹配以word结尾的内容，vim/vi里面$代表一行的末尾。
 ```bash
-[root@lixin ~]# grep -i 'm$' oldboy.txt
-my blog is http://oldboy.blog.51cto.com
+[root@lixin ~]# grep -i 'm$' daxin.txt
+my blog is http://daxin.blog.51cto.com
 [root@lixin ~]#
 ```
 ### 4.1.3  ^$
 ^$表示以结尾为开头，以开头为结尾，表示空行。
 ```bash
-[root@lixin ~]# grep -n '^$' oldboy.txt
+[root@lixin ~]# grep -n '^$' daxin.txt
 3:
 8:
 [root@lixin ~]#         # -n表示匹配到的行添加行号，为了显示去匹配到了空行
@@ -276,28 +276,28 @@ my blog is http://oldboy.blog.51cto.com
 ### 4.1.4  .
 .表示代表任意一个字符。
 ```bash
-[root@lixin ~]# grep 'o.d' oldboy.txt
-I am oldboy teacher!
-my blog is http://oldboy.blog.51cto.com
-my god ,i am not oldbey,but OLDBOY!
+[root@lixin ~]# grep 'o.d' daxin.txt
+I am daxin teacher!
+my blog is http://daxin.blog.51cto.com
+my god ,i am not dachenzi,but daxin!
 good
 [root@lixin ~]#
 ```
 ### 4.1.5 \
 \表示转意符号，在正则里面加入我们真的要使用.这个符号，由于它有特别的意义，需要使用\号，让它脱掉马甲，还原真意。
 ```bash
-[root@lixin ~]# grep '.$' oldboy.txt 
-I am oldboy teacher!
+[root@lixin ~]# grep '.$' daxin.txt 
+I am daxin teacher!
 I teach linux.
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
 my qq num is 49000448.
 not 4900000448.
-my god ,i am not oldbey,but OLDBOY!
+my god ,i am not dachenzi,but daxin!
 gd
 good                  //不转意的话，由于.表示任意字符，所以都能匹配到
-[root@lixin ~]# grep '\.$' oldboy.txt
+[root@lixin ~]# grep '\.$' daxin.txt
 I teach linux.
 my qq num is 49000448.
 not 4900000448.
@@ -306,8 +306,8 @@ not 4900000448.
 ### 4.1.6 *
 *号，表示前面的字符0次或多次出现。
 ```bash
-[root@lixin ~]# grep 'go*d' oldboy.txt
-my god ,i am not oldbey,but OLDBOY!
+[root@lixin ~]# grep 'go*d' daxin.txt
+my god ,i am not dachenzi,but daxin!
 gd
 good
 [root@lixin ~]#  //可以匹配到0次o，或者多次o
@@ -315,17 +315,17 @@ good
 ### 4.1.7 .*
 .*号，为组合符号，.表示匹配任意字符，*表示前面的字符0次或多次出现，加在一起一般会匹配所有，Linux中一般成它们的组合为贪婪匹配。
 ```bash
-[root@lixin ~]# grep -n '.*' oldboy.txt
-1:I am oldboy teacher!
+[root@lixin ~]# grep -n '.*' daxin.txt
+1:I am daxin teacher!
 2:I teach linux.
 3:
 4:I like badminton ball ,billiard ball and chinese chess!
-5:my blog is http://oldboy.blog.51cto.com
+5:my blog is http://daxin.blog.51cto.com
 6:our site is http://www.etiantian.org
 7:my qq num is 49000448.
 8:
 9:not 4900000448.
-10:my god ,i am not oldbey,but OLDBOY!
+10:my god ,i am not dachenzi,but daxin!
 11:gd
 12:good
 [root@lixin ~]#         //贪婪匹配，所以连空行也能匹配到
@@ -333,26 +333,26 @@ good
 ### 4.1.8 [abc]
 [abc]表示匹配括号内任意的一个内容，也可以写为[0-9]，表示任意的数字。[a-z]表示任意的小写字母，[A-Z]表示任意的大写字母。
 ```bash
-[root@lixin ~]# grep '[abc]' oldboy.txt
-I am oldboy teacher!
+[root@lixin ~]# grep '[abc]' daxin.txt
+I am daxin teacher!
 I teach linux.
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
-my god ,i am not oldbey,but OLDBOY!            # 仅仅匹配到了abc
-[root@lixin ~]# grep '[0-9]' oldboy.txt     
-my blog is http://oldboy.blog.51cto.com
+my god ,i am not dachenzi,but daxin!            # 仅仅匹配到了abc
+[root@lixin ~]# grep '[0-9]' daxin.txt     
+my blog is http://daxin.blog.51cto.com
 my qq num is 49000448.
 not 4900000448.                        # 匹配到了数字
-[root@lixin ~]# grep '[a-z]' oldboy.txt   
-I am oldboy teacher!
+[root@lixin ~]# grep '[a-z]' daxin.txt   
+I am daxin teacher!
 I teach linux.
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
 my qq num is 49000448.
 not 4900000448.
-my god ,i am not oldbey,but OLDBOY!
+my god ,i am not dachenzi,but daxin!
 gd
 good                                    # 匹配到所有小写字母
 [root@lixin ~]#
@@ -360,11 +360,11 @@ good                                    # 匹配到所有小写字母
 ### 4.1.9  [^abc]
 [^abc]表示匹配非abc的字符，^放在[]里面表示非。
 ```bash
-[root@lixin ~]# grep '[^0-9]' oldboy.txt
-I am oldboy teacher!
+[root@lixin ~]# grep '[^0-9]' daxin.txt
+I am daxin teacher!
 I teach linux.
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
 my qq num is 49000448.
 not 4900000448.
@@ -375,53 +375,53 @@ good
 ### 4.1.10  a\{n,m\}
 a\{n,m\}表示括号外的a重复至少n次，最多m次，因为使用了扩展正则表达式的{}的符号，所以要用转意符号。如果是grep的话可以使用grep –E（egrep）来支持扩展正则表达式。
 ```bash
-[root@lixin ~]# grep 'b\{1,2\}' oldboy.txt 
-I am oldboy teacher!
+[root@lixin ~]# grep 'b\{1,2\}' daxin.txt 
+I am daxin teacher!
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
-my god ,i am not oldbey,but OLDBOY!
+my blog is http://daxin.blog.51cto.com
+my god ,i am not dachenzi,but daxin!
 [root@lixin ~]#
-[root@lixin ~]# grep -E 'b{1,2}' oldboy.txt
-I am oldboy teacher!
+[root@lixin ~]# grep -E 'b{1,2}' daxin.txt
+I am daxin teacher!
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
-my god ,i am not oldbey,but OLDBOY!
+my blog is http://daxin.blog.51cto.com
+my god ,i am not dachenzi,but daxin!
 [root@lixin ~]#    # grep –E==egrep，表示b匹配最少出现1次，最多出现2次。
 ```
 ### 4.1.11  a\{n,\}
 a\{n,\}表示括号外的内容最少出现n次。
 ```bash
-[root@lixin ~]# grep -E 'o{2,}' oldboy.txt 
+[root@lixin ~]# grep -E 'o{2,}' daxin.txt 
 good
 [root@lixin ~]#
 ```
 4.1.12  a\{n\}
 a\{n\}表示重复前面的字符a等于n次。
 ```bash
-[root@lixin ~]# grep -E 'o{1}' oldboy.txt
-I am oldboy teacher!
+[root@lixin ~]# grep -E 'o{1}' daxin.txt
+I am daxin teacher!
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
 not 4900000448.
-my god ,i am not oldbey,but OLDBOY!
+my god ,i am not dachenzi,but daxin!
 good  //匹配了两次，不是一次匹配了2个。
 [root@lixin ~]#
 ```
 ### 4.1.13  a\{,m\}
 a\{,m\}表示匹配前面的字符a最多m次。
 ```bash
-[root@lixin ~]# grep -E '0{,3}' oldboy.txt  
-I am oldboy teacher!
+[root@lixin ~]# grep -E '0{,3}' daxin.txt  
+I am daxin teacher!
 I teach linux.
 
 I like badminton ball ,billiard ball and chinese chess!
-my blog is http://oldboy.blog.51cto.com
+my blog is http://daxin.blog.51cto.com
 our site is http://www.etiantian.org
 my qq num is 49000448.
 
 not 4900000448.
-my god ,i am not oldbey,but OLDBOY!
+my god ,i am not dachenzi,but daxin!
 gd
 good
 [root@lixin ~]#
@@ -430,32 +430,32 @@ good
 ### 4.2.1 +
 +号，表示前面的字符1次或多次出现，注意和*区分开，*表示的是0次或多次出现。
 ```bash
-[root@lixin ~]# grep -E 'go+d' oldboy.txt
-my god ,i am not oldbey,but OLDBOY!
+[root@lixin ~]# grep -E 'go+d' daxin.txt
+my god ,i am not dachenzi,but daxin!
 good
 [root@lixin ~]#     //表示g和d之前的后出现1次以上
 ```
 ### 4.2.2 ？
 ?表示重复前面的字符0次或1次。
 ```bash
-[root@lixin ~]# grep -E 'go?d' oldboy.txt 
-my god ,i am not oldbey,but OLDBOY!
+[root@lixin ~]# grep -E 'go?d' daxin.txt 
+my god ,i am not dachenzi,but daxin!
 gd
 [root@lixin ~]#  //表示g和d之间的o出现o次或1次
 ```
 ### 4.2.3 |
 |表示或，用于同时查找多个字符。
 ```bash
-[root@lixin ~]# grep -E 'oldboy|oldbey' oldboy.txt
-I am oldboy teacher!
-my blog is http://oldboy.blog.51cto.com
-my god ,i am not oldbey,but OLDBOY!
-[root@lixin ~]#         //表示匹配oldboy或oldbey的列
+[root@lixin ~]# grep -E 'daxin|dachenzi' daxin.txt
+I am daxin teacher!
+my blog is http://daxin.blog.51cto.com
+my god ,i am not dachenzi,but daxin!
+[root@lixin ~]#         //表示匹配daxin或dachenzi的列
 ```
 ### 4.2.4 ()
 ()表示用户组，括号中的内用以组的形式出现。但是在sed中一般用来表示后巷引用。
 ```bash
-[root@lixin ~]# grep -E 'g(oo)d' oldboy.txt
+[root@lixin ~]# grep -E 'g(oo)d' daxin.txt
 good       
 [root@lixin ~]#                 //只匹配g和d之间是oo的列
 ```
@@ -505,8 +505,8 @@ ip addr show eth0| awk -F '[ /]+' 'NR==3{print $3}'
 ### 5.2取出文件或目录的权限
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当命令结果包含我们需要的内容的时候，我们要想到命令的参数是否有具有的参数能够一步达到我们需要的结果呢？通常在manual中会记录，这时可以使用man command查寻。
 ```bash
-[root@lixin ~]# stat oldboy.txt      
-File: `oldboy.txt'
+[root@lixin ~]# stat daxin.txt      
+File: `daxin.txt'
 Size: 261             Blocks: 8          IO Block: 4096   regular file
 Device: 803h/2051d      Inode: 25401       Links: 1
 Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
@@ -516,22 +516,22 @@ Change: 2016-03-21 14:47:15.281186631 +0800
 [root@lixin ~]#                   //测试文本
 
 # 方法一：使用stat内置参数-c，配合%a来用数字显示文件的权限信息（最佳）
-[root@lixin ~]# stat -c %a oldboy.txt
+[root@lixin ~]# stat -c %a daxin.txt
 644
 [root@lixin ~]#
 
 # 方法二：利用awk指定多分隔符，去目标项左右两边的字符为分隔符
-[root@lixin ~]# stat oldboy.txt | awk -F '[0/]' 'NR==4 {print $2}'
+[root@lixin ~]# stat daxin.txt | awk -F '[0/]' 'NR==4 {print $2}'
 644
 [root@lixin ~]#
 
 # 方法三：利用sed的后向引用
-[root@lixin ~]# stat oldboy.txt | sed -nr '4s#^A.*\(0(.*)/-.*$#\1#gp'
+[root@lixin ~]# stat daxin.txt | sed -nr '4s#^A.*\(0(.*)/-.*$#\1#gp'
 644
 [root@lixin ~]#
 
 # 方法四：使用ls –l列出字母方式权限，替换成数字，相加完成（比较low，但思路特别）
-[root@lixin ~]# ls -l oldboy.txt | awk '{print $1}'|cut -c 2- | tr "rwx-" "4210" | awk -F "" '{print $1+$2+$3$4+$5+$6$7+$8+$9}'
+[root@lixin ~]# ls -l daxin.txt | awk '{print $1}'|cut -c 2- | tr "rwx-" "4210" | awk -F "" '{print $1+$2+$3$4+$5+$6$7+$8+$9}'
 644
 [root@lixin ~]#
 ```

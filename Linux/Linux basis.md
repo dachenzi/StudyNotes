@@ -24,7 +24,7 @@ FHS规定的/(根)目录下各目录结构，如下图
 ```bash
 [root@lixin /]# ls
 bin data etc lib   lost+found  mnt   opt   root  selinux  sys  usr
-boot dev home lib64 media  daxin  proc  sbin  srv   tmp  var
+boot dev home lib64 media  oldboy  proc  sbin  srv   tmp  var
 ```
 ### 2.3.2 /bin目录
 用来存放二进制可执行命令的目录，用户常用的命令都存在该目录下。例如：mkdir（创建目录）、cat（查看文件）、find（查找文件）等。

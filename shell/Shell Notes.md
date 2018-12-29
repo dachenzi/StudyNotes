@@ -130,7 +130,7 @@ echo $c
 #### 4.2.3.2 普通变量小结
 1. 连续的数字字符串可以不加引号
 2. 变量内容是命令的结果，定义时可以使用反引号或$().
-3. 若变量和其他字符连接的时候，就必须给变量加上大括号{}。${key}_keyname;
+3. 若变量和其他字符连接的时候，就必须给变量加上大括号{}。__${key}_keyname;__
 #### 4.2.3.3 变量的高级应用
 定义变量后可以直接在各个地方调用
 ```bash
@@ -216,7 +216,7 @@ cat /tmp/a.pid
 #### 4.2.4.3 bash内置命令
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bash的内置命令，这些命令内置在bash中，没有绝对路径，需要时可以直接在shell脚本中调用 __alias, bg, bind, break, builtin, caller, cd,command, compgen, complete, compopt, continue, declare, dirs,disown,  echo,  enable,  eval, exec, exit, export, false, fc,fg, getopts, hash, help, history,  jobs,  kill,  let,  local,logout,  mapfile,  popd,  printf, pushd, pwd, read, readonly,return, set, shift,  shopt,  source,  suspend,  test,  times,trap,  true,  type,  typeset,  ulimit, umask, unalias, unset,wait__
 ### 4.2.4.4 变量子串
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过man bash找到Parameter Expansion来查看子串的全部用法
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过man bash找到Parameter Expansion来查看子串的全部用法  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${#变量名}取变量的长度
 ```bash
 [root@CentOS6 ~]# httpd="I am httpd"
@@ -272,12 +272,13 @@ i am good boy
 i am good
 [root@CentOS6 scripts]#
 ```
-小结：
-1. #是开头删除匹配最短
-2. ##是开头删除匹配最长
-3. %是结尾删除匹配最短
-4. %%是结尾删除匹配最长  
-***
+>小结：
+>1. #是开头删除匹配最短
+>2. ##是开头删除匹配最长
+>3. %是结尾删除匹配最短
+>4. %%是结尾删除匹配最长    
+
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${变量/字符串1/字符串2}，从开头开始，把变量中的字符串1替换为字符串2.
 ```bash
 [root@CentOS6 scripts]# LIXIN="i am good boy boy"
@@ -589,7 +590,7 @@ echo "$a/$b=$(($a/$b))"
 >2.在[[]]中可以使用通配符进行模式匹配。&&.||.<.>等操作符可以直接应用于[[]]中，但不能应用于[]中。  
 >3.对于整数的关系运算，也可以使用shell的算数运算符(())。
 #### 4.3.1.1 test <测试表达式>
-格式为：test [option] 目标
+格式为：__test [option] 目标__
 ```bash
 [root@CentOS6 scripts]# test -f /etc/hosts && echo 0 || echo 1
 0
@@ -1720,7 +1721,7 @@ main "$@"
 组成数组的各个变量成为数组的分量，也成为数组的元素，有时也成为下标变量。
 ## 7.1 数组的定义
 __array=(1 2 3)__   
-数组是一个特殊的变量。其中数组名为array，里面有3个元素，可以使用 echo ${#array[*]},来查看数组的长度。这里*和@都可以。  
+数组是一个特殊的变量。其中数组名为array，里面有3个元素，可以使用 `echo ${#array[*]}` ,来查看数组的长度。这里*和@都可以。  
 注意：数组的下标从0开始，即0代表取数组内第一个数据  
 例子：循环打印出数组中的IP地址
 ```bash
