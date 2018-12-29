@@ -243,10 +243,10 @@ http {                  #http区段开始
     default_type  application/octet-stream;       #默认媒体类型
     sendfile        on;                                   #开启高效传输模式
     keepalive_timeout  65;                             #连接超时时间
-#############www.etiantian.org#############
+#############www.beyondlee.org#############
 server {                                          #server模块开始
     listen       80;                       #监听端口80
-    server_name www.etiantian.org;                    #提供服务的域名
+    server_name www.beyondlee.org;                    #提供服务的域名
     location / {                                    #location区块开始（可以有多个location区块）
         root   html/www;          #该server站点根目录
         index  index.html index.htm;         #该server站点主页
@@ -275,7 +275,7 @@ http {
     keepalive_timeout  65;
     server {
         listen       80;
-        server_name  www.etiantian.org;
+        server_name  www.beyondlee.org;
     location / {
         root   html/www;
         index  index.html index.htm;    
@@ -283,7 +283,7 @@ http {
     }
     server {
     listen       80;
-    server_name  bbs.etiantian.org;
+    server_name  bbs.beyondlee.org;
     location / {
         root   html/bbs;
         index  index.html index.htm;
@@ -291,7 +291,7 @@ http {
     }
     server {
         listen       80;
-        server_name  blog.etiantian.org;
+        server_name  blog.beyondlee.org;
         location / {
             root   html/blog;
             index  index.html index.htm;
@@ -320,7 +320,7 @@ http {
     keepalive_timeout  65;
     server {
         listen       80;
-        server_name  www.etiantian.org;
+        server_name  www.beyondlee.org;
         location / {
             root   html/www;
             index  index.html index.htm;
@@ -328,7 +328,7 @@ http {
         }
     server {
         listen       81;
-        server_name  bbs.etiantian.org;
+        server_name  bbs.beyondlee.org;
         location / {
             root   html/bbs;
             index  index.html index.htm;
@@ -336,7 +336,7 @@ http {
     }
     server {
         listen       82;
-        server_name  blog.etiantian.org;
+        server_name  blog.beyondlee.org;
         location / {
             root   html/blog;
             index  index.html index.htm;
@@ -358,7 +358,7 @@ http {
     keepalive_timeout  65;
     server {
         listen       10.0.0.8:80;
-        server_name  www.etiantian.org;
+        server_name  www.beyondlee.org;
         location / {
             root   html/www;
             index  index.html index.htm;
@@ -366,7 +366,7 @@ http {
     }
     server {
         listen       10.0.0.101:80;
-        server_name  www.etiantian.org;
+        server_name  www.beyondlee.org;
         location / {
             root   html/bbs;
             index  index.html index.htm;
@@ -374,7 +374,7 @@ http {
     }
     server {
         listen       10.0.0.102:80;
-        server_name  www.etiantian.org;
+        server_name  www.beyondlee.org;
         location / {
             root   html/blog;
             index  index.html index.htm;
@@ -412,7 +412,7 @@ bbs.conf  blog.conf  www.conf
 [root@web01 vhost]# cat www.conf              #只定义虚拟主机配置文件
 server {
     listen       80;
-    server_name www.etiantian.org;
+    server_name www.beyondlee.org;
     location / {
         root   html/www;
         index  index.html index.htm;
@@ -426,7 +426,7 @@ server {
 [root@web01 vhost]# cat www.conf
 server {
     listen       80;
-    server_name www.etiantian.org lixin.etiantian.org;
+    server_name www.beyondlee.org lixin.beyondlee.org;
     location / {
         root   html/www;
         index  index.html index.htm;
@@ -440,7 +440,7 @@ server {
 [root@web01 vhost]# cat www.conf
 server {
     listen       80;
-    server_name www.etiantian.org lixin.etiantian.org;
+    server_name www.beyondlee.org lixin.beyondlee.org;
     location / {
         root   html/www;
         index  index.html index.htm;
@@ -450,7 +450,7 @@ server {
 }
 [root@web01 vhost]#
 ```
-打开：lixin.etiantian.com有如下显示
+打开：lixin.beyondlee.com有如下显示
 ```bash
 Active connections: 145
 server accepts handled requests
@@ -515,7 +515,7 @@ $http_x_forwarded_for 当前端有代理服务器时，设置web节点记录客�
 [root@web01 vhost]# cat www.conf
 server {
 listen       80;
-server_name www.etiantian.org;
+server_name www.beyondlee.org;
 log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
           '$status $body_bytes_sent "$http_referer" '
           '"$http_user_agent" "$http_x_forwarded_for"';
