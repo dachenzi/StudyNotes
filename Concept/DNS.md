@@ -90,6 +90,7 @@ Address: 119.75.218.70
 [root@lixin ~]#
 ```
 __`host`__
+```bash
 [root@lixin ~]# host www.baidu.com
 www.baidu.com has address 119.75.218.70
 www.baidu.com has address 119.75.217.109
