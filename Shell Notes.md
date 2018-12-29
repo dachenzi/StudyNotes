@@ -163,29 +163,29 @@ awk 'BEGIN{print "'$key'"}'
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__$n__ 获取当前执行的shell脚本的第n个参数的值，n=1..9，当n为0时表示脚本的文件名，如果n大于9，用大括号括起来${10}.例子：
 ```bash
 # 创建测试文件：
-[root@db01 ~]# echo -n 'echo ' > test1.sh && echo \${1..15} >> test.sh
-[root@db01 ~]# cat test.sh
+[root@CentOS6 ~]# echo -n 'echo ' > test1.sh && echo \${1..15} >> test.sh
+[root@CentOS6 ~]# cat test.sh
 echo $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 $16
-[root@db01 ~]# bash test.sh {a..z}
+[root@CentOS6 ~]# bash test.sh {a..z}
 a b c d e f g h i a0 a1 a2 a3 a4 a5 a6
 # 由于变量超过了9个，所以从第10个变量开始要加大括号，不然shell认为$10，是$1的值和0组合在一起，所以才会显示a0
-[root@db01 ~]# cat test.sh
+[root@CentOS6 ~]# cat test.sh
 echo $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16}
-[root@db01 ~]# bash test.sh {a..z}
+[root@CentOS6 ~]# bash test.sh {a..z}
 a b c d e f g h i j k l m n o p
 # $# 表示脚本传参的个数，脚本名称后面的参数的个数.
 # $* 将命令行脚本所有参数视为单个字符串等同于"$1$2$3",$*要用双引号。
 # $@ 将命令行脚本每个参数视为单独的字符串，等同于"$1","$2","$3",这是将参数传递给其他程序的最佳方式，因为他会保留所有内嵌在每个参数里的任何空白。
 # 注意：上述区别仅限于添加双引号的时候，即"$*"和$"@"
 例：
-[root@db01 scripts]# set -- a b c
-[root@db01 scripts]# for i in "$@" ;do echo $i; done;
+[root@CentOS6 scripts]# set -- a b c
+[root@CentOS6 scripts]# for i in "$@" ;do echo $i; done;
 a
 b
 c
-[root@db01 scripts]# for i in "$*" ;do echo $i; done;
+[root@CentOS6 scripts]# for i in "$*" ;do echo $i; done;
 a b c
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 #### 4.2.4.2 进程状态变量
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$? 查看上一个命令的执行结果。0表示成功，非0表示不成功。  
@@ -202,7 +202,7 @@ http://httpd.blog.51cto.com/2561410/1175971
 ```bash
 set -- 'i am' handsome boy 传递3个参数到shell
 set -- 1 2 3
-[root@db01 ~]# echo $1 $2 $3
+[root@CentOS6 ~]# echo $1 $2 $3
 1 2 3
 # $$ 显示当前进程的进程号
 # $! 上一个进程的id号
@@ -219,17 +219,17 @@ cat /tmp/a.pid
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过man bash找到Parameter Expansion来查看子串的全部用法
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${#变量名}取变量的长度
 ```bash
-[root@db01 ~]# httpd="I am httpd"
-[root@db01 ~]# echo $httpd
+[root@CentOS6 ~]# httpd="I am httpd"
+[root@CentOS6 ~]# echo $httpd
 I am httpd
-[root@db01 ~]# echo $httpd|wc -L
+[root@CentOS6 ~]# echo $httpd|wc -L
 11
-[root@db01 ~]# echo ${#httpd}
+[root@CentOS6 ~]# echo ${#httpd}
 11
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过使用expr命令计算变量的长度
 ```bash
-[root@db01 ~]# expr length "$httpd"
+[root@CentOS6 ~]# expr length "$httpd"
 11
 
 # 计算I am good boy,welcome to myhome中字母小于5个的并打印
@@ -242,35 +242,35 @@ done
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${变量：2}截取变量的第几个字符到最后
 ```bash
-[root@db01 ~]# httpd="I am httpd"
-[root@db01 ~]# echo ${httpd:2}
+[root@CentOS6 ~]# httpd="I am httpd"
+[root@CentOS6 ~]# echo ${httpd:2}
 am httpd
-[root@db01 ~]# echo ${httpd:3}
+[root@CentOS6 ~]# echo ${httpd:3}
 m httpd
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${#变量:n:m}从第n个字符开始截取m个
 ```bash
-[root@db01 ~]# echo ${httpd:2:2}
+[root@CentOS6 ~]# echo ${httpd:2:2}
 am
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${变量#字符串}从开头开始匹配，删除最短匹配字符串的值
 ```bash
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# echo $LIXIN
 123123123123123123123123456
-[root@db01 scripts]# echo ${LIXIN#1*3}
+[root@CentOS6 scripts]# echo ${LIXIN#1*3}
 123123123123123123123456
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${变量##字符串}从开头开始匹配，删除最长匹配字符串的值
 ```bash
-[root@db01 scripts]# echo ${LIXIN##1*3}
+[root@CentOS6 scripts]# echo ${LIXIN##1*3}
 456
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# echo $LIXIN
 i am good boy boy
-[root@db01 scripts]# echo ${LIXIN%b*y}
+[root@CentOS6 scripts]# echo ${LIXIN%b*y}
 i am good boy
-[root@db01 scripts]# echo ${LIXIN%%b*y}
+[root@CentOS6 scripts]# echo ${LIXIN%%b*y}
 i am good
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 小结：
 1. #是开头删除匹配最短
@@ -280,56 +280,56 @@ i am good
 ***
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${变量/字符串1/字符串2}，从开头开始，把变量中的字符串1替换为字符串2.
 ```bash
-[root@db01 scripts]# LIXIN="i am good boy boy"
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# LIXIN="i am good boy boy"
+[root@CentOS6 scripts]# echo $LIXIN
 i am good boy boy
-[root@db01 scripts]# echo ${LIXIN/boy/girl}
+[root@CentOS6 scripts]# echo ${LIXIN/boy/girl}
 i am good girl boy
-[root@db01 scripts]# echo ${LIXIN//boy/girl}
+[root@CentOS6 scripts]# echo ${LIXIN//boy/girl}
 i am good girl girl
 两个斜线表示替换所有符合的字符串
-[root@db01 scripts]# echo ${LIXIN/#boy/girl}
+[root@CentOS6 scripts]# echo ${LIXIN/#boy/girl}
 i am good boy boy
 #表示以boy开头的，替换为girl，由于变量LIXIN没有以boy开头，所以不会替换
-[root@db01 scripts]# echo ${LIXIN/%boy/girl}
+[root@CentOS6 scripts]# echo ${LIXIN/%boy/girl}
 i am good boy girl
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 #### 4.2.4.5 变量替换
 __${values:-word}__ 如果变量名称存在并且非null，则返回变量的值。否则返回word字符串，表示如果变量未定义，则返回默认值。
 ```bash
-[root@db01 scripts]# echo ${lixin:-test}
+[root@CentOS6 scripts]# echo ${lixin:-test}
 test
-[root@db01 scripts]# lixin=123
-[root@db01 scripts]# echo ${lixin:-test}
+[root@CentOS6 scripts]# lixin=123
+[root@CentOS6 scripts]# echo ${lixin:-test}
 123
-[root@db01 scripts]# echo $lixin
+[root@CentOS6 scripts]# echo $lixin
 空
 ```
 __${value:=word}__ 如果变量名存在且非null，则返回变量值。否则，设置这个变量为word，并返回其值
 ```bash
-[root@db01 scripts]# echo ${lixin:=test}
+[root@CentOS6 scripts]# echo ${lixin:=test}
 test
-[root@db01 scripts]# echo $lixin
+[root@CentOS6 scripts]# echo $lixin
 test
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 >注意：-和=的区别是，-表示变量为空的时候返回的默认值，这个默认值并不会被赋予变量，所以echo变量的时候依旧为空，=表示如果变量为空，则把word赋予该变量。  
 >扩展：这个冒号：也可以不加，功能和加上是相同的
 ```bash
-[root@db01 scripts]# unset LIXIN
-[root@db01 scripts]# echo ${LIXIN-test}
+[root@CentOS6 scripts]# unset LIXIN
+[root@CentOS6 scripts]# echo ${LIXIN-test}
 test
-[root@db01 scripts]# LIXIN=1
-[root@db01 scripts]# echo ${LIXIN-test}
+[root@CentOS6 scripts]# LIXIN=1
+[root@CentOS6 scripts]# echo ${LIXIN-test}
 1
-[root@db01 scripts]#
-[root@db01 scripts]# unset LIXIN
-[root@db01 scripts]# echo ${LIXIN=test}
+[root@CentOS6 scripts]#
+[root@CentOS6 scripts]# unset LIXIN
+[root@CentOS6 scripts]# echo ${LIXIN=test}
 test
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# echo $LIXIN
 test
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 #### 4.2.4.6 变量的数值(整数)计算
 变量的数值计算常见的有如下几个命令：__(()),let,expr,bc(小数运算)，${}，其他都是整数。__  
@@ -345,99 +345,99 @@ test
 __1.(())用法__  
 如果要执行简单的整数就算，只需要将特定的算数表达式用$(())括起来即可。
 ```bash
-[root@db01 scripts]# echo $((1+2))
+[root@CentOS6 scripts]# echo $((1+2))
 3
-[root@db01 scripts]# echo $(1+2)
+[root@CentOS6 scripts]# echo $(1+2)
 -bash: 1+2: command not found
 
-[root@db01 scripts]#
-[root@db01 scripts]# ((a=1+2**3-4%3))
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]#
+[root@CentOS6 scripts]# ((a=1+2**3-4%3))
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 +=例子：
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]# echo $((a+=1))
+[root@CentOS6 scripts]# echo $((a+=1))
 9
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 9
-[root@db01 scripts]# echo $((a-=1))
+[root@CentOS6 scripts]# echo $((a-=1))
 8
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 n++例子：
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]# echo $((a++))
+[root@CentOS6 scripts]# echo $((a++))
 8
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 9
-[root@db01 scripts]# echo $((a--))
+[root@CentOS6 scripts]# echo $((a--))
 9
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ++n例子：
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 9
-[root@db01 scripts]# echo $((a--))
+[root@CentOS6 scripts]# echo $((a--))
 9
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]# echo $((--a))
+[root@CentOS6 scripts]# echo $((--a))
 7
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 7
-[root@db01 scripts]# echo $((++a))
+[root@CentOS6 scripts]# echo $((++a))
 8
-[root@db01 scripts]# echo $a
+[root@CentOS6 scripts]# echo $a
 8
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 小结: n++和++n的区别是，变量n在前，则表达式的值为n，然后n自增或自减，变量n在后，则表达式的值为自增自减后的n
 
 __2.let命令（用于整数计算）__  
 格式：let 赋值表达式
 ```bash
-[root@db01 scripts]# i=2
-[root@db01 scripts]# i=i+8
-[root@db01 scripts]# echo $i
+[root@CentOS6 scripts]# i=2
+[root@CentOS6 scripts]# i=i+8
+[root@CentOS6 scripts]# echo $i
 i+8
 # 因为定义了两次i，所以第二次会覆盖之前对于i的定义
-[root@db01 scripts]# i=2
-[root@db01 scripts]# let i=i+8
-[root@db01 scripts]# echo $i
+[root@CentOS6 scripts]# i=2
+[root@CentOS6 scripts]# let i=i+8
+[root@CentOS6 scripts]# echo $i
 10
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # let的效果和(())相同，但效率不如(())高，所以建议用双括号
 ```
 __3.expr__  
 + __计算(整数数字，并且要有空格)__
 ```bash
-[root@db01 scripts]# expr 1 + 2
+[root@CentOS6 scripts]# expr 1 + 2
 3
-[root@db01 scripts]# expr 1+2
+[root@CentOS6 scripts]# expr 1+2
 1+2
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # 注意：除号.乘号需要用反斜线转意
-[root@db01 scripts]# expr 2 \* 2
+[root@CentOS6 scripts]# expr 2 \* 2
 4
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 * __判断是否为整数__  
 由于expr不能计算非整数的表达式，可以通过expr的返回值确定传递的变量是否为整数。
 ```bash
-[root@db01 scripts]# expr 1 + a
+[root@CentOS6 scripts]# expr 1 + a
 expr: non-numeric argument
-[root@db01 scripts]# echo $?
+[root@CentOS6 scripts]# echo $?
 2
-[root@db01 scripts]# expr 1 + 1
+[root@CentOS6 scripts]# expr 1 + 1
 2
-[root@db01 scripts]# echo $?
+[root@CentOS6 scripts]# echo $?
 0
-[root@db01 scripts]# cat ceshi.sh
+[root@CentOS6 scripts]# cat ceshi.sh
 #!/bin/bash
 a=$1
 expr $a + 1 &>/dev/null
@@ -445,7 +445,7 @@ expr $a + 1 &>/dev/null
  echo "please input number"
 }
 # 或者
-[root@db01 scripts]# cat ceshi1.sh
+[root@CentOS6 scripts]# cat ceshi1.sh
 #!/bin/bash
 a=$1
 expr $a + 1 &>/dev/null
@@ -455,38 +455,38 @@ expr $a + 1 &>/dev/null
 ```
 __计算字符串的长度__
 ```bash
-[root@db01 scripts]# expr length $LIXIN
+[root@CentOS6 scripts]# expr length $LIXIN
 4
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# echo $LIXIN
 test
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 其他计算变量长度的方法：
-[root@db01 scripts]# echo ${#LIXIN}
+[root@CentOS6 scripts]# echo ${#LIXIN}
 4
-[root@db01 scripts]# echo $LIXIN|wc -L
+[root@CentOS6 scripts]# echo $LIXIN|wc -L
 4
-[root@db01 scripts]# echo $LIXIN | awk "{print length $0}"
+[root@CentOS6 scripts]# echo $LIXIN | awk "{print length $0}"
 4
 ```
 __expr判断后缀名__   
 通过expr对变量进行模式匹配,格式为:expr value : 关键字
 ```bash
-[root@db01 scripts]# LIXIN=test.pub
-[root@db01 scripts]# expr $LIXIN : ".*\.pub"
+[root@CentOS6 scripts]# LIXIN=test.pub
+[root@CentOS6 scripts]# expr $LIXIN : ".*\.pub"
 8
-[root@db01 scripts]# LIXIN=test.puv
-[root@db01 scripts]# expr $LIXIN : ".*\.pub"
+[root@CentOS6 scripts]# LIXIN=test.puv
+[root@CentOS6 scripts]# expr $LIXIN : ".*\.pub"
 0
 # 匹配为0，不匹配则非0
 ```
 __time命令__ 计算命令的运行时间（真实时间.内核时间.用户时间）
 ```bash
-[root@db01 scripts]# time sh bianliang1.sh 1
+[root@CentOS6 scripts]# time sh bianliang1.sh 1
 
 real 0m0.003s
 user       0m0.001s
 sys  0m0.000s
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # 该命令可以对相同结果的命令进行压力测试，看哪个执行速度更快
 ```
 小结：内置功能速度更快（${#value}计算速度最快）
@@ -494,31 +494,31 @@ __bc命令__
 linux内置命令，同时也是一个计算器，直接输入bc，会进入计算器界面。并且bc支持小数(awk也支持小数)
 ```bash
 # 命令行：
-[root@db01 scripts]# echo 1+2|bc
+[root@CentOS6 scripts]# echo 1+2|bc
 3
-[root@db01 scripts]# echo 2*2|bc
+[root@CentOS6 scripts]# echo 2*2|bc
 4
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # 转换成二进制
-[root@db01 scripts]# echo "obase=2;255"|bc
+[root@CentOS6 scripts]# echo "obase=2;255"|bc
 11111111
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # 确定小数点后数字的个数
-[root@db01 scripts]# echo "scale=2;10/3"|bc
+[root@CentOS6 scripts]# echo "scale=2;10/3"|bc
 3.33
-[root@db01 scripts]# echo "scale=3;10/3"|bc
+[root@CentOS6 scripts]# echo "scale=3;10/3"|bc
 3.333
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # awk方法计算小数
-[root@db01 scripts]# echo "1.5 2.3"|awk '{print ($1*$2)}'
+[root@CentOS6 scripts]# echo "1.5 2.3"|awk '{print ($1*$2)}'
 3.45
 # 例题:
 # 计算1+2+3+4+5+6+7+8+9+10的值，并且列出1+2+3+4+5+6+7+8+9+10=55的结果
-[root@db01 scripts]# echo `seq -s '+' 10`=`seq -s '+' 10|bc`
+[root@CentOS6 scripts]# echo `seq -s '+' 10`=`seq -s '+' 10|bc`
 1+2+3+4+5+6+7+8+9+10=55
-[root@db01 scripts]# a=`seq -s "+" 10` && echo $a=`echo $a|bc`
+[root@CentOS6 scripts]# a=`seq -s "+" 10` && echo $a=`echo $a|bc`
 1+2+3+4+5+6+7+8+9+10=55
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 小结：常用的shell的数值运算方法为(())和let
 ### 4.2.3 变量的输入  
@@ -526,17 +526,17 @@ shell变量除了可以直接复制或脚本传参外，还可以使用read命�
 __格式：read [参数] [变量名]__  
 常用参数: -p,设置提示时间。-t，设置等待时间，默认单位为秒
 ```bash
-[root@db01 ~]# read -t 10 -p "please input two number"
+[root@CentOS6 ~]# read -t 10 -p "please input two number"
 please input two number1 2
-[root@db01 ~]# read -t 10 -p "please input two number" a b
+[root@CentOS6 ~]# read -t 10 -p "please input two number" a b
 please input two number1 2
-[root@db01 ~]# echo $a $b
+[root@CentOS6 ~]# echo $a $b
 1 2
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 在脚本中通过read命令进行传参
 ```bash
-[root@db01 scripts]# vim read.sh
+[root@CentOS6 scripts]# vim read.sh
 #!/bin/bash
 read -t 10 -p "please input two number" a b
 echo "$a+$b=$(($a+$b))"
@@ -550,7 +550,7 @@ read a b
 ```
 扩展题目：使用read读入2个变量，计算他们的加减乘除结果，并且判断是否为2个变量，以及是否为整数，当第二个数为被除数的时候不能为0
 ```bash
-[root@db01 scripts]# vim read.sh
+[root@CentOS6 scripts]# vim read.sh
 
 #!/bin/bash
 read -t 10 -p "please input two number" a b
@@ -591,48 +591,48 @@ echo "$a/$b=$(($a/$b))"
 #### 4.3.1.1 test <测试表达式>
 格式为：test [option] 目标
 ```bash
-[root@db01 scripts]# test -f /etc/hosts && echo 0 || echo 1
+[root@CentOS6 scripts]# test -f /etc/hosts && echo 0 || echo 1
 0
-[root@db01 scripts]# test -x /etc/hosts && echo 0 || echo 1
+[root@CentOS6 scripts]# test -x /etc/hosts && echo 0 || echo 1
 1
-[root@db01 scripts]# test -x /server/scripts/pid.sh && echo 0 || echo 1
+[root@CentOS6 scripts]# test -x /server/scripts/pid.sh && echo 0 || echo 1
 0
-[root@db01 scripts]# test -d /etc/hosts && echo 0 || echo 1
+[root@CentOS6 scripts]# test -d /etc/hosts && echo 0 || echo 1
 1
-[root@db01 scripts]# test -d /etc && echo 0 || echo 1
+[root@CentOS6 scripts]# test -d /etc && echo 0 || echo 1
 0
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 #### 4.3.1.2 [<表达式>]
 __格式为：[ 选项 目标 ]__  
 多个条件使用-a（并且），-o（或），来链接
 ```bash
-[root@db01 scripts]# [ -f /etc/hosts ] && echo 0||echo 1
+[root@CentOS6 scripts]# [ -f /etc/hosts ] && echo 0||echo 1
 0
-[root@db01 scripts]# [ -f /etc/hosts -a -f /etc ] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [ -f /etc/hosts -a -f /etc ] && echo 0 ||echo 1
 1
 # 由于etc不是文件，所以表达式为假
-[root@db01 scripts]# [ -d /etc/host ] && echo 0||echo 1
+[root@CentOS6 scripts]# [ -d /etc/host ] && echo 0||echo 1
 1
-[root@db01 scripts]# [ -d /etc/hosts -a -d /etc ] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [ -d /etc/hosts -a -d /etc ] && echo 0 ||echo 1
 1
 # 由于hosts不是目录，所以表达式为假
-[root@db01 scripts]# [ -x /etc/host ] && echo 0||echo 1
+[root@CentOS6 scripts]# [ -x /etc/host ] && echo 0||echo 1
 1
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 #### 4.3.1.3 [[<表达式>]]
 __格式为：[[ 选项 目标 ]]__  
 多个条件使用&&（并且），||（或），来链接
 ```bash
-[root@db01 scripts]# [[ -f /etc/hosts ]] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [[ -f /etc/hosts ]] && echo 0 ||echo 1
 0
-[root@db01 scripts]# [[ -f /etc/hosts -a /etc/services ]] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [[ -f /etc/hosts -a /etc/services ]] && echo 0 ||echo 1
 -bash: syntax error in conditional expression
 -bash: syntax error near '-a'
-[root@db01 scripts]# [[ -f /etc/hosts && /etc/services ]] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [[ -f /etc/hosts && /etc/services ]] && echo 0 ||echo 1
 0
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # [[]]与[]不同的是表示逻辑关系的时候，&&（-a），||（-o）。
 ```
 ### 4.3.2 文件测试表达式
@@ -660,9 +660,9 @@ __格式为：[[ 选项 目标 ]]__
 __注：在选项前加！表示取反__  
 ```bash
 # 例：高效的判断方法
-[root@db01 scripts]# [ -f /etc/host ] || echo 123
+[root@CentOS6 scripts]# [ -f /etc/host ] || echo 123
 123
-[root@db01 scripts]# cat tiaojiao.sh
+[root@CentOS6 scripts]# cat tiaojiao.sh
 #!/bin/bash
 [ -f $1 ] || {
   echo 1
@@ -670,7 +670,7 @@ __注：在选项前加！表示取反__
   echo 3
 }
 # 判断$1是否是文件，不是得话输出1，2，3
-[root@db01 scripts]# sh tiaojian.sh /etc/host
+[root@CentOS6 scripts]# sh tiaojian.sh /etc/host
 1
 2
 3
@@ -694,15 +694,15 @@ __在[]和test中 在[[]]和(())中 含义__
 + -le <= 小于等于
 ```bash
 # 例：生产中一般使用[]和eq这样的搭配
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# echo $LIXIN
 2
-[root@db01 scripts]# [ $LIXIN -ne 0 ] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [ $LIXIN -ne 0 ] && echo 0 ||echo 1
 0
-[root@db01 scripts]# [ $LIXIN -eq 2 ] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [ $LIXIN -eq 2 ] && echo 0 ||echo 1
 0
-[root@db01 scripts]# [ $LIXIN -eq 3 ] && echo 0 ||echo 1
+[root@CentOS6 scripts]# [ $LIXIN -eq 3 ] && echo 0 ||echo 1
 1
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 ### 4.3.5 逻辑操作符
 __在[]和test中 在(())和[[]]中 含义__
@@ -765,16 +765,16 @@ expr $a + $b + 1 &>/dev/null
 ```
 __扩展：针对判断整数的问题，可以有如下思路：__
 ```bash
-[root@db01 scripts]# echo $LIXIN
+[root@CentOS6 scripts]# echo $LIXIN
 123a
-[root@db01 scripts]# echo $LIXIN | sed s#[^0-9]##
+[root@CentOS6 scripts]# echo $LIXIN | sed s#[^0-9]##
 123
-[root@db01 scripts]# [ "`echo $LIXIN | sed s#[^0-9]##`" = "$LIXIN" ] && echo 1 || echo 0
+[root@CentOS6 scripts]# [ "`echo $LIXIN | sed s#[^0-9]##`" = "$LIXIN" ] && echo 1 || echo 0
 0
-[root@db01 scripts]# LIXIN=123
-[root@db01 scripts]# [ "`echo $LIXIN | sed s#[^0-9]##`" = "$LIXIN" ] && echo 1 || echo 0
+[root@CentOS6 scripts]# LIXIN=123
+[root@CentOS6 scripts]# [ "`echo $LIXIN | sed s#[^0-9]##`" = "$LIXIN" ] && echo 1 || echo 0
 1
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 # 把输入的字符串中的非数字替换为空，如果和源字符串相等，则表示输入的是数字。
 ```
 #### 4.5.6.2 打印菜单
@@ -785,7 +785,7 @@ __扩展：针对判断整数的问题，可以有如下思路：__
 4. 当输入任何其他字符，给出提示'input error'后退出脚本
 5. 要对执行的脚本进行相关条件判断，例如：脚本是否存在，是否可以执行等。
 ```bash
-[root@db01 ~]# cat menu.sh
+[root@CentOS6 ~]# cat menu.sh
 #!/bin/bash
 man(){
 cat <<EOF
@@ -808,7 +808,7 @@ else
     echo "input error"
     exit 2
 fi
-[root@db01 ~]# 
+[root@CentOS6 ~]# 
 ```
 ## 4.4 分支与循环结构
 ### 4.4.1 if条件语句
@@ -847,9 +847,9 @@ fi
 ```
 例子：开发shell脚本判断系统剩余内存的大小，如果低于100M，就邮件报警给管理员，并且加入系统定时任务每3分钟执行一次检查。
 ```bash
-[root@db01 ~]# tail -1 /etc/mail.rc
+[root@CentOS6 ~]# tail -1 /etc/mail.rc
 set from=beyondlee2011@126.com smtp=smtp.126.com smtp-auth-user=beyondlee2011 smtp-auth-password=aini3845 smtp-auth=login
-[root@db01 scripts]# cat memtest.sh
+[root@CentOS6 scripts]# cat memtest.sh
 #!/bin/bash
 mem=`free -m | awk 'NR==3{print $NF}'`
 [ $mem -le 100 ] && {
@@ -857,12 +857,12 @@ mem=`free -m | awk 'NR==3{print $NF}'`
    echo "memory is $mem" | mail -s "Warning:memory is not enough" 287990400@qq.com
 }
 //定时任务
-[root@db01 scripts]# crontab -l
+[root@CentOS6 scripts]# crontab -l
 */3 * * * * /bin/bash /server/scripts/memtest.sh &>/dev/null
 ```
 例子2：用if双分支实现对mysql服务是否正常进行判断，使用端口，进程数或者URL的方式拍段，如果进程没起动，把进行启动
 ```bash
-[root@db01 scripts]# cat testmysql.sh
+[root@CentOS6 scripts]# cat testmysql.sh
 #!/bin/bash
 mysqlinfor=`netstat -lntup | grep 3306 | grep -v grep | wc -l`
 if [ $mysqlinfor -ge 1 ] ;then
@@ -873,11 +873,11 @@ if [ $mysqlinfor -ge 1 ] ;then
     sleep 3
     echo "ok"
 fi
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 例子3：以read读入的方式比较两个数的带下，用if多分支来实现。
 ```bash
-[root@db01 scripts]# cat testnum.sh
+[root@CentOS6 scripts]# cat testnum.sh
 #!/bin/bash
 read -t 10 -p "please input two number " a b
 expr $a + $b + 1 &>/dev/null
@@ -902,7 +902,7 @@ if [ "$a" -gt "$b" ]
   else
    echo "$a=$b"
 fi
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 >扩展：  
 >判断mysql或者web服务共同方法：  
@@ -937,7 +937,7 @@ USAGE：sh adduser {-add | -del | -search} username
 3. 如果有同名的用户则不能添加，没有对应用户则无需删除，查找到用户以及没有用户时给出明确提示。
 4. /etc/user.conf不能被所有外部用户直接删除及修改
 ```bash
-[root@db01 scripts]# cat adduser.sh
+[root@CentOS6 scripts]# cat adduser.sh
 #!/bin/bash
 [ $UID -ne 0 ] && {
     echo "please use root"
@@ -983,7 +983,7 @@ fi
 ```
 面试及实战考试题：监控web站点目录(/var/html/www)下所有文件是否篡改（文件内容被改了），如果有就打印改动的文件名（发邮件），定时任务每3分钟执行一次。
 ```bash
-[root@db01 scripts]# cat testweb.sh
+[root@CentOS6 scripts]# cat testweb.sh
 #!/bin/bash
 dir=/var/www/html
 result=/tmp/web.log
@@ -1000,7 +1000,7 @@ if [ ! "`md5sum -c $result 2>/dev/null | grep FAILED | tee $error_file | wc -l`"
         mv $result /root/$(date +%F)_web_error.log
 fi
 # 保存退出
-[root@db01 scripts]#  crontab -l
+[root@CentOS6 scripts]#  crontab -l
 */3 * * * * /bin/bash /server/scripts/testweb.sh &>/dev/null
 ```
 ### 4.4.2 case结构条件句
@@ -1017,7 +1017,7 @@ esac
 ```
 例子：根据用户驶入判断是哪个数字，如果用户输入1或2或3，则输出对应输入的数字，如果是其他内容，返回不正确，退出
 ```bash
-[root@db01 scripts]# cat case1.sh
+[root@CentOS6 scripts]# cat case1.sh
 #!/bin/bash
 a=$1
 case "$a" in
@@ -1038,7 +1038,7 @@ esac
 
 当用户选择水果的时候，打印告诉它选择的水果是什么，并给水果单词加上一种颜色。要求用case语句实现。
 ```bash
-[root@db01 scripts]# cat case2.sh
+[root@CentOS6 scripts]# cat case2.sh
 #!/bin/bash
 RED="\033[31m"
 GREEN="\033[32m"
@@ -1071,7 +1071,7 @@ esac
 ```
 范例3：开发一个给指定内容加指定颜色的脚本要求：1.使用read或传参实现：2.case实现3.以传参为例：在脚本命令行传2个参参数，给指定内容(是第一个参数)加指定颜色（是第二个参数）
 ```bash
-[root@db01 scripts]# cat color_case.sh
+[root@CentOS6 scripts]# cat color_case.sh
 #!/bin/bash
 RED="\033[31m"
 GREEN="\033[32m"
@@ -1178,22 +1178,22 @@ done
 * bg ID：把某一个任务重新调成到后台
 * kill %ID：杀掉一个任务
 ```bash
-[root@db01 ~]# sh while3.sh &
+[root@CentOS6 ~]# sh while3.sh &
 [1] 67583
-[root@db01 ~]#
-[root@db01 ~]# jobs
+[root@CentOS6 ~]#
+[root@CentOS6 ~]# jobs
 [1]+  Running                 sh while3.sh &
-[root@db01 ~]# kill %1
-[root@db01 ~]# jobs
+[root@CentOS6 ~]# kill %1
+[root@CentOS6 ~]# jobs
 [1]+  Terminated              sh while3.sh
-[root@db01 ~]# jobs
-[root@db01 ~]#
+[root@CentOS6 ~]# jobs
+[root@CentOS6 ~]#
 ```
 ## 5.4 while循环
 例子：计算1+...+100之和
 ```bash
 # 方法1：
-[root@db01 scripts]# vim while_sum.sh
+[root@CentOS6 scripts]# vim while_sum.sh
 #!/bin/bash
 i=1
 while  (( $i <= 100 ))
@@ -1204,7 +1204,7 @@ done
 echo $sum
 
 # 方法2：
-[root@db01 scripts]# vim while_sum.sh
+[root@CentOS6 scripts]# vim while_sum.sh
 #!/bin/bash
 i=1
 while [ $i -le 100 ]
@@ -1216,7 +1216,7 @@ echo $sum
 ```
 例2：列出10到1的所有数字
 ```bash
-[root@db01 scripts]# cat while_num.sh
+[root@CentOS6 scripts]# cat while_num.sh
 #!/bin/bash
 i=10
 while [ $i -ge 1 ]
@@ -1224,7 +1224,7 @@ while [ $i -ge 1 ]
         echo $i
         ((i--))
 done
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 练习题  
 1. 猜数字游戏：首先让系统随机生成一个数字，给这个数字定一个范围（数字前50及后50），让用户输入猜的数字，对输入判断，如果不符合数字就给予高与低的提示，猜对后给下猜对用的次数，请用while语句实现。
@@ -1255,7 +1255,7 @@ done < FILE
 ```
 例子：记录日志中访问的文件的大小，并做加法
 ```bash
-[root@db01 scripts]# cat access.sh
+[root@CentOS6 scripts]# cat access.sh
 #!/bin/bash
 i=0
 sum=0
@@ -1267,7 +1267,7 @@ while read line
 done
     echo $sum
 # 注意：由于有些访问客户端本地会缓存所以它不会下载，一般这种访问的大小为-，我这里做了grep过滤，即只把数字过滤出来，另一种方法为：
-[root@db01 scripts]# vim access_new.sh
+[root@CentOS6 scripts]# vim access_new.sh
 #!/bin/bash
 while read line
     do
@@ -1284,7 +1284,7 @@ echo $sum
 ```
 例子：一个httpd.log日志10个IP记录，每十秒钟一个导出到nginx.log里，倒腾到nginx.log里和httpd.log内容一样。
 ```bash
-[root@db01 ~]# cat quip.sh
+[root@CentOS6 ~]# cat quip.sh
 #!/bin/bash
 while read line
     do
@@ -1300,7 +1300,7 @@ while read line
             continue
         fi
 done < /root/httpd.log
-[root@db01 ~]# 
+[root@CentOS6 ~]# 
 ```
 ### 5.4.2 while循环小结
 1. while循环的特长是执行守护进程以及我们系统循环不退出持续执行的情况，用于频率小于1分钟循环处理(crond)，其他的while循环几乎都可以被for替代。
@@ -1338,7 +1338,7 @@ done
 ```
 例子：
 ```bash
-[root@db01 ~]# cat test3.sh
+[root@CentOS6 ~]# cat test3.sh
 #!/bin.bash
 for i in 1 2 3 4 5 6 7 8 9 10
     do
@@ -1346,42 +1346,42 @@ for i in 1 2 3 4 5 6 7 8 9 10
 done
 
 # 升级方法1
-[root@db01 ~]# cat test4.sh
+[root@CentOS6 ~]# cat test4.sh
 #!/bin/bash
 for i in {1..10}
     do
         echo $i
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 
 #升级方法2
-[root@db01 ~]# cat test4.sh
+[root@CentOS6 ~]# cat test4.sh
 #!/bin/bash
 for i in `seq 10`
     do
         echo $i
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 例子：批量生成10个名称任意的文件
 ```bash
-[root@db01 ~]# cat test6.sh
+[root@CentOS6 ~]# cat test6.sh
 #!/bin/bash
 mkdir ./test
 for ((i=1;i<10;i++))
     do
         touch ./test/`echo $RANDOM|md5sum|cut -c 1-8`.log
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 例子，批量改文件后缀名
 ```bash
-[root@db01 test]# ls
+[root@CentOS6 test]# ls
 01e2c72d.log  3a14455d.log  3be873ce.log  44902678.log  783e7809.log  7f1fcb3c.log  c4c2399d.log  d55801a9.log  f8e1527b.log
 0d339dcf.log  3bc67de9.log  3d90e27a.log  77d45895.log  7a93b22e.log  a29613b1.log  c6909d86.log  ea69f47e.log  fa601ba4.log 
 
 # 方法1:
-[root@db01 ~]# cat test7.sh
+[root@CentOS6 ~]# cat test7.sh
 #!/bin/bash
 cd /root/test
 for i in `find /root/test/ -name "*.log"`
@@ -1389,53 +1389,53 @@ for i in `find /root/test/ -name "*.log"`
         name=` echo $i | awk -F '.' '{print $1}'`
         mv $i ${name}.html
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 
 # 方法2：（变量的替换功能）
-[root@db01 ~]# vim test8.sh
+[root@CentOS6 ~]# vim test8.sh
 #!/bin/bash
 cd /root/test
 for i in `ls`
     do
         mv $i ${i/.html/.jpg}
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 
 # 方法3：拼接功能
-[root@db01 ~]# cat test9.sh
+[root@CentOS6 ~]# cat test9.sh
 #!/bin/bash
 cd /root/test
 for i in `ls`
     do
         mv $i `echo $i | sed 's#.jpg#.log#g'`
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 
 # 方法4:通过rename改名
-[root@db01 ~]# vim test10.sh
+[root@CentOS6 ~]# vim test10.sh
 #!/bin/bash
 cd /root/test
 for i in `ls`
     do
         rename ".log" ".jpg" $i
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 rename "把什么" "改成什么"  对谁修改
 ```
 例子：批量修改chkconfig管理
 ```bash
-[root@db01 ~]# vim test11.sh
+[root@CentOS6 ~]# vim test11.sh
 #!/bin/bash
 for i in `chkconfig --list | grep 3:on |awk '{print $1}'| grep -Ev "network|crond|rsyslog|sshd|sysstat"`
     do
         chkconfig $i off
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 例子：利用for命令计算1..100的和
 ```bash
 # C语言型：
-[root@db01 ~]# cat test12.sh
+[root@CentOS6 ~]# cat test12.sh
 #!/bin/bash
 sum=0
 for ((i=1;i<=100;i++))
@@ -1443,10 +1443,10 @@ for ((i=1;i<=100;i++))
         ((sum+=i))
 done
 echo $sum
-[root@db01 ~]#
+[root@CentOS6 ~]#
 
 # 普通型：
-[root@db01 ~]# cat test13.sh
+[root@CentOS6 ~]# cat test13.sh
 #!/bin/bash
 sum=0
 for i in `seq 100`
@@ -1454,7 +1454,7 @@ for i in `seq 100`
         let sum+=i
 done
 echo $sum
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 练习题：等差数列,计算n-m的累加之和可以用等差公式m(n+m)/2
 ## 5.6 循环控制
@@ -1467,7 +1467,7 @@ $shell循环控制主要有四种方式：break、continue、exit、return。
 
 例子1：
 ```bash
-[root@db01 ~]# cat test15.sh
+[root@CentOS6 ~]# cat test15.sh
 #!/bin/bash
 for ((i=1;i<=5;i++))
     do
@@ -1480,15 +1480,15 @@ for ((i=1;i<=5;i++))
         echo $i
 done
 echo 'OK'
-[root@db01 ~]# sh test15.sh
+[root@CentOS6 ~]# sh test15.sh
 1
 2
-[root@db01 ~]#
+[root@CentOS6 ~]#
 # 注意：由于使用了exit，所以在循环到第三次的时候，就直接退出了脚本
 ```
 例子2：
 ```bash
-[root@db01 ~]# cat test15.sh
+[root@CentOS6 ~]# cat test15.sh
 #!/bin/bash
 for ((i=1;i<=5;i++))
     do
@@ -1501,18 +1501,18 @@ for ((i=1;i<=5;i++))
         echo $i
 done
 echo 'OK'
-[root@db01 ~]# sh test15.sh
+[root@CentOS6 ~]# sh test15.sh
 1
 2
 4
 5
 OK
-[root@db01 ~]#
+[root@CentOS6 ~]#
 # 注意：由于使用了continue，所以在执行到第三次的时候，结束本次循环，继续执行下一次循环。
 ```
 例子3：
 ```bash
-[root@db01 ~]# cat test15.sh
+[root@CentOS6 ~]# cat test15.sh
 #!/bin/bash
 for ((i=1;i<=5;i++))
     do
@@ -1525,11 +1525,11 @@ for ((i=1;i<=5;i++))
         echo $i
 done
 echo 'OK'
-[root@db01 ~]# sh test15.sh
+[root@CentOS6 ~]# sh test15.sh
 1
 2
 OK
-[root@db01 ~]#
+[root@CentOS6 ~]#
 # 注意：由于使用了break，当执行到第三次的时候，跳出循环，继续执行其他命令。
 ```
 练习题：开发shell脚本实现给服务器临时配置多个别名IP，并可以随时撤销配置的所以IP，IP地址为10.0.2.1-16，其中10.0.2.10不能配置。
@@ -1579,19 +1579,19 @@ function 函数名(){
 
 实例：
 ```bash
-[root@db01 scripts]# cat hanshu.sh
+[root@CentOS6 scripts]# cat hanshu.sh
 #!/bin/bash
 function main(){
     echo "hello,i am handsome man"
 }
 main
-[root@db01 scripts]# sh hanshu.sh
+[root@CentOS6 scripts]# sh hanshu.sh
 hello,i am handsome man
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 注意:引用其他脚本的函数的时候，可以在本脚本中通过source或者.来调用
 ```bash
-[root@db01 scripts]# cat hanshu.sh
+[root@CentOS6 scripts]# cat hanshu.sh
 #!/bin/bash
 . /etc/init.d/functions
 function main(){
@@ -1599,17 +1599,17 @@ function main(){
     action "is is ok" /bin/true
 }
 main
-[root@db01 scripts]# sh hanshu.sh
+[root@CentOS6 scripts]# sh hanshu.sh
 hello,i am handsome man
 is is ok                                                   [  OK  ]
-[root@db01 scripts]#
+[root@CentOS6 scripts]#
 ```
 例子：函数传参转成脚本命令传参，对任意指定URL判断是否异常。
 1. 脚本传参检查url是否正常。
 2. 脚本的功能写成函数
 3. 函数传参转成脚本命令行传参，对任意指定的URL进行判断。
 ```bash
-[root@db01 scripts]# cat testurl.sh
+[root@CentOS6 scripts]# cat testurl.sh
 #!/bin/bash
 [ -f /etc/init.d/functions ] && . /etc/init.d/functions
 Usage(){
@@ -1665,7 +1665,7 @@ echo -e "\033[41;37m 红底白字 \033[0m"
 __可以通过man console_code来查询__  
 实例：传递两个参数给脚本，并打印对应颜色的字体
 ```bash
-[root@db01 scripts]# cat color.sh
+[root@CentOS6 scripts]# cat color.sh
 #!/bin/bash
 RED="\033[31m"
 GREEN="\033[32m"
@@ -1725,7 +1725,7 @@ __array=(1 2 3)__
 例子：循环打印出数组中的IP地址
 ```bash
 # 方法1：
-[root@db01 ~]# cat array.sh
+[root@CentOS6 ~]# cat array.sh
 #!/bin/bash
 array=(
     10.0.0.1
@@ -1736,10 +1736,10 @@ for ((i=0;i<${#array[*]};i++))
     do
         echo ${array[i]}
 done
-[root@db01 ~]#
+[root@CentOS6 ~]#
 
 # 方法2：
-[root@db01 ~]# cat array1.sh
+[root@CentOS6 ~]# cat array1.sh
 #!/bin/bash
 array=(
     10.0.0.1
@@ -1751,39 +1751,39 @@ for i in ${array[*]}
         echo $i
 done
  
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 ## 7.2 向数组的添加值
 ```bash
-[root@db01 ~]# array=(1 2 3)
-[root@db01 ~]# echo ${array[*]}
+[root@CentOS6 ~]# array=(1 2 3)
+[root@CentOS6 ~]# echo ${array[*]}
 1 2 3
-[root@db01 ~]# array[3]=4
-[root@db01 ~]# echo ${array[*]}
+[root@CentOS6 ~]# array[3]=4
+[root@CentOS6 ~]# echo ${array[*]}
 1 2 3 4
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 7.3 删除数组中的值
 ```bash
-[root@db01 ~]# echo ${array[*]}
+[root@CentOS6 ~]# echo ${array[*]}
 1 2 3 4
-[root@db01 ~]# unset array[0]
-[root@db01 ~]# echo ${array[*]}
+[root@CentOS6 ~]# unset array[0]
+[root@CentOS6 ~]# echo ${array[*]}
 2 3 4
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 7.4 把命令的结果定义成array
 ```bash
 # 方法1，通过$()取命令的结果
-[root@db01 ~]# array=($(ls))
-[root@db01 ~]# echo ${array[*]}
-2016-07-01_web_error.log access.log array1.sh array.sh eluosi.sh for_sum.sh fruit.sh kuang2 menu.sh oldboy.log oldgirl.log quip.sh test test10.sh test11.sh test12.sh test13.sh test14.sh test15.sh test1.sh test2.sh test3.sh test4.sh test5.sh test6.sh test7.sh test8.sh test9.sh test.sh while1.sh while2.sh while3.sh while.sh
-[root@db01 ~]#
+[root@CentOS6 ~]# array=($(ls))
+[root@CentOS6 ~]# echo ${array[*]}
+2016-07-01_web_error.log access.log array1.sh array.sh eluosi.sh for_sum.sh fruit.sh kuang2 menu.sh daxin.log daxinxin.log quip.sh test test10.sh test11.sh test12.sh test13.sh test14.sh test15.sh test1.sh test2.sh test3.sh test4.sh test5.sh test6.sh test7.sh test8.sh test9.sh test.sh while1.sh while2.sh while3.sh while.sh
+[root@CentOS6 ~]#
 # 方法2：通过``取命令的结果
-[root@db01 ~]# array=(`ip a l | grep eth | grep inet | awk '{print $NF}'`)
-[root@db01 ~]# echo ${array[@]}
+[root@CentOS6 ~]# array=(`ip a l | grep eth | grep inet | awk '{print $NF}'`)
+[root@CentOS6 ~]# echo ${array[@]}
 eth0 eth1
-[root@db01 ~]#
+[root@CentOS6 ~]#
 ```
 ## 7.5 小结
 1. 定义
