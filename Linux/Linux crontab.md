@@ -220,7 +220,7 @@ tar zcf /backup/backup_$(date +%F).tar.gz etc/rc.local var/spool/cron/ etc/hosts
 ```
 # 7 注意
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在`crontab –e`中，比如使用`date +%F`，这种命令时，由于`crontab` 默认不识别%，需要进行转意，即`\%`，当我们使用脚本进行定时任务时，而脚本中又使用系统环境变量，建议在脚本中再定义一遍，防止因为环境变量的问题导致定时任务失败。
-# 8 inode被填埋的问题
+# 8 inode被填满的问题
 问题：我们的服务器上发生了No space left on device，df –h发现没满，请问为什么？  
 解答：默认定时任务执行时会给root发邮件，如果邮件服务不打开，就会把邮件存放在临时队列目录：
 1. centos 5：/var/spool/clientmqueue
