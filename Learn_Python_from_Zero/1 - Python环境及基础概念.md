@@ -1,5 +1,10 @@
 # 1 编程基础
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;计算机技术及编程技术可以追溯到好几十年前，心路历程并不丰顺，我们现在使用if就可以进行的条件判断也是经过了很久的演变，具体过程和详细概念这里不会全部覆盖，只表述一些需要的知识，更深层的知识，需要自行搜索。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;首先，我们普及一下编程语言的基础知识。用任何编程语言来开发程序，都是为了让计算机干活，比如下载一个MP3，编写一个文档等等，而计算机干活的CPU只认识机器指令，所以，尽管不同的编程语言差异极大，最后都得'翻译'成CPU可以执行的机器指令。而不同的编程语言，干同一个活，编写的代码量，差距也很大。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;比如，完成同一个任务，C语言要写1000行代码，Java只需要写100行，而Python可能只要20行。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所以Python是一种相当高级的语言。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;你也许会问，代码少还不好？代码少的代价是运行速度慢，C程序运行1秒钟，Java程序可能需要2秒，而Python程序可能就需要10秒。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;那是不是越低级的程序越难学，越高级的程序越简单？表面上来说，是的，但是，在非常高的抽象计算中，高级的Python程序设计也是非常难学的，所以，高级程序语言不等于简单。但是，对于初学者和完成普通任务，Python语言是非常简单易用的。连Google都在大规模使用Python，你就不用担心学了会没用。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用Python可以做什么？可以做日常任务，比如自动备份你的MP3；可以做网站，很多著名的网站包括YouTube就是Python写的；可以做网络游戏的后台，很多在线游戏的后台都是Python开发的。总之就是能干很多很多事啦。下面我们了解一下计算机的基础概念
 ## 1.1 基本概念
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;程序：是一组能让计算机识别和执行的指令。    
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;计算机五大部件：`输入设备`、`输出设备`、`运算器`、`控制器`、`存储器`，各部分主要作用：
@@ -19,8 +24,8 @@
 - `编译语言`：把代码转换成目标及其的CPU指令
 - `解释语言`：解释后转换成字节码，运行在虚拟机上，解释器执行中间代码  
 
+![language](photo/low-and-high.png)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__语言越高级，越接近人类的自然语言和数学语言，越低级则越能让及其理解，高级语言和低级语言之间需要的一个转换的工具：编译器、解释器，例如C、C++等语言的源代码需要本地编译，而Java、Python、C#的源代码需要被解释器编译成中间代码，在虚拟机上运行__
- <div align="center">![language](photo/low-and-high.png)</div> 
 ## 1.3 高级语言的发展
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;高级语言根据发展历程主要分为四个阶段或者说是四种类型：`非结构化`、`结构化`、`面向对象`、`函数式`。
 - `非结构化语言`:编号或标签、GOTO、子程序可以有多个入口和出口，有分支、循环。
@@ -70,8 +75,27 @@ __&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;虽然列举了这么多编译
 - 字符串统一使用unicode。2.x中如果想要输入中文，还需要在文件头显示声明(`_*_coding:utf-8 _*_`)
 - 异常的捕获、抛出的语法改变  
 # 6 Python安装
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;windows安装，只需要访问 `https://www.python.org/` 
-在`Downloads`标签页下选择windows，然后根据自己需求，下载对应的 `Windows x86-64 executable installer` 版本，一路`next`安装即可。注意：在安装程序中选择 `add to PATH` 哦。  
+不同平台需要安装不同版本的Python，比如windows，需要用exe的应用程序，而Linux可以有源码编译安装，或者yum安装。
+## 6.1 windows安装
+安装方法
+　　windows由于都是图形界面，这里就不一一截图了，只文字说明安装步骤。
+```bash
+1、下载安装包
+访问 https://www.python.org/ 在 Downloads标签页下选择 windows，然后根据自己需求，下载对应的 `Windows x86-64 executable installer` 版本
+ 
+2、安装
+双击下载好的 Windows x86-64 executable installer，一直next即可。
+# 安装路径默认即可，不要自作聪明修改
+ 
+3、配置环境变量
+在安装程序中选择 add to PATH，就是把python命令安装在PATH变量中，让我们可以在任意地方通过命令访问，如果忘记选择，也可以通过下面的方法进行设置
+右击我的电脑 -- 属性 -- 高级系统设置 -- 环境变量 -- 编辑 PATH 变量 -- 添加 python 的安装路径 C:\Python36 （以分号隔开）-- 确定
+
+4、测试
+打开 cmd (命令提示符，快捷键windows+r) ，输入 python ，可以进入解释器表示安装成功
+```
+
+## 6.2 Linux安装
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Linux的安装有yum和编译安装两种方式：
 1. yum方式
 ```bash
@@ -332,3 +356,19 @@ General Options:
 ```
 # 9 pycharm安装及基本使用
 请参考博文: http://www.cnblogs.com/dachenzi/articles/7684064.html , 安装过程中遇到的问题，欢迎邮件咨询 beyondlee2011@126.com 
+# 10 第一个Python程序
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;既然Python语言安装完毕了，那么小伙伴肯定已经跃跃欲试了，那么我们就来写一个吊炸天的Python程序吧  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;首先这个程序很牛逼，为什么这么说呢？因为会用到一个我们以后几乎天天用的命令，那就是print。有的同学英文好，一下就知道是打印的意思。那么该如何使用呢？  
+
+__精通hello world__  
+这个吊炸天的例子如下：
+```bash
+# Python 2.x
+print 'hello world'
+ 
+# python 3.x
+print('hello world')
+
+# 这里：引号扩起来的就表示要打印到屏幕上的代码，快去试试吧。
+```
+__OK，你已经精通Python了！厉害了我的哥。哈哈__
