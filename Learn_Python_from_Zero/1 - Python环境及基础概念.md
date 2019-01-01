@@ -360,7 +360,6 @@ General Options:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;既然Python语言安装完毕了，那么小伙伴肯定已经跃跃欲试了，那么我们就来写一个吊炸天的Python程序吧  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;首先这个程序很牛逼，为什么这么说呢？因为会用到一个我们以后几乎天天用的命令，那就是print。有的同学英文好，一下就知道是打印的意思。那么该如何使用呢？  
 
-__精通hello world__  
 这个吊炸天的例子如下：
 ```bash
 # Python 2.x
