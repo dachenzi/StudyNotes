@@ -108,7 +108,7 @@ Out[49]: bool
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;从上面代码结果可以看出`type`返回的是类型，并不是字符串，而在数据判断时我们需要的是判断，比如判断某个变量是某个类型的，那么这个时候就需要用到`instance`了。
 ```python
 # 基本用法                                       
-Signature: isinstance(obj, class_or_tuple, /)
+Signature: isinstance(obj, class_or_tuple, /) --> bool
 # 接受两个参数
 # obj：要判断的对象
 # class_or_tuple：一个类，或者多个类组成的元组
@@ -154,9 +154,11 @@ __注意：列表的增删如果是在队伍当中，那么相对效率比较低
 1. queue：队列(一般是从队首或者队尾获取数据)分为：`先进先出队列`和`先进后出队列`及`优先级队列`
 2. stack：栈。后进先出的就被叫做栈(主要应用于函数的压栈)
 ## 2.3 列表的查询
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;列表提供了很多的方法，使我们可以方便的对它进行查询、统计等操作。	
-- `index()`: 在列表中获取传入元素的索引值，如果元素不存在，会报异常，如果存在多个，只返回找到的第一个匹配元素的索引值
-- `count()`: 统计传入元素在列表中出现的次数
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;列表提供了很多的方法，使我们可以方便的对它进行查询、统计等操作。
+```python
+L.index(value, [start, [stop]]) -> integer -- 在列表中获取传入元素的索引值，如果元素不存在，会报异常，如果存在多个，只返回找到的第一个匹配元素的索引值,其中start，stop为表示查找区间，默认为整个列表
+L.count(value) -> integer -- 统计传入元素在列表中出现的次数并返回
+```	
 > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__index和count的时间复杂度都是O(n),即随着列表的规模增加，效率会依次下降。什么是时间复杂度? 这是在计算算法优劣时的主要参考值，我们主要使用大写的O来表示时间复杂度，由于index和count函数都需要遍历列表，所以如果这个列表有n个元素的话，那么它的时间复杂度就为O(n),详细的解释，建议自行了解，这里知道这样表示即可，由于list[1]通过偏移量进行火速据访问，可以理解为一步到位，所以这种方式的时间复杂度为O(1)，不会随着规模增大而改变。__
 ```python
 In [66]: lst                                                                                            
@@ -193,8 +195,8 @@ __需要注意的时，所以不要越界，否则会报异常__
 ## 2.5 列表的追加和插入
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;列表提供了对其进行追加或插入的函数，即`append`和`insert`。先来看看这两个函数的使用方法。
 ```python
-Docstring: L.append(object) -> None --> 接受一个元素，用于追加到列表的末尾。
-Docstring: L.insert(index, object) --> 接受两个变量:索引,元素。 在列表中指定的索引位置，插入元素。
+L.append(object) --> None --> 接受一个元素，用于追加到列表的末尾。
+L.insert(index, object) --> 接受两个变量:索引,元素。 在列表中指定的索引位置，插入元素。
 ```
 说明：
 1. 列表尾部追加元素时，append的返回值是None，会直接对原列表进行操作，对应的时间复杂度是O(1)
@@ -214,7 +216,7 @@ Out[82]: [500, 1, 2, 3, 500]
 ```
 很多场景下我们对列表操作不是一个一个元素的追加，更多的时候，我们可能需要的是批量的操作，列表提供了一个`extend`函数用于满足这种需求。
 ```python        
-Docstring: L.extend(iterable) -> None -- 从一个可迭代对象中把元素扩展追加到当前列表中
+L.extend(iterable) --> None -- 从一个可迭代对象中把元素扩展追加到当前列表中
 ```
 说明：
 1. extend直接操作原列表，所以其返回值为None
@@ -249,7 +251,7 @@ In [100]: lst1[1][1] = 20
 In [101]: lst1                                                                                                     
 Out[101]: [[1, 20, 3], [1, 20, 3], [1, 20, 3]]
 ```
-有没有发现什么问题？我明明修改的是lst1的第二个元素的第二个值为20，为什么全都改变了？这是因为在列表是一个引用类型，lst中实际上存储的是[1,2,3]的内存地址，而我们使用*3的时候，等于复制了三分这个地址，所以lst1的3个元素，其实都指向了一个内存地址，所以我们随便修改一个元素，其他的也都会跟着被改变(毕竟是1个地址啊)，知道了原因，我们就可以想办法解决了，既然你复制的是门牌号，那有没有办法复制门牌号里面的数据呢？答案当然是可以的，我们使用`copy`模块的`deepcopy`完成，它可以帮我们一层一层的找到元素真正的位置，然后进行复制
+有没有发现什么问题？我明明修改的是lst1的第二个元素的第二个值为20，为什么全都改变了？这是因为在列表是一个引用类型，lst中实际上存储的是[1,2,3]的内存地址，而我们使用*3的时候，等于复制了三份这个地址，所以lst1的3个元素，其实都指向了一个内存地址，所以我们随便修改一个元素，其他的也都会跟着被改变(毕竟是1个地址啊)，我们一般称这种复制为`影子复制(shadow copy)`，知道了原因，我们就可以想办法解决了，既然你复制的是门牌号，那有没有办法复制门牌号里面的数据呢？答案当然是可以的，我们使用`copy`模块的`deepcopy`完成，它可以帮我们一层一层的找到元素真正的位置，然后进行复制。我们称deepcopy为`深拷贝`。
 ```python
 In [102]: import copy          # 导入copy模块                                                
 In [103]: lst                                                                                                         
@@ -274,43 +276,95 @@ In [114]: lst
 Out[114]: [[1, 1000, 3]]
 
 ```
+## 2.7 删除元素
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;列表对象同时提供了专门的方法用于对列表元素进行删除：`remove`、`pop`、`clear`。
+```python
+L.remove(value) --> None -- 删除列表中匹配value的第一个元素.
+L.pop([index]) --> item -- 删除并返回index对应的item,索引超界抛出IndexError错误，如果不指定index,默认是列表的最后一个
+L.clear() --> None -- 清空列表，不建议进行操作，可以等待GC自行进行销毁
+```
+__&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当我们使用remove和pop时，依然需要考虑`效率问题`，remove删除一个元素的时候，它首先需要遍历这个列表，查找匹配到的元素后移除，它的时间复杂度是O(n),使用pop指定index删除时，虽然可以1步定位到元素，但是如果删除的列表是首部或者中间的元素，那么将会使列表中的后续数据`集体搬家`,但当你使用pop不指定index时，它默认会在列表的默认删除，这种操作的时间复杂度为`O(1)`。所以建议如果需要频繁的对列表进行增删改，建议使用链表类型，而如果需要频繁的查或者只是从末尾弹出，就可以使用列表，因为这样效率更高，以上只是建议。__
+```python
+In [1]: lst = [1,2,3,4]                                                                                               
+In [2]: lst.remove(2)                                                                                                 
+In [3]: lst                                                                                                           
+Out[3]: [1, 3, 4]
+In [4]: lst.pop()                                                                                                     
+Out[4]: 4
+In [5]: lst                                                                                                           
+Out[5]: [1, 3]
+In [6]: lst.pop(1)                                                                                                    
+Out[6]: 3
+In [7]: lst                                                                                                           
+Out[7]: [1]
+In [8]: lst.clear()                                                                                                   
+In [9]: lst                                                                                                        
+Out[9]: []
+```
+## 2.8 其他操作
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当我们的列表中存储的是int类型的数据，而我们想要对其进行排序，那么就可以使用列表的排序，当我们想要判断一个元素是否存在于列表中时，就可以使用成员判断。
+```python
+L.reverse() -- 原地反转,原地将列表元素进行反转
+L.sort(key=None, reverse=False) -> None -- 对列表进行原地排序
+in: 成员判断,判断元素是否在列表中 1 in [1,2,3]，由于要遍历，所以它的时间复杂度为O(n)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`sort`比较特别，它有两个参数，其中`key`可以接受一个函数，使列表中的元素按照函数处理过后的类型进行排序，默认为空，即不处理。`reverse`则有两个值`True`和`False`,表示正序或者反序，默认为`False`表示正序。  
 
+>__线性数据结构的通病，找元素，需要进行遍历。__
+```python
+# 列表是顺序结构，但凡是 顺序不一致，那么两个列表就不相等
+In [11]: l1 = [1,2,3,[4,5]]                                                                             
+In [12]: [4,5] in l1                                                                                    
+Out[12]: True
+In [13]: [5,4] in l1      # 顺序改变，所以不相等                                                                                
+Out[13]: False
 
-	删除元素
-		remove(value)：从左到右查找第一个匹配value的值，移除该元素
-		pop([index])：
-			不指定索引index,就从列表尾部弹出一个元素
-			指定索引index，就从索引处弹出一个元素，索引超界抛出IndexError错误
-				效率，指定索引的时间复杂度与不指定索引的时间复杂度
-		clear():  # 不要轻易的清除，GC
-		
-			
-	其他操作：
-		reverse() --> None
-			1. 将列表元素反转，返回None
-			2. 就地修改
-		sort(key=None,reverse=False) --> None
-			1.对列表元素进行排序，就地修改，默认升序
-			2.reverse为True，反转，降序
-			3.key一个函数，指定key如何排序
-				ll.sort(key=function)
-		in : 成员判断
-			O(n)
-	线性数据结构的通病，找元素，需要进行遍历。
-	
-	列表是顺序结构，但凡是 顺序不一致，那么两个列表就不相等
-		In [11]: l1 = [1,2,3,[4,5]]                                                                             
+In [10]: lst = [ 2, 1 ,3 ,4 ,5 ]                                                                                      
+In [11]: lst.reverse()                                                                                                
+In [12]: lst                                                                                                          
+Out[12]: [5, 4, 3, 1, 2]
+In [13]: lst.sort()                                                                                                   
+In [14]: lst                                                                                                        
+Out[14]: [1, 2, 3, 4, 5]
+In [15]: lst.sort(reverse=True)                                                                                      
+In [16]: lst                                                                                                          
+Out[16]: [5, 4, 3, 2, 1]
+In [17]
+```
+# 3 随机数random
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;之所以在这里介绍random模块是因为，我们可能需要在列表中随机挑选一个或几个重复或者不重复的数据，这时，就可以使用python得知的`radnom模块`。我们常用的函数如下：
+```python
+random.randint(a,b): 返回[a,b]之间的整数,包含a和b本身。
+random.choice(seq): 从非空序列的元素中随机挑选一个元素。
+random.randrange([start,] stop, [,step]): 从指定范围内获取一个随机数。和range相同属于前包后不包区间, start(起始) 默认为0，step（步长) 默认为1 
+random.shuffle(list) --> None : 直接对原列表进行洗牌(随机打乱)
+random.sample(population, k): 从population(样本空间)中随机选取出k个不同的元素，返回一个新的列表
+```
+下面是例子：
+```python
+In [24]: import random                                                                                                
 
-		In [12]: [4,5] in l1                                                                                    
-		Out[12]: True
+In [25]: random.randint(1,10)                                                                                         
+Out[25]: 4
 
-		In [13]: [5,4] in l1                                                                                    
-		Out[13]: False
+In [26]: random.choice(range(10))                                                                                     
+Out[26]: 5
 
-		In [14]: 
+In [27]: random.randrange(1)                                                                                          
+Out[27]: 0
 
-	列表复制
-		shadow copy
-		deepcopy 
-	随机数random
-		sample：不同索引的元素
+In [28]: random.randrange(0,5,2)                                                                                      
+Out[28]: 2
+                                                                       
+
+In [31]: lst = list(range(10))                                                                                        
+
+In [32]: random.shuffle(lst)                                                                                          
+
+In [33]: lst                                                                                                          
+Out[33]: [8, 1, 6, 4, 3, 9, 7, 0, 5, 2]
+
+In [34]: random.sample(lst,4)                                                                                         
+Out[34]: [8, 4, 1, 0]
+ 
+```
