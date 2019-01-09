@@ -86,7 +86,7 @@ In [10]: env,path
 Out[10]: ('JAVA_HOME', '/usr/bin/java')
 ```
 __解构是Python提供的很好的功能，可以方便的提取复杂的数据结构的值，配置_使用时，会更加便捷。__
-# 2 集合
+# 2 set类型
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;集合set在Python中是一个非常重要的`非线性结构`，它使用`{}`表示，用三个词总结集合的特点就是：__`可变的`__、__`无序的`__、__`不重复`__。它的官方解释如下：
 - set是一个无序的，不同的`可hash对象`组成的集。
 - 常用来进行成员测试，在一个序列中去掉重复的对象，和进行数学上的计算，比如`交集(intersection)`、`并集(union)`、`差集(difference)`、`对称差集(symmetric difference)`等。
@@ -216,4 +216,72 @@ Out[96]: True
 In [97]: 10000 not in s                                                                                    
 Out[97]: True
 ```
-> 我们知道在list，str这种线性结构中进行成员判断时，它的时间复杂度是O(n)的，因为需要遍历，但是在set中就很简单了，它只需要把要判断的元素进行hash，找到set中对应的门牌号，把里面的数据拽出来，看看是不是相同。 这种操作通常都是O(1)的，所以在set中，成员判断效率很高，当然在dict类型中，也是如此。
+> 我们知道在list，str这种`线性结构`中进行`成员判断`时，它的时间复杂度是`O(n)`的，因为需要遍历，但是在set中就很简单了，它只需要把要判断的元素进行hash，找到set中对应的门牌号，把里面的数据拽出来，看看是不是相同。 这种操作通常都是`O(1)`的，所以在set中，`成员判断效率很高`，当然在`dict类型`中，也是如此。
+## 2.3 set小结
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;线性结构的查询时间复杂度是`O(n)`，即随着数据规模的这不过大而增加耗时，set、dict等结构，内部使用的是hash值作为key，时间复杂度可以做到`O(1)`查询时间和数据规模无关，在python中可hash对象有(都属于不可变类型)
+- 数值类型int、float、complex
+- 布尔值True、False
+- 字符串String、Bytes
+- 元组tuple
+- None  
+# 3 集合
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;简单来说，所谓的一个集合，就是将数个对象归类而分成为一个或数个形态各异的大小整体。 一般来讲，集合是具有某种特性的事物的整体，或是一些确认对象的汇集。构成集合的事物或对象称作元素或是成员。集合的元素可以是任何事物，可以是人，可以是物，也可以是字母或数字等。 （此解释来自于维基百科）
+- 全集：所有元素的结合。例如实数集，所有实数组成的集合就是实数集
+- 子集subset和超集superset: 一个集合A所有的元素都在另一个集合B内，A是B的子集，B是A的超集
+- 真子集和真超集：A是B的子集，且A不等于B，A就是B的真子集，B就是A的真超集
+- 并集：多个集合合并的结果
+- 交集：多个集合的公共部分
+- 差集：集合中除去和其他集合共有的部分
+>这些是小学数学基础概念哦，兄弟们。
+## 3.1 集合运算
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过集合运算，我们可以方便的对求出集合的差集、并集等，Python的集合除了提供了大量的集合运算方法还提供了不少的特殊符号用来表示集合运算。
+## 3.2 并集
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;将集合A和集合B所有元素合并在一起，组成的集合称为集合A和集合B的并集
+```python
+s.union(*other) --> new set object --> 把多个集合和集合s进行合并，返回一个新的集合对象
+--> 使用 | 表示
+
+s.update(*other) --> None --> 把*others个可迭代可hash对象，和s进行并集，然后赋给s。（就地修改）
+--> 使用 != 表示
+```
+## 3.3 交集
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;集合A和集合B，由所有属于A且属于B的元素组成的集合。
+```python
+s.intersection(*other) --> new set object --> 返回多个集合的交集
+--> 使用 & 表示
+
+s.intersection_update(*other) --> None  --> 获取多个集合的交集，就地进行修改
+--> 使用 &= 表示
+```
+## 3.3 差集
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;集合A和B，由所有属于A且不属于B的元素组成的集合。
+```python
+s.difference(*others) --> new set object --> 返回集合s和其他多个集合的差集
+--> 使用 - 表示
+
+s.difference_update(*other) --> None --> 返回集合s和其他多个集合的差集，就地进行修改
+--> 使用 -= 表示
+```
+## 3.4 对称差集
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;不属于集合A和集合B交集的其他元素组成的集合，数学表达式为：(A-B) U (B-A)。
+```python
+s.symmetric_difference(*other) --> new set object --> 返回和另一些集合的对称差集
+--> 使用 ^ 表示
+
+s.symmetric_difference_update --> None --> 返回和另一些集合的对称差集，就地修改
+--> 使用 ^= 表示
+```
+## 3.5 集合的其他运算
+```python
+s.issubset(other) --> bool --> 判断当前集合是否是另一个集合的子集
+--> 使用 <= 表示
+
+set1 < set2 : 判断set1是否是set2的真子集
+
+s.isssuperset(other) --> bool --> 判断当前集合是否是other的超集
+--> 使用 >= 表示
+
+set1 > set2 : 判断set1是否是other的真超集
+
+s.isdisjoint(other) --> bool --> 判断当前集合和另一个集合有没有交集
+```
