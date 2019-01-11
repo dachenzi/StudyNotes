@@ -1,3 +1,19 @@
+<!-- TOC -->
+
+- [1 时间](#1-时间)
+- [2 datetime模块](#2-datetime模块)
+    - [2.1 获取当前日期和时间](#21-获取当前日期和时间)
+    - [2.2 获取指定日期和时间](#22-获取指定日期和时间)
+    - [2.3 datetime转换为timestamp](#23-datetime转换为timestamp)
+    - [2.4 timestamp转换为datetime](#24-timestamp转换为datetime)
+    - [2.5 str转换为datetime](#25-str转换为datetime)
+    - [2.6 datetime转换为str](#26-datetime转换为str)
+    - [2.7 datetime加减](#27-datetime加减)
+- [3 time模块](#3-time模块)
+
+<!-- /TOC -->
+
+---
 # 1 时间
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在我们日常写代码的过程中很多时候会用到时间，比如：输出当前时间，计算程序的运行时间，让程序休息一定的时间然后再做某些事情等等，Python内置了不少用于计算和输出时间的模块，最常用的是`time`模块和`datetime`模块。在Python 3中建议使用`datetime模块`。
 # 2 datetime模块
