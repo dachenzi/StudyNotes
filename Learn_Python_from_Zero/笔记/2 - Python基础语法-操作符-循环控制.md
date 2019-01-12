@@ -33,9 +33,6 @@
     - [4.2.1 for 循环](#421-for-循环)
 
 <!-- /TOC -->
-
----
-
 # 1 Python 基础语法
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所有语言都有它自己规定的格式，Python也不例外，下面从几个方面来了解。

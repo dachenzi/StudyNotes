@@ -11,9 +11,10 @@
     - [3.2 遍历字典的value](#32-遍历字典的value)
     - [3.3 变量字典的键值对](#33-变量字典的键值对)
     - [3.4 字典遍历小结](#34-字典遍历小结)
+- [4 defaultdict默认值字典](#4-defaultdict默认值字典)
+- [5 OrdereDict有序字典](#5-orderedict有序字典)
 
 <!-- /TOC -->
----
 
 # 1 字典介绍
 
@@ -130,6 +131,23 @@ In [55]: dic.clear()
 In [56]: dic                                                                                                                           
 Out[56]: {}
 ```
+> 当我们以字典的某个对象比如keys,values,items等为条件对字典进行遍历时，我们不能在遍历的同时删除字典的元素，字典在运行时不允许长度改变，但是在list中这种操作是可以的，但是会得到意想不到的结果，建议对容器进行遍历的同时不要修改它的长度。
+```python
+In [7]: s                                                                                           
+Out[7]: {'a': 1, 'b': 2, 'c': 4, 'd': 5, 'e': 7, 'j': 10}
+In [8]: len(s)                                                                                      
+Out[8]: 6
+In [10]: for i in range(6): 
+    ...:     s.popitem() 
+    ...:                                                                                            
+
+In [11]: s                                                                                          
+Out[11]: {}
+
+# 下面这种方式是错的，也是觉得不可以的。
+for i in s.keys():
+    s.pop(i)
+```
 # 3 字典遍历
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在Python中，我们所说的基本数据结构：字符串、元组、列表，集合，包括字典，都可以认为是一个容器箱子，只要是容器，我们就可以进行遍历(是否有序和是否可以遍历没有必然关系，只不过有序的话是顺序拿出，而无序则是随机拿出)，我们可以使用多种方式对字典进行迭代遍历，但是有些地方和其他类型不同。  
 
@@ -202,4 +220,66 @@ In [78]:
 ```
 >由于返回的每个键值对为元组格式，那么利用我们前面学的封装与结构，可以很方便的获取key和它对应的value
 ## 3.4 字典遍历小结
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在Python3中，keys、values、items方法返回一个类似一个生成器的可迭代对象，不会把函数的返回结果复制到内存空间中
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在Python3中，keys、values、items方法返回一个类似一个生成器的可迭代对象，不会把函数的返回结果复制到内存空间中。
+- Dictionary view对象，可以使用len()、iter()、in
+操作
+- 字典的entry的动态视图，字典变化，视图将反映出这些变化
+- keys返回一个类似set的对象，也可以看作是一个set集合，如果values可hash的话，那么items也可以看作是类set对象  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python 2中，keys、values、items方法会返回一个新的列表，占据新的内存空间，所以Python 2建议使用iterkeys、itervalues、iteritems，返回一个迭代器，而不是返回一个copy
+```python
+[11:20:32 python@centos7 ~]$python
+Python 2.7.5 (default, Oct 30 2018, 23:45:53) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> s = {'a':1,'b':2}
+>>> s.keys()    # 直接生成一个keys的列表
+['a', 'b']
+>>> s.iterkeys()   # 对象，迭代可以获取数据
+<dictionary-keyiterator object at 0x7f271c5fa520>
+>>> 
+
+```
+# 4 defaultdict默认值字典
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;defaultdit object是dict的子类，我们称它为默认值字典，即在创建字典时给所有的value指定一个默认值，它存放在collections模块中，使用前需要先进行导入。为什么有默认值字典这种类型呢？那么请看如下代码：
+```python
+dic = {}
+for i in 'abacdabeddfef':
+    if i not in dic:     # 这句其实也可以优化为 dic[i] = dic.get(i, 0) + 1
+        dic[i] = 0
+    dic[i] += 1
+print(dic)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们在计算一个字符串或者一个列表中的元素重复的次数时，通常会用到字典对齐进行计数，如果元素不存在字典中，那么就需要初始化元素，当我们使用默认值字典时，就可以优化的更简洁。
+```python
+from collections import defaultdict
+dic = defaultdict(int)   # defaultdict(lambda :0)  这种方法也可以设置默认为0
+for i in 'abacdabeddfef':
+    dic[i] += 1    # 默认是int型，可以直接加减
+print(dic)
+```
+# 5 OrdereDict有序字典
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ordered dictionaries像一个有序字典，但是它记住的是插入元素的顺序。当我们迭代有序字典时，它会按照这些键值对插入的顺序返回。它同样存在于collections模块中，需要使用是请首先导入。
+```python
+In [1]: from collections import OrderedDict                                                                                                                                                                                          
+In [2]: dic = OrderedDict()                                                                                                                                                                                                          
+In [5]: dic = dic.fromkeys('abc',1)                                                                                                                                                                                                  
+In [6]: dic                                                                                                                                                                                                                          
+Out[6]: OrderedDict([('a', 1), ('b', 1), ('c', 1)])
+In [8]: for k,v in dic.items():     # 按照插入的顺序
+   ...:     print(k,v) 
+   ...:                                                                                                                                                                                                                              
+a 1
+b 1
+c 1
+In [10]: dic = dict([('a', 1), ('b', 1), ('c', 1)])                                                                                                                                                                                  
+
+In [11]: for k,v in dic.items():    # 无序的
+    ...:     print(k,v) 
+    ...:                                                                                                                                                                                                                             
+a 1
+c 1
+b 1
+
+In [12]:       
+```
+> 注意：在3.6的版本的python在python/ipython解释器中，直接迭代或者打印时，是有序的(OrderedDict)，但是在3.5版本以前都是随机的，千万不要以为字典是有序的！
