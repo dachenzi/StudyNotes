@@ -40,18 +40,18 @@
 - `dic = {'a':1, 'b':2, 'c':3, 'd':[1,2,3]}`
 - `dic = dict.fromkeys(iterable, value)`: 使用可迭代对象的值作为key生成字典,value默认为0，否则用指定的value对字典进行初始化。
 ```python
-In [114]: d1=dict()                                                                                        
-In [115]: d2={}                                                                                            
+In [114]: d1=dict()
+In [115]: d2={}    
 In [118]: d3 = dict(a=1,b=2)                                                                               
-In [120]: d3                                                                                               
+In [120]: d3       
 Out[120]: {'a': 1, 'b': 2}
 In [124]: d4 = dict([('a',1),('b',2)], c=3, d=4)                                                           
 In [125]: d5 = dict(d4,e=5,f=6)                                                                            
 In [126]: d7 = dict.fromkeys(range(5))                                                                     
 In [127]: d8 = dict.fromkeys(range(5),100)                                                                
-In [128]: d7                                                                                               
+In [128]: d7       
 Out[128]: {0: None, 1: None, 2: None, 3: None, 4: None}                                                         
-In [131]: d8                                                                                               
+In [131]: d8       
 Out[131]: {0: 100, 1: 100, 2: 100, 3: 100, 4: 100} 
 ```
 ## 2.2 字典元素的访问
@@ -60,26 +60,26 @@ Out[131]: {0: 100, 1: 100, 2: 100, 3: 100, 4: 100}
 - `dict.get(key[, default])`: 返回key对应的value，key不存在返回缺省值，如果没有设置缺省值赶回None
 - `dict.setdefault(key[, default])`: 返回key对应的值value，key不存在，添加key:value键值对(value设置为default)，并返回value，如果default没有设置缺省为None
 ```python
-In [32]: dic = {'a':1, 'b':2, 'c':3, 'd':4}                                                                                            
-In [33]: dic['a']                                                                                                                      
+In [32]: dic = {'a':1, 'b':2, 'c':3, 'd':4}    
+In [33]: dic['a']                              
 Out[33]: 1
-In [34]: dic['e']          # 不存在'e'这个key，所以直接访问会出现异常                                                                                                               
+In [34]: dic['e']          # 不存在'e'这个key，所以直接访问会出现异常                       
 ---------------------------------------------------------------------------
 KeyError                                  Traceback (most recent call last)
 <ipython-input-34-87d22c709971> in <module>
 ----> 1 dic['e']
 
 KeyError: 'e'
-In [35]: dic.get('a')     # key存在，则返回对应的值                                                                                                                
+In [35]: dic.get('a')     # key存在，则返回对应的值                        
 Out[35]: 1
-In [36]: dic.get('e')     # 不存在，默认会返回None，ipython优化了None的输出，所以这里无显示                                                                                                             
-In [37]: dic.get('e','not exist')     # 不存在时，由指定的default进行返回                                                                                                 
+In [36]: dic.get('e')     # 不存在，默认会返回None，ipython优化了None的输出，所以这里无显示                     
+In [37]: dic.get('e','not exist')     # 不存在时，由指定的default进行返回         
 Out[37]: 'not exist'
-In [38]: dic.setdefault('a', 'ok?')   # 设置a的值为ok?,a存在，所以返回a对应的值1                                                                                                 
+In [38]: dic.setdefault('a', 'ok?')   # 设置a的值为ok?,a存在，所以返回a对应的值1         
 Out[38]: 1
-In [39]: dic.setdefault('e', 'ok?')   # 设置e的值为ok?，e不存在，所以设置并放回value(key不存在时等同于设置并访问了)                                                                                                 
+In [39]: dic.setdefault('e', 'ok?')   # 设置e的值为ok?，e不存在，所以设置并放回value(key不存在时等同于设置并访问了)         
 Out[39]: 'ok?'
-In [40]: dic                                                                                                                           
+In [40]: dic                                   
 Out[40]: {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 'ok?'}
 ```
 >__当然字典也可以被迭代访问,后面介绍__
@@ -92,22 +92,22 @@ Out[40]: {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 'ok?'}
 - `dic.clear()`: 清空字典。
 - `del dic['a']`: 通用的删除变量方法。
 ```python
-In [41]: dic                                                                                                                           
+In [41]: dic                                   
 Out[41]: {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 'ok?'}
 
-In [42]: dic['a'] = 1000                                                                                                               
-In [43]: dic                                                                                                                           
+In [42]: dic['a'] = 1000                       
+In [43]: dic                                   
 Out[43]: {'a': 1000, 'b': 2, 'c': 3, 'd': 4, 'e': 'ok?'}
 
-In [44]: dic2 = {'a':200,'f':50}                                                                                                       
-In [45]: dic.update(dic2)                                                                                                              
-In [46]: dic                                                                                                                           
+In [44]: dic2 = {'a':200,'f':50}               
+In [45]: dic.update(dic2)                      
+In [46]: dic                                   
 Out[46]: {'a': 200, 'b': 2, 'c': 3, 'd': 4, 'e': 'ok?', 'f': 50}
 
-In [48]: dic.pop('a')             # 弹出一个key'a'，key存在返回key对应的value                                                                                                   
+In [48]: dic.pop('a')             # 弹出一个key'a'，key存在返回key对应的value           
 Out[48]: 200
 
-In [49]: dic.pop('g')              # 弹出一个key'g'，key不存在，又没有指定default，则会报KeyError异常                                                                                                        
+In [49]: dic.pop('g')              # 弹出一个key'g'，key不存在，又没有指定default，则会报KeyError异常                
 ---------------------------------------------------------------------------
 KeyError                                  Traceback (most recent call last)
 <ipython-input-49-311c3ba80251> in <module>
@@ -115,33 +115,33 @@ KeyError                                  Traceback (most recent call last)
 
 KeyError: 'g'
 
-In [50]: dic.pop('g','not exist')       # 指定了default，当key不存在时，会返回指定的default值                                                                                               
+In [50]: dic.pop('g','not exist')       # 指定了default，当key不存在时，会返回指定的default值       
 Out[50]: 'not exist'
 
-In [51]: dic.popitem()          # 弹出一个key:valyue键值对，返回对象是元组形式                                                                                                       
+In [51]: dic.popitem()          # 弹出一个key:valyue键值对，返回对象是元组形式               
 Out[51]: ('d', 4)
-In [52]: dic                                                                                                                           
+In [52]: dic                                   
 Out[52]: {'b': 2, 'c': 3, 'e': 'ok?', 'f': 50}
 
-In [53]: del dic['e']                                                                                                                  
-In [54]: dic                                                                                                                           
+In [53]: del dic['e']                          
+In [54]: dic                                   
 Out[54]: {'b': 2, 'c': 3, 'f': 50}
 
-In [55]: dic.clear()                                                                                                                   
-In [56]: dic                                                                                                                           
+In [55]: dic.clear()                           
+In [56]: dic                                   
 Out[56]: {}
 ```
 > 当我们以字典的某个对象比如keys,values,items等为条件对字典进行遍历时，我们不能在遍历的同时删除字典的元素，字典在运行时不允许长度改变，但是在list中这种操作是可以的，但是会得到意想不到的结果，建议对容器进行遍历的同时不要修改它的长度。
 ```python
-In [7]: s                                                                                           
+In [7]: s   
 Out[7]: {'a': 1, 'b': 2, 'c': 4, 'd': 5, 'e': 7, 'j': 10}
 In [8]: len(s)                                                                                      
 Out[8]: 6
 In [10]: for i in range(6): 
     ...:     s.popitem() 
-    ...:                                                                                            
+    ...:    
 
-In [11]: s                                                                                          
+In [11]: s  
 Out[11]: {}
 
 # 下面这种方式是错的，也是觉得不可以的。
@@ -154,23 +154,23 @@ for i in s.keys():
 ## 3.1 遍历字典的key
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`dic.keys()`: --> `dict_keys` --> 返回字典dic的所有key组成的一个dict_keys视图集合(__`类set结构，不会生成新的内存空间`__)。
 ```python
-In [64]: dic = {'a':1, 'b':2, 'c':3, 'd':4}                                                                                            
+In [64]: dic = {'a':1, 'b':2, 'c':3, 'd':4}    
 
 In [65]: for key in dic: 
-    ...:     print(key)                                                                                                                      
+    ...:     print(key)                              
 a
 d
 c
 b
 
 In [66]: for key in dic.keys(): 
-    ...:     print(key)                                                                                                                            
+    ...:     print(key)                                    
 a
 d
 c
 b
 
-In [67]: dic.keys()                                                                                                                    
+In [67]: dic.keys()                            
 Out[67]: dict_keys(['a', 'd', 'c', 'b'])
 ```
 > 迭代字典就是在迭代字典的key，所以直接迭代字典和使用字典的keys()方法返回一个keys的视图然后再迭代，是一样的效果。  
@@ -179,20 +179,20 @@ Out[67]: dict_keys(['a', 'd', 'c', 'b'])
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`dic.values()`: --> `dict_values` --> 返回字典dic的所有values组成的一个dict_values视图集合(__`类set结构，不会生成新的内存空间`__)。
 ```python
 In [69]: for i in dic: 
-    ...:     print(dic[i])                                                                                                                           
+    ...:     print(dic[i])                                   
 1
 4
 3
 2
 
 In [70]: for i in dic.values(): 
-    ...:     print(i)                                                                                                                           
+    ...:     print(i)                                   
 1
 4
 3
 2
 
-In [71]: dic.values()                                                                                                                  
+In [71]: dic.values()                          
 Out[71]: dict_values([1, 4, 3, 2])
 ```
 >可以首先遍历字典的key，然后再通过key来访问对应的value，也可以通过values()直接访问values。  
@@ -202,7 +202,7 @@ Out[71]: dict_values([1, 4, 3, 2])
 ```python
 In [75]: for i in dic.items(): 
     ...:     print(i) 
-    ...:                                                                                                                               
+    ...:                                       
 ('a', 1)
 ('d', 4)
 ('c', 3)
@@ -210,7 +210,7 @@ In [75]: for i in dic.items():
 
 In [77]: for key,value in dic.items(): 
     ...:     print('key:{} value:{}'.format(key,value)) 
-    ...:                                                                                                                               
+    ...:                                       
 key:a value:1
 key:d value:4
 key:c value:3
@@ -260,22 +260,22 @@ print(dic)
 # 5 OrdereDict有序字典
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ordered dictionaries像一个有序字典，但是它记住的是插入元素的顺序。当我们迭代有序字典时，它会按照这些键值对插入的顺序返回。它同样存在于collections模块中，需要使用是请首先导入。
 ```python
-In [1]: from collections import OrderedDict                                                                                                                                                                                          
-In [2]: dic = OrderedDict()                                                                                                                                                                                                          
-In [5]: dic = dic.fromkeys('abc',1)                                                                                                                                                                                                  
-In [6]: dic                                                                                                                                                                                                                          
+In [1]: from collections import OrderedDict          
+In [2]: dic = OrderedDict()                          
+In [5]: dic = dic.fromkeys('abc',1)                  
+In [6]: dic                                          
 Out[6]: OrderedDict([('a', 1), ('b', 1), ('c', 1)])
 In [8]: for k,v in dic.items():     # 按照插入的顺序
    ...:     print(k,v) 
-   ...:                                                                                                                                                                                                                              
+   ...:                                              
 a 1
 b 1
 c 1
-In [10]: dic = dict([('a', 1), ('b', 1), ('c', 1)])                                                                                                                                                                                  
+In [10]: dic = dict([('a', 1), ('b', 1), ('c', 1)])  
 
 In [11]: for k,v in dic.items():    # 无序的
     ...:     print(k,v) 
-    ...:                                                                                                                                                                                                                             
+    ...:                                             
 a 1
 c 1
 b 1

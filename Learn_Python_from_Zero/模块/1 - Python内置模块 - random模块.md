@@ -13,29 +13,29 @@ random.sample(population, k): 从population(样本空间)中随机选取出k个�
 ```
 下面是例子：
 ```python
-In [24]: import random                                                                                                
+In [24]: import random        
 
-In [25]: random.randint(1,10)                                                                                         
+In [25]: random.randint(1,10) 
 Out[25]: 4
 
 In [26]: random.choice(range(10))                                                                                     
 Out[26]: 5
 
-In [27]: random.randrange(1)                                                                                          
+In [27]: random.randrange(1)  
 Out[27]: 0
 
 In [28]: random.randrange(0,5,2)                                                                                      
 Out[28]: 2
                                                                        
 
-In [31]: lst = list(range(10))                                                                                        
+In [31]: lst = list(range(10))
 
-In [32]: random.shuffle(lst)                                                                                          
+In [32]: random.shuffle(lst)  
 
-In [33]: lst                                                                                                          
+In [33]: lst                  
 Out[33]: [8, 1, 6, 4, 3, 9, 7, 0, 5, 2]
 
-In [34]: random.sample(lst,4)                                                                                         
+In [34]: random.sample(lst,4) 
 Out[34]: [8, 4, 1, 0]
  
 ```

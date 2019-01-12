@@ -31,29 +31,29 @@
 ## 1.1 封装
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;封装故名思议就是装箱，把多个值使用逗号分隔，组合在一起，本质上来看，其返回的是一个元组，只是省略了小括号。(一定要区别与C语言的逗号表达式)
 ```python
-In [91]: t1 = (1,2)  # 定义一个元组                                                                                                                                
-In [92]: t2 = 1,2    # 省略括号，其内部还是会封装成元组                                                                                                                               
-In [93]: t1                                                                                                                                         
+In [91]: t1 = (1,2)  # 定义一个元组                                        
+In [92]: t2 = 1,2    # 省略括号，其内部还是会封装成元组                                       
+In [93]: t1                                                 
 Out[93]: (1, 2)
-In [94]: t2                                                                                                                                         
+In [94]: t2                                                 
 Out[94]: (1, 2)
-In [95]: type(t1)                                                                                                                                   
+In [95]: type(t1)                                           
 Out[95]: tuple
-In [96]: type(t2)                                                                                                                                   
+In [96]: type(t2)                                           
 Out[96]: tuple
 
 ```
 ## 1.2 解构
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;解构，解构，就是把箱子解开，在Python中表示从线性结构中把元素解开，并且顺序的赋值给其他变量，需要注意的是，解构时接受元素的变量，需要放在等式的左边，并且数量要和右边解开的元素的个数一致。
 ```python
-In [97]: t1                                                                                                                                         
+In [97]: t1                                                 
 Out[97]: (1, 2)
-In [98]: a,b = t1    # 表示把1赋给a，把2赋给b                                                                                                                               
-In [99]: a                                                                                                                                          
+In [98]: a,b = t1    # 表示把1赋给a，把2赋给b                                       
+In [99]: a                                                  
 Out[99]: 1
-In [100]: b                                                                                                                                         
+In [100]: b                                                 
 Out[100]: 2
-In [101]: a,b,c = t1           # 当接受元素的变量多余解构的元素时，会提示ValueError，反之相同                                                                                                                     
+In [101]: a,b,c = t1           # 当接受元素的变量多余解构的元素时，会提示ValueError，反之相同                             
 ---------------------------------------------------------------------------
 ValueError                                Traceback (most recent call last)
 <ipython-input-101-2e8ad53e5fc7> in <module>
@@ -80,15 +80,15 @@ In [102]:
 - `*号`： 使用方式为: `*变量名`，贪婪的吸收解构的元素形成一个列表,__无论能否吸收，都会返回一个列表__。
 - `_号`：表示丢弃一个变量(实际上是使用`_`接受变量，但是使用这么一个符号，就表示我们不想用它)
 ```python
-In [1]: t = list(range(5))                                                                                                                          
-In [2]: t                                                                                                                                           
+In [1]: t = list(range(5))                                  
+In [2]: t                                                   
 Out[2]: [0, 1, 2, 3, 4]
-In [3]: head,*mid,tail = t                                                                                                                          
-In [4]: head                                                                                                                                        
+In [3]: head,*mid,tail = t                                  
+In [4]: head                                                
 Out[4]: 0
-In [5]: mid                                                                                                                                         
+In [5]: mid                                                 
 Out[5]: [1, 2, 3]
-In [6]: tail                                                                                                                                        
+In [6]: tail                                                
 Out[6]: 4
 
 ```
@@ -110,7 +110,7 @@ Out[6]: 4
 或者
 
 In [9]:  env, _, path = 'JAVA_HOME=/usr/bin/java'.partition('=')                                                                                    
-In [10]: env,path                                                                                                                                   
+In [10]: env,path                                           
 Out[10]: ('JAVA_HOME', '/usr/bin/java')
 ```
 __解构是Python提供的很好的功能，可以方便的提取复杂的数据结构的值，配置_使用时，会更加便捷。__
@@ -129,13 +129,13 @@ set(iterable) -> new set object   --> 返回一个set对象，元素有iterable�
 ```
 例如：
 ```python
-In [44]: s1 = set()                                                                                        
+In [44]: s1 = set()
 In [45]: s2 = set(range(5))             # {0, 1, 2, 3, 4}                                                                    
 In [46]: s3 = set(list(range(10)))   # 外面使用list进行转换，多此一举，{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}                                                                     
 In [47]: s4 = {}           # 这种方式实际上是创建了一个字典                                                                               
-In [48]: s4                                                                                                
+In [48]: s4        
 Out[48]: {}
-In [50]: type(s4)                                                                                          
+In [50]: type(s4)  
 Out[50]: dict
 In [51]: s5 = {(1,3),3,'a'}                                                                                  
 In [52]: s6={[1,2],(1,2,),1,2}       # list属于不可hash对象，所以无法添加到set中去                                                                        
@@ -159,16 +159,16 @@ s.update(*other) --> None --> 把*others个可迭代可hash对象，和s进行�
 ```
 例
 ```python
-In [62]: s                                                                                                 
+In [62]: s         
 Out[62]: {1, 2, 3}
 In [63]: s.add('abc')     # 把'abc'当作一个元素添加进去                                                                                     
-In [64]: s                                                                                                 
+In [64]: s         
 Out[64]: {1, 2, 3, 'abc'}  
 In [65]: s.add((1,2,3))     # 把(1,2,3) 当作一个元素添加进去                                                                             
-In [66]: s                                                                                                 
+In [66]: s         
 Out[66]: {(1, 2, 3), 1, 2, 3, 'abc'}
 In [67]: s.update(range(5),'abcdef',[5,6,7,8])     # 多个可迭代可hash对象取并集                                                      
-In [68]: s                                                                                                 
+In [68]: s         
 Out[68]: {(1, 2, 3), 0, 1, 2, 3, 4, 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
 ```
 ### 2.2.2 删除元素
@@ -184,12 +184,12 @@ s.clear()  --> None --> 清空集合
 ```
 例
 ```python
-In [71]: s                                                                                                 
+In [71]: s         
 Out[71]: {(1, 2, 3), 0, 1, 2, 3, 4, 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
 
 In [72]: s.remove(0)                                                                                       
 
-In [73]: s                                                                                                 
+In [73]: s         
 Out[73]: {(1, 2, 3), 1, 2, 3, 4, 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
 
 In [74]: s.remove(1000)       # 不存在集合内的元素，删除会报异常                                                                               
@@ -199,15 +199,15 @@ KeyError                                  Traceback (most recent call last)
 ----> 1 s.remove(1000)
 
 KeyError: 1000
-In [76]: s                                                                                                 
+In [76]: s         
 Out[76]: {(1, 2, 3), 1, 2, 3, 4, 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
 
-In [77]: s.pop()                                                                                           
+In [77]: s.pop()   
 Out[77]: 1
 
-In [78]: s                                                                                                 
+In [78]: s         
 Out[78]: {(1, 2, 3), 2, 3, 4, 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
-In [82]: s1                                                                                                
+In [82]: s1        
 Out[82]: set()
 In [84]: s1.pop()      # 空集合会报异常                                                                                    
 ---------------------------------------------------------------------------
@@ -217,14 +217,14 @@ KeyError                                  Traceback (most recent call last)
 
 KeyError: 'pop from an empty set'
 
-In [85]: s                                                                                                 
+In [85]: s         
 Out[85]: {(1, 2, 3), 4, 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
 In [86]: s.discard(1000)     # 直接删除，不会返回                                                                             
 In [89]: s.discard(4)                                                                                      
-In [90]: s                                                                                                 
+In [90]: s         
 Out[90]: {(1, 2, 3), 5, 6, 7, 8, 'a', 'abc', 'b', 'c', 'd', 'e', 'f'}
-In [92]: s.clear()                                                                                         
-In [93]: s                                                                                                 
+In [92]: s.clear() 
+In [93]: s         
 Out[93]: set()
 ```
 ### 2.2.3 修改元素
@@ -239,7 +239,7 @@ Out[93]: set()
 - not in : x not in s,  判断元素x不在集合s中，返回bool类型
 ```python
 In [95]: s = set(range(20))                                                                                
-In [96]: 1 in s                                                                                            
+In [96]: 1 in s    
 Out[96]: True
 In [97]: 10000 not in s                                                                                    
 Out[97]: True

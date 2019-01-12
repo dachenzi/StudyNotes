@@ -66,20 +66,20 @@ Out[35]: (1, 3, 5)
 ## 1.3 元组的访问
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;元组和列表在内存中的格式是相同的，都是线性顺序结构，所以我们可以像列表一样，使用`索引访问`元组的元素，其中元组支持`正索引`和`负索引`，同样不支持索引超界，会提示`IndexError`。
 ```python
-In [49]: b = (1,2,3)                                                                                                
-In [50]: b[1]                                                                                                       
+In [49]: b = (1,2,3)        
+In [50]: b[1]               
 Out[50]: 2
-In [51]: b[-1]                                                                                                        
+In [51]: b[-1]                
 Out[51]: 3
 ```
 >__&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;需要注意的是在对元组进行修改的时候，元组本身是无法进行修改的，但当元组内嵌套的是列表这种引用类型时，元组的不可修改指的是元组中存储的嵌套列表的内存地址不可修改，但你可以对这快内存地址里的数据进行修改，因为这是列表的特性。__
 ```python
-In [44]: a                                                                                                           
+In [44]: a                   
 Out[44]: (1, 2, [1, 2], 1, 2, [1, 2], 1, 2, [1, 2])
 In [45]: a[2][0] = 100         # 可以对嵌套的列表进行赋值操作                                                                                       
-In [46]: a                                                                                                           
+In [46]: a                   
 Out[46]: (1, 2, [100, 2], 1, 2, [100, 2], 1, 2, [100, 2])
-In [47]: a[3] = 100      # 修改指向是不被允许的                                                                                             
+In [47]: a[3] = 100      # 修改指向是不被允许的     
 ---------------------------------------------------------------------------
 TypeError                                 Traceback (most recent call last)
 <ipython-input-47-2b62bbdeb061> in <module>
@@ -109,8 +109,8 @@ In [9]: a.index('1')
 Out[9]: 0
 In [10]: a.index('3')
 Out[10]: 2
-In [57]: a = ('1','2','3')                                                                                            
-In [58]: a.index('4')     # 不存在，就会报错                                                                                             
+In [57]: a = ('1','2','3')    
+In [58]: a.index('4')     # 不存在，就会报错     
 ---------------------------------------------------------------------------
 ValueError                                Traceback (most recent call last)
 <ipython-input-58-dca64b8e9162> in <module>
@@ -140,7 +140,7 @@ __常用参数含义__
 33
 >>> p.x + p.y                       # 也可以通过字段名访问
 33
->>> p.x = 33            # 没有办法进行修改的                                                                                         
+>>> p.x = 33            # 没有办法进行修改的 
 ---------------------------------------------------------------------------
 AttributeError                            Traceback (most recent call last)
 <ipython-input-63-dac7085722b7> in <module>
@@ -171,7 +171,7 @@ In [4]: a[0] --> # 下标从0开始，0表示第一个数
 Out[4]: '1'
 In [5]: a[3] --> # 表示第四个数
 Out[5]: '4'
-In [3]: a[1] = 100   # 字符串没有办法被修改                                                                                                  
+In [3]: a[1] = 100   # 字符串没有办法被修改          
 ---------------------------------------------------------------------------
 TypeError                                 Traceback (most recent call last)
 <ipython-input-3-8554a2b011c3> in <module>
@@ -182,7 +182,7 @@ TypeError: 'str' object does not support item assignment
 In [4]:
 In [6]: for i in a:       # 可以被for循环进行迭代
    ...:     print(i) 
-   ...:                                                                                                             
+   ...:                     
 1
 2
 3
@@ -190,7 +190,7 @@ In [6]: for i in a:       # 可以被for循环进行迭代
 5
 6
 7
-In [7]: list(a)        # 可以被当作一个可迭代对象传给list，转换为一个列表                                                                                               
+In [7]: list(a)        # 可以被当作一个可迭代对象传给list，转换为一个列表       
 Out[7]: ['1', '2', '3', '4', '5', '6', '7']
 
 ```
@@ -203,18 +203,18 @@ S.join(iterable) -> str  --> 使用s对可迭代对象进行拼接，返回拼�
 - +: 把两个字符串直接进行连接，返回一个新的字符串
 - *: 把字符串重复复制N次，返回一个新的字符串
 ```python
-In [11]: str1                                                                                                         
+In [11]: str1                 
 Out[11]: ['h', 'e', 'l', 'l', 'o']
-In [12]: ''.join(str1)                                                                                                
+In [12]: ''.join(str1)        
 Out[12]: 'hello'
-In [13]: str2 = ''.join(str1)                                                                                          
-In [14]: str2                                                                                                         
+In [13]: str2 = ''.join(str1)  
+In [14]: str2                 
 Out[14]: 'hello'
-In [17]: '-'.join(str1)      # 使用-进行拼接                                                                                           
+In [17]: '-'.join(str1)      # 使用-进行拼接   
 Out[17]: 'h-e-l-l-o'
-In [15]: str2 * 2                                                                                                     
+In [15]: str2 * 2             
 Out[15]: 'hellohello'
-In [16]: str2 + str2                                                                                                  
+In [16]: str2 + str2          
 Out[16]: 'hellohello'
 
 In [18]: lst = ['1',['1','2'],'3']                                                                                    
@@ -241,9 +241,9 @@ S.partition(sep) -> (head, sep, tail)  --> 从左至右对字符串s进行切割
 例子
 ```python
 In [20]: s = "hello world I am Daxin"                                                                                 
-In [21]: s.split()       # 默认使用空格进行分割                                                                                              
+In [21]: s.split()       # 默认使用空格进行分割      
 Out[21]: ['hello', 'world', 'I', 'am', 'Daxin']
-In [23]: s.split('o')         # 使用字母o进行分割                                                                                        
+In [23]: s.split('o')         # 使用字母o进行分割
 Out[23]: ['hell', ' w', 'rld I am Daxin']   
 In [24]: s.split('o',1)                   # 使用字母o进行分割，并且只分割1次                                                                          
 Out[24]: ['hell', ' world I am Daxin']
@@ -251,16 +251,16 @@ In [25]: s.split(sep='o',maxsplit=1)         # 也可以指定关键字进行传
 Out[25]: ['hell', ' world I am Daxin']
 In [26]: s.partition(' ')                  # 使用' '进行分割，返回三元组                                                                           
 Out[26]: ('hello', ' ', 'world I am Daxin')
-In [27]: s.partition('o')                                                                                             
+In [27]: s.partition('o')     
 Out[27]: ('hell', 'o', ' world I am Daxin')
 
 # 当分割符不存在时
 In [29]: s = "helloworldIamDaxin"                                                                                     
-In [30]: s.split()     # 一定会返回一个列表，如果没有被切分，那么会发那会一个元素的列表                                                                                                   
+In [30]: s.split()     # 一定会返回一个列表，如果没有被切分，那么会发那会一个元素的列表           
 Out[30]: ['helloworldIamDaxin']
 In [31]: s.partition(' ')         # 一定会返回一个三元组，如果没有被切分，那么会从字符串的最右边切开，形成一个三元组，和 一个空字符组成的列表                               
 Out[31]: ('helloworldIamDaxin', '', '')
-In [32]: s.partition('12')                                                                                           
+In [32]: s.partition('12')   
 Out[32]: ('helloworldIamDaxin', '', '')
 
 ```
@@ -270,15 +270,15 @@ S.rsplit(sep=None, maxsplit=-1) -> list of strings --> 功能与split相同，�
 
 S.splitlines([keepends]) -> list of strings  --> 按照行来切分，keepends表示是否保留换行符，True表示保留，False表示不保留，默认为False
 
-In [33]: s = 'I am Super Man'                                                                                         
-In [34]: s.rsplit('u')      # 不指定分割次数，一般和split是一样的效果                                                                                             
+In [33]: s = 'I am Super Man' 
+In [34]: s.rsplit('u')      # 不指定分割次数，一般和split是一样的效果     
 Out[34]: ['I am S', 'per Man']
-In [35]: s.rsplit('a')                                                                                                
+In [35]: s.rsplit('a')        
 Out[35]: ['I ', 'm Super M', 'n']
 In [37]: s.rsplit(sep='a',maxsplit=1)     #  当指分割1次时，会从右边开始切开                                                                             
 Out[37]: ['I am Super M', 'n']
 In [40]: s = 'hello\nworld\rI\nam\r\ndaxin'                                                                           
-In [41]: s.splitlines()                                                                                               
+In [41]: s.splitlines()       
 Out[41]: ['hello', 'world', 'I', 'am', 'daxin']
 In [42]: s.splitlines(True)             # 默认不保留分隔符，True表示保留分隔符                                                                             
 Out[42]: ['hello\n', 'world\r', 'I\n', 'am\r\n', 'daxin']   
@@ -292,15 +292,15 @@ Out[42]: ['hello\n', 'world\r', 'I\n', 'am\r\n', 'daxin']
 - `title`: 转换成每个单词首字母大写的标题模式
 ```python
 In [51]: s = 'hElLo wORld i aM dAxin'                                                                                 
-In [52]: s.upper()                                                                                                    
+In [52]: s.upper()            
 Out[52]: 'HELLO WORLD I AM DAXIN'
-In [53]: s.lower()                                                                                                    
+In [53]: s.lower()            
 Out[53]: 'hello world i am daxin'
-In [54]: s.swapcase()                                                                                                 
+In [54]: s.swapcase()         
 Out[54]: 'HeLlO WorLD I Am DaXIN'
-In [55]: s.capitalize()                                                                                               
+In [55]: s.capitalize()       
 Out[55]: 'Hello world i am daxin'
-In [56]: s.title()                                                                                                    
+In [56]: s.title()            
 Out[56]: 'Hello World I Am Daxin'    
 ```
 ## 3.4 字符串排版
@@ -309,13 +309,13 @@ Out[56]: 'Hello World I Am Daxin'
 - `ljust(width [, fillchar])`：左对齐，width表示整体宽度，fillchar表示填充字符
 - `rjust(width [, fillchar])`：右对齐，width表示整体宽度，fillchar表示填充字符
 ```python
-In [61]: a                                                                                                            
+In [61]: a                    
 Out[61]: 'abc'
-In [62]: a.ljust(20,'-')                                                                                              
+In [62]: a.ljust(20,'-')      
 Out[62]: 'abc-----------------'
-In [63]: a.rjust(20,'-')                                                                                              
+In [63]: a.rjust(20,'-')      
 Out[63]: '-----------------abc'
-In [64]: a.center(10,'-')                                                                                             
+In [64]: a.center(10,'-')     
 Out[64]: '---abc----' 
 ```
 ## 3.5 字符串修改
@@ -328,13 +328,13 @@ S.strip([chars]) -> str --> 将字符串s进行处理，从字符串的两边删
 ```
 __注意：replace的替换是`生成一个新的字符串`,而`不是修改原字符串`，这也是字符串修改的原理__
 ```python
-In [3]: s                                                                                                             
+In [3]: s                     
 Out[3]: ' \n\t Hello World \n\r'
-In [4]: s.strip()     # '不指定chars，默认是任意多个空白字符                                                                                                
+In [4]: s.strip()     # '不指定chars，默认是任意多个空白字符        
 Out[4]: 'Hello World'
 In [5]: s.strip(' \n\tHd')       # 如果指定了chars，那么就挨个使用char进行匹配去除                                                                                     
 Out[5]: 'ello World \n\r'
-In [6]: s.strip(' \n\rHd')                                                                                            
+In [6]: s.strip(' \n\rHd')    
 Out[6]: '\t Hello Worl'
 In [7]: s.replace('World','Daxin')                                                                                    
 Out[7]: ' \n\t Hello Daxin \n\r' 
@@ -356,24 +356,24 @@ S.count(sub[, start[, end]]) -> int  --> 从左开始在字符串S中统计sub�
 ```
 __index和count方法由于是遍历查找，所以时间复杂度都是O(n),会随着字符串序列的数据规模的增大，而效率下降，如果没要在字符串中进行查找，还是建议使用`find`函数。__
 ```python
-In [15]: s = 'abc abc abc'                                                                                            
-In [16]: s.find('a')                                                                                                  
+In [15]: s = 'abc abc abc'    
+In [16]: s.find('a')          
 Out[16]: 0
 In [17]: s.find('a',1,-1)      # 指定区间， 注意这里-1表示最后1位，但是不包含-1，类似于[1,-1)                                                                                      
 Out[17]: 4
-In [18]: s.find('a',-1,-15)                                                                                           
+In [18]: s.find('a',-1,-15)   
 Out[18]: -1
-In [19]: s.rfind('a')                                                                                                 
+In [19]: s.rfind('a')         
 Out[19]: 8
-In [20]: s.rfind('a',2,-1)                                                                                            
+In [20]: s.rfind('a',2,-1)    
 Out[20]: 8
-In [21]: s.rfind('c',2,-1)                                                                                            
+In [21]: s.rfind('c',2,-1)    
 Out[21]: 6
 In [22]: s.rfind('c',2,-100)    # end点超出范围，会无法找到，start，end表示起始和终止，最好不要使用负数表示区间                                                                                     
 Out[22]: -1
-In [23]: s.index('a')                                                                                                 
+In [23]: s.index('a')         
 Out[23]: 0
-In [24]: s.index('a',2)     # 从索引为2，开始向右查找                                                                                          
+In [24]: s.index('a',2)     # 从索引为2，开始向右查找  
 Out[24]: 4
 In [25]: s.index('e')       # 没找到，直接报异常                                                                                     
 ---------------------------------------------------------------------------
@@ -393,17 +393,17 @@ S.endswith(suffix[, start[, end]]) -> bool  --> 判断字符串prefix是否是�
 ```
 
 ```python
-In [32]: s                                                                                                            
+In [32]: s                    
 Out[32]: 'abc abc abc'
 In [33]: s.startswith('bc',1,-1)    # 从s的[1,-1)开始判断'bc'是否是开头                                                                                     
 Out[33]: True
 In [34]: s.endswith('bc',2,-1)      # 从s的[2,-1)开始匹配'bc'是否是结尾                                                                                 
 Out[34]: False                     # 这里-1不包含，所以返回False
-In [35]: s.endswith('bc',3,7)                                                                                         
+In [35]: s.endswith('bc',3,7) 
 Out[35]: True
-In [36]: s.startswith('abc')                                                                                          
+In [36]: s.startswith('abc')  
 Out[36]: True
-In [37]: s.endswith('bc')                                                                                             
+In [37]: s.endswith('bc')     
 Out[37]: True 
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;除了判断开始和结尾，Python的字符串还提供了部分函数，用来判断字符串内的元素类型,比如判断字符串是否是纯数字组成？是否是纯字母组成等，这些函数的返回值统一都为`bool`型，可以作为`if语句的条件表达式`。
@@ -438,9 +438,9 @@ Out[50]: 'I am 20'
 Out[39]: 'I like Python'
 In [41]: '%3.2f%%,0x%x,0X%02X' % (89.7654,10,15)     # 3.2f表示最长3为，小数点后精度为2位，当数字大时整体长度会被撑开，x表示16进制，02X表示两位显示，高位补0                                                                 
 Out[41]: '89.77%,0xa,0X0F'
-In [45]: "I am %-5d" % 20                                                                                             
+In [45]: "I am %-5d" % 20     
 Out[45]: 'I am 20   '
-In [46]: "I am %5d" % 20                                                                                              
+In [46]: "I am %5d" % 20      
 Out[46]: 'I am    20'  
 ```
 ### 3.8.2 format格式化
@@ -467,7 +467,7 @@ Out[55]: '10.0.0.13:8888'
 
 In [57]: from collections import namedtuple                                                                           
 In [58]: Point = namedtuple('_Point',['x','y'])                                                                       
-In [59]: p = Point(4,5)                                                                                               
+In [59]: p = Point(4,5)       
 In [60]: "{{{0.x},{0.y}}}".format(p)   # 两个花括号重叠表示打印一个花括号，由于p对象含有x和y属性，所以可以在字符串格式化时直接引用                                                                            
 Out[60]: '{4,5}'
 ```
@@ -478,20 +478,20 @@ Out[60]: '{4,5}'
 - `^`: 居中显示  
 >__对齐方式需要在占位符内使用`：号`进行分割__
 ```python
-In [61]: '{:5}'.format('2')     #   打印以讹字符串，这个字符串占5位，默认靠左对齐                                                                                                                
+In [61]: '{:5}'.format('2')     #   打印以讹字符串，这个字符串占5位，默认靠左对齐                        
 Out[61]: '2    '
-In [62]: '{:>5}'.format('2')     # > 表示向右对齐                                                                                                                  
+In [62]: '{:>5}'.format('2')     # > 表示向右对齐                          
 Out[62]: '    2'
-In [65]: '{:0<5}'.format('2')     # 字符串站5位，向左对齐，其他为使用0填充(可以简写为'{:<05}')                                                                                                          
+In [65]: '{:0<5}'.format('2')     # 字符串站5位，向左对齐，其他为使用0填充(可以简写为'{:<05}')                  
 Out[65]: '20000'
-In [66]: '{:>05}'.format('2')                                                                                                                       
+In [66]: '{:>05}'.format('2')                               
 Out[66]: '00002'
-In [71]: '{:*>5}'.format('2')     # > 表示向右对齐，其他位用*填充                                                                                                           
+In [71]: '{:*>5}'.format('2')     # > 表示向右对齐，其他位用*填充                   
 Out[71]: '****2'
 
-In [67]: '{:0^5}'.format('2')     # 居中显示，使用0进行填充                                                                                                                 
+In [67]: '{:0^5}'.format('2')     # 居中显示，使用0进行填充                         
 Out[67]: '00200'
-In [69]: '{:*^5}'.format('2')                                                                                                                       
+In [69]: '{:*^5}'.format('2')                               
 Out[69]: '**2**'
 ```
 >__当填充符为数字的时候，可以与宽度写在一起，比如 `{:0<5} --> {:<05} , {:0^5} --> {:^05}`__
@@ -502,10 +502,10 @@ In [74]: "int: {0:d}; hex: {0:x}; oct: {0:o}; bin: {0:b}".format(42)
 Out[74]: 'int: 42; hex: 2a; oct: 52; bin: 101010'
 In [75]: "int: {0:d}; hex: {0:#x}; oct: {0:#o}; bin: {0:#b}".format(42)                                                                             
 Out[75]: 'int: 42; hex: 0x2a; oct: 0o52; bin: 0b101010'
-In [76]: octets = [10,0,0,13]                                                                                                                      
-In [78]: '{:02X}{:02X}{:02X}{:02X}'.format(*octets)                                                                                                 
+In [76]: octets = [10,0,0,13]                              
+In [78]: '{:02X}{:02X}{:02X}{:02X}'.format(*octets)         
 Out[78]: '0A00000D'
-In [79]: '{:02X}-{:02X}-{:02X}-{:02X}'.format(*octets)                                                                                              
+In [79]: '{:02X}-{:02X}-{:02X}-{:02X}'.format(*octets)      
 Out[79]: '0A-00-00-0D'  
 ```
 - `d`: 表示十进制
@@ -516,23 +516,23 @@ Out[79]: '0A-00-00-0D'
 - `#`: 表示添加进制前缀
 - `*[1,2,3]`: 表示把列表中的元素结构出来：`*[1,2,3]` --> `1,2,3`
 ```python
-In [82]: "{}".format(3**0.4)    # 默认按照字符串打印                                                                                                                        
+In [82]: "{}".format(3**0.4)    # 默认按照字符串打印                                
 Out[82]: '1.5518455739153598'
-In [83]: "{:f}".format(3**0.4)         # f表示填充位为小数，小数是有精度的                                                                                                              
+In [83]: "{:f}".format(3**0.4)         # f表示填充位为小数，小数是有精度的                      
 Out[83]: '1.551846'
-In [84]: "{:02f}".format(3**0.4)         # 表示小数的长度为2，但是如果小数的位数超过2，会直接撑开                                                                                                           
+In [84]: "{:02f}".format(3**0.4)         # 表示小数的长度为2，但是如果小数的位数超过2，会直接撑开                   
 Out[84]: '1.551846'
-In [85]: "{:10f}".format(3**0.4)       #  表示小数的长度为10，默认是右对齐                                                                                                            
+In [85]: "{:10f}".format(3**0.4)       #  表示小数的长度为10，默认是右对齐                    
 Out[85]: '  1.551846'
-In [86]: "{:<10f}".format(3**0.4)          # 左对齐                                                                                                         
+In [86]: "{:<10f}".format(3**0.4)          # 左对齐                 
 Out[86]: '1.551846  '
-In [89]: "{:.2f}".format(3**0.4)          # .2f表示 小数点后取两位的浮点型                                                                                                          
+In [89]: "{:.2f}".format(3**0.4)          # .2f表示 小数点后取两位的浮点型                  
 Out[89]: '1.55'
-In [90]: "{:3.2f}".format(3**0.4)          # 总长3为，小数点后保留2位，若长度超出，则撑开                                                                                                         
+In [90]: "{:3.2f}".format(3**0.4)          # 总长3为，小数点后保留2位，若长度超出，则撑开                 
 Out[90]: '1.55'
-In [91]: "{:2.2f}".format(3**0.4)                                                                                                                   
+In [91]: "{:2.2f}".format(3**0.4)                           
 Out[91]: '1.55'
-In [92]: "{:2.2%}".format(3**0.4)          # 使用百分比显示                                                                                                         
+In [92]: "{:2.2%}".format(3**0.4)          # 使用百分比显示                 
 Out[92]: '155.18%'
 ```
 # 4 切片
@@ -548,16 +548,16 @@ Out[92]: '155.18%'
 4. 超过上届(右)，则取到末尾;超过下届(左)，则取到开头。
 5. start一定要在stop的左边
 ```python
-In [72]: a = 'hello world , My name is daxin'                                                                                                       
-In [73]: a[2:-1]                                                                                                                                  
+In [72]: a = 'hello world , My name is daxin'               
+In [73]: a[2:-1]                                          
 Out[73]: 'llo world , My name is daxi'
-In [74]: a[2:]                                                                                                                                      
+In [74]: a[2:]                                              
 Out[74]: 'llo world , My name is daxin'
-In [75]: a[-100:]                                                                                                                                   
+In [75]: a[-100:]                                           
 Out[75]: 'hello world , My name is daxin'
-In [76]: a[10:-100]     # stop位置在start左边，所以没办法取出，如果实在想要倒着取，那么需要使用步长                                                                                                                             
+In [76]: a[10:-100]     # stop位置在start左边，所以没办法取出，如果实在想要倒着取，那么需要使用步长                                     
 Out[76]: '' 
-In [77]: a[10:-100:-1]      # 负步长就可以形成开闭区间，注意是从起始位开始按照step取的(所以会倒序排列返回)                                                                                                                        
+In [77]: a[10:-100:-1]      # 负步长就可以形成开闭区间，注意是从起始位开始按照step取的(所以会倒序排列返回)                                
 Out[77]: 'dlrow olleh'
 ```
 注意：
@@ -569,13 +569,13 @@ Out[77]: 'dlrow olleh'
 - 切片操作写在等号的左边
 - 被插入的可迭代对象在等号右边
 ```python
-In [79]: lst = list(range(10))                                                                                                                      
-In [80]: lst                                                                                                                                        
+In [79]: lst = list(range(10))                              
+In [80]: lst                                                
 Out[80]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-In [81]: lst[1:3]                                                                                                                                  
+In [81]: lst[1:3]                                          
 Out[81]: [1, 2]
 
-In [82]: lst[1:3] = 1                                                                                                                               
+In [82]: lst[1:3] = 1                                       
 ---------------------------------------------------------------------------
 TypeError                                 Traceback (most recent call last)
 <ipython-input-82-7fef59136c7e> in <module>
@@ -583,8 +583,8 @@ TypeError                                 Traceback (most recent call last)
 
 TypeError: can only assign an iterable
 
-In [83]: lst[1:3] = [100,200]                                                                                                                       
-In [84]: lst                                                                                                                                        
+In [83]: lst[1:3] = [100,200]                               
+In [84]: lst                                                
 Out[84]: [0, 100, 200, 3, 4, 5, 6, 7, 8, 9]  
 ```
 仔细看上面示例代码会发现几个问题：
@@ -594,13 +594,13 @@ Out[84]: [0, 100, 200, 3, 4, 5, 6, 7, 8, 9]
 4. 字符串、元组这类不可变的元素，无法使用切片赋值(理由请看3)
 > 当我们使用切片时，它会产生新的内存地址来存放生成的新列表，但是如果把切片操作放在赋值操作的左边时，那么就相当于引用了原列表的[start:stop]的索引，这种操作是不会生成新的内存空间的，换句话来讲就是直接对原列表进行了`insert操作`.
 ```python
-In [86]: lst                                                                                                                                        
+In [86]: lst                                                
 Out[86]: [0, 100, 200, 3, 4, 5, 6, 7, 8, 9]
-In [87]: lst[1:3] = []               # 这种操作相当于list.remove                                                                                                               
-In [88]: lst                                                                                                                                        
+In [87]: lst[1:3] = []               # 这种操作相当于list.remove                       
+In [88]: lst                                                
 Out[88]: [0, 3, 4, 5, 6, 7, 8, 9]
-In [89]: lst[1:3] = [100,200]        # 这种操作相当于在1:3的位置上进行了list.insert                                                                                                              
-In [90]: lst                                                                                                                                        
+In [89]: lst[1:3] = [100,200]        # 这种操作相当于在1:3的位置上进行了list.insert                      
+In [90]: lst                                                
 Out[90]: [0, 100, 200, 5, 6, 7, 8, 9]
    
 ```

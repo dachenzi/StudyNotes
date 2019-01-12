@@ -31,22 +31,22 @@ class datetime.timezone : 根据tzinfo组合UTC时间的类(UTC时间基类)
 ## 2.1 获取当前日期和时间
 通过datetime模块我们可以方便的获取当前的时间
 ```python
-In [100]: import datetime    # 导入时间模块                                                                                                          
-In [101]: now = datetime.datetime.now()       # 创建一个基于当前时间的datetime.datetime对象                                                                                         
-In [102]: print(now)          # 打印出了当前时间，类的__str__方法用于实现在打印这个对象时要进行的操作                                                                                                         
+In [100]: import datetime    # 导入时间模块                  
+In [101]: now = datetime.datetime.now()       # 创建一个基于当前时间的datetime.datetime对象 
+In [102]: print(now)          # 打印出了当前时间，类的__str__方法用于实现在打印这个对象时要进行的操作                 
 2019-01-10 08:37:30.272250
-In [103]: print(type(now))                                                                                                            
+In [103]: print(type(now))                    
 <class 'datetime.datetime'>
 In [104]:  
 ```
 ## 2.2 获取指定日期和时间
 要指定某个日期和时间，我们直接用参数构造一个datetime
 ```python
-In [104]: import datetime                                                                                                              
+In [104]: import datetime                      
 In [105]: dt = datetime.datetime(2019,1,10,17,50,20)                                                                                   
-In [106]: dt                                                                                                                           
+In [106]: dt                                   
 Out[106]: datetime.datetime(2019, 1, 10, 17, 50, 20)
-In [107]: print(dt)                                                                                                                    
+In [107]: print(dt)                            
 2019-01-10 17:50:20
 ```
 ## 2.3 datetime转换为timestamp
@@ -57,7 +57,7 @@ In [107]: print(dt)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;可见timestamp的值与时区毫无关系，因为timestamp一旦确定，其UTC时间就确定了，转换到任意时区的时间也是完全确定的，这就是为什么计算机存储的当前时间是以timestamp表示的，因为全球各地的计算机在任意时刻的timestamp都是完全相同的(假定时间已校准),把一个datetime类型转换为timestamp只需要简单调用`datetime对象`的`timestamp()`方法：
 ```python
-In [108]: dt                                                                                                                           
+In [108]: dt                                   
 Out[108]: datetime.datetime(2019, 1, 10, 17, 50, 20)    
 In [109]: dt.timestamp()                       # 已知的datetime.datetime对象                                                                               
 Out[109]: 1547113820.0
@@ -69,17 +69,17 @@ Out[111]: 1547086655.785918
 要把timestamp转换为datetime，使用`datetime对象`提供的`fromtimestamp()`方法：
 ```python
 In [112]: now = datetime.datetime.now().timestamp()                                                                                    
-In [113]: now                                                                                                                          
+In [113]: now                                  
 Out[113]: 1547086789.775884
-In [114]: datetime.datetime.fromtimestamp(now)                                                                                         
+In [114]: datetime.datetime.fromtimestamp(now) 
 Out[114]: datetime.datetime(2019, 1, 10, 10, 19, 49, 775884) 
 ```
 > 注意到timestamp是一个浮点数，它没有时区的概念，而datetime是有时区的。上述转换是在timestamp和本地时间做转换。  
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本地时间是指当前操作系统设定的时区。例如北京时区是东8区，则本地时间：2018-07-09 16:43:15.430684,实际上就是UTC+8:00时区的时间：2018-07-09 16:43:15.430684,而此刻的格林威治标准时间与北京时间差了8小时，也就是UTC+0:00时区的时间应该是：2018-07-09 08:43:15.430684。timestamp也可以直接被转换到UTC标准时区的时间：
 ```python
-In [1]: import datetime                                                                                                                
-In [2]: now = datetime.datetime.now()                                                                                                  
+In [1]: import datetime                        
+In [2]: now = datetime.datetime.now()          
 In [3]: now = datetime.datetime.now().timestamp()                                                                                      
 In [4]: datetime.datetime.utcfromtimestamp(now)     # 本地时间转换为UTC时间                                                                                   
 Out[4]: datetime.datetime(2019, 1, 10, 11, 26, 53, 174167)
@@ -106,13 +106,13 @@ __在字符串的format方法中，这些标识符是通用的，代表一个含
 >注意转换后的datetime是没有时区信息的。
 ```python
 In [8]: now = datetime.datetime.now()                                                    
-In [9]: '{:%Y-%m-%d %H:%M:%S}'.format(now)                                                                                             
+In [9]: '{:%Y-%m-%d %H:%M:%S}'.format(now)     
 Out[9]: '2019-01-10 19:33:55'
 ```
 ## 2.6 datetime转换为str
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果已经有了datetime对象，要把它格式化为字符串显示给用户，就需要转换为str，转换方法是通过`datetime对象`的`strftime()`实现的，同样需要一个日期和时间的格式化字符串：
 ```python
-In [10]: now                                                                                                                           
+In [10]: now                                   
 Out[10]: datetime.datetime(2019, 1, 10, 19, 33, 55, 792489)
 In [11]: now.strftime('%Y-%m-%d %H:%M:%S')       # 指定显示时间的格式                                                                                      
 Out[11]: '2019-01-10 19:33:55'
@@ -121,18 +121,18 @@ Out[11]: '2019-01-10 19:33:55'
 ## 2.7 datetime加减
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;对日期和时间进行加减实际上就是把datetime往后或往前计算，得到新的datetime。加减可以直接用+和-运算符，需要使用`timedelta`对象，来进行包装
 ```python
-In [19]: import datetime                                                                                                               
-In [20]: start = datetime.datetime.now()                                                                                               
-In [21]: end = datetime.datetime.now()                                                                                                 
-In [22]: total_time = end - start         # datetime对象相减返回timedelta对象                                                                                             
-In [23]: type(total_time)                                                                                                             
+In [19]: import datetime                       
+In [20]: start = datetime.datetime.now()       
+In [21]: end = datetime.datetime.now()         
+In [22]: total_time = end - start         # datetime对象相减返回timedelta对象     
+In [23]: type(total_time)                     
 Out[23]: datetime.timedelta
-In [24]: total_time                                                                                                                    
+In [24]: total_time                            
 Out[24]: datetime.timedelta(0, 6, 924720)
-In [25]: total_time.total_seconds()      # timedelta对象的total_seconds返回以秒显示的结果                                                                                                
+In [25]: total_time.total_seconds()      # timedelta对象的total_seconds返回以秒显示的结果        
 Out[25]: 6.92472
 In [28]: delta = datetime.timedelta(days=1)         # 创建一个1天的timedelta对象，                                                                                  
-In [29]: datetime.datetime.now()                                                                                                       
+In [29]: datetime.datetime.now()               
 Out[29]: datetime.datetime(2019, 1, 10, 19, 55, 12, 592136)
 In [30]: datetime.datetime.now() - delta               # 当前时间减1天                                                                                
 Out[30]: datetime.datetime(2019, 1, 9, 19, 55, 15, 202816)
