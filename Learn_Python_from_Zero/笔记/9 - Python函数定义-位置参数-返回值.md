@@ -104,7 +104,17 @@ Out[12]: 120
 In [13]: function(20, y=500)  # 20以位置参数的形式传递给x，500以关键字参数的形式传递给了y
 Out[13]: 520
 ```
->`位置传参一定要放在关键字传参的左边！！！`  
+>当定义参数的默认值时，注意`默认值参数`必须要放在`位置参数的右边`，在传参时位置传参一定要放在`关键字传参的左边`！！！
+```python
+In [1]: def functions(x=1, y):    # 必须把x=1，放在y的右边，否则无法完成函数定义
+   ...:     print(x+y)
+  File "<ipython-input-1-ea496fa7fc81>", line 1
+    def functions(x=1, y):
+                 ^
+SyntaxError: non-default argument follows default argument
+
+In [2]:
+```
 
 使用默认值参数的好处是：
 - 参数的默认值可以在未传入足够的实参的时候，对没有给定的参数赋值为默认值。
@@ -126,7 +136,7 @@ In [18]: function([1,2,3,4])  # 会把list收集成元祖类型
 ```
 > 在函数定义时，一般的规范是使用 `*args`, 表示收集多个位置传参。
 ### 3.2.2 可变关键字传参
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在形参前使用`**`号，表示该形参是可变关键字参数，可以接受多个实参，在函数内部，可变关键字参数会封装成字典(即便是没有传递)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在形参前使用`**`号，表示该形参是可变关键字参数，可以接受多个关键字参数，在函数内部，可变关键字参数会封装成字典(即便是没有传递)
 ```python
 In [20]: def function(**kwargs):
     ...:     print(kwargs)
@@ -135,4 +145,29 @@ In [20]: def function(**kwargs):
 In [21]: function(a=1,b=2)
 {'a': 1, 'b': 2}
 
+# 参数的默认值和位置参数同时使用
+In [5]: def function(x=1,y=2,**kwargs):
+   ...:     print('x = {}'.format(x))
+   ...:     print('y = {}'.format(y))
+   ...:     print(kwargs)
+   ...:
+
+In [6]: function(a=10,b=20)   # 参数没有a，b形参，则被kwargs接收
+x = 1
+y = 2
+{'a': 10, 'b': 20}
+
+In [7]: function(x=100,y=200,z=300) # z没有被匹配，被kwargs接收
+x = 100
+y = 200
+{'z': 300}
+
+In [8]: function(1000,2000,z=300)  # 前面的按照位置参数赋值，z同样被字典kwargs收集
+x = 1000
+y = 2000
+{'z': 300}
+
+In [9]:
 ```
+### 3.2.3 可变参数混合使用
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;前面说的各种参数是可以混合使用的，当混合使用时遵循一定的顺序，简单总结一下，按照从左至右的顺序来说：位置参数，关键字参数，可变位置参数，可变关键字参数 `def function(位置参数，关键字参数，可变位置参数，可变关键字参数)`。
