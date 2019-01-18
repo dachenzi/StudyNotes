@@ -11,7 +11,7 @@
         - [1.4.2 signature类](#142-signature类)
         - [1.4.3 parameters属性](#143-parameters属性)
         - [1.4.3 获取对象的参数签名](#143-获取对象的参数签名)
-    - [1.5 业务应用](#15-业务应用)
+    - [1.5 检查参数](#15-检查参数)
 
 <!-- /TOC -->
 # 1 python类型注解
@@ -142,9 +142,8 @@ _KEYWORD_ONLY            = _ParameterKind.KEYWORD_ONLY          # keyword-only�
 _VAR_KEYWORD             = _ParameterKind.VAR_KEYWORD           # 可变关键字参数
 ```
 > 其中POSITIONAL_ONLY，Python中没有被实现。  
-
-通过它的属性，搭配`有序字典`这个特性,有没有很兴奋？参数有序，传入的实参有序，还能获取参数注解的类型，那么就可以开工进行参数检查了！
 ### 1.4.3 获取对象的参数签名
+根据上面讲的方法，我们可以通过如下方式，简单的获取参数的签名：
 ```python
 In [11]: import inspect
     ...:
@@ -156,17 +155,36 @@ In [11]: import inspect
     ...: print(params)
 OrderedDict([('x', <Parameter "x:int">), ('y', <Parameter "y:int">)])
 
-In [12]:
+In [21]: params['x'].annotation
+Out[21]: int    # 如果没有定义x的参数注解，那么这里就是inspect._empty
 ```
+通过它的属性，搭配`有序字典`这个特性,有没有很兴奋？参数有序，传入的实参有序，还能获取参数注解的类型，那么就可以开工进行参数检查了！
+## 1.5 检查参数
+以上面函数为例子，当给add函数传入的x，y时进行参数检查，如果x，y不是int类型，那么返回异常，并退出函数
+```python
+import inspect
+import functools
 
+def check(fn):
+    @functools.wraps(fn)   # 等于 wrapper.__annotation__ = fn.__annotation__ 还有其他的属性比如__doc__，__module__等
+    def wrapper(*args, **kwargs):
+        sig = inspect.signature(fn)   # 获取add函数签名信息
+        params = sig.parameters     # 获取add函数的参数信息
+        values = list(params.values())   # 由于params是个有序字典，那么values也是有序的，只需根据索一一对应判断即可
+        for i, k in enumerate(args):   # 遍历用户传入的位置参数
+            if values[i].annotation != inspect._empty:   # 如果定义了参数注解，则开始检查
+                if not isinstance(k, values[i].annotation):   # 如果检查不通过，曝出异常
+                    raise('Key Error')
+        for k,v in kwargs.items():
+            if params[k].annotation != inspect._empty:
+                if not isinstance(v,params[k].annotation):
+                    raise('Key Error')
+        return fn(*args, **kwargs)
+    return wrapper
 
-
-
-
-
-
-
-
-
-
-## 1.5 业务应用
+@check
+def add(x: int, y: int) -> int:
+    return x + y
+    
+add(4,y=5)
+```
