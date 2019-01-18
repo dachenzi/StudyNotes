@@ -5,7 +5,12 @@
     - [1.1 函数定义的弊端](#11-函数定义的弊端)
     - [1.2 函数文档](#12-函数文档)
     - [1.3 函数注解](#13-函数注解)
+        - [1.3.1 annotation属性](#131-annotation属性)
     - [1.4 inspect模块](#14-inspect模块)
+        - [1.4.1 常用方法](#141-常用方法)
+        - [1.4.2 signature类](#142-signature类)
+        - [1.4.3 parameters属性](#143-parameters属性)
+        - [1.4.3 获取对象的参数签名](#143-获取对象的参数签名)
     - [1.5 业务应用](#15-业务应用)
 
 <!-- /TOC -->
@@ -78,7 +83,90 @@ def add(x: int, y: int) -> int:
 
 完成以上定义后，，主要的差别如下图：  
 ![zhushi1](photo/zhushi.png)  
->当我们在IDE中准备传入非注释类型变量时，IDE会帮我们进行颜色提示，用于表示这里传入的变量有点问题。在编写时我们尚且可以使用这种方式，对我们产生一点'警示'，但是当我们写的函数被其他人调用的时候，那么就无法进行'提示'了，这个时候，我们就需要对传入的参数进行类型检查了。
+>当我们在IDE中准备传入非注释类型变量时，IDE会帮我们进行颜色提示，用于表示这里传入的变量有点问题。在编写时我们尚且可以使用这种方式，对我们产生一点'警示'，但是当我们写的函数被其他人调用的时候，那么就无法进行'提示'了，这个时候，我们就需要对传入的参数进行类型检查了。    
+
+我们来总结一下：
+- 函数注解在Python3.5中引入
+- 对函数的参数、返回值进行类型注解
+- 只对函数的参数做一个辅助的说明，并不对函数参数进行类型检查
+- 提供给第三方工具，做代码分析，发现隐藏的BUG
+- 函数注解的信息，保存在函数的`__annotation__`属性中。
+> `python3.6` 以上还添加了变量的注解：`i:int = 10`,当然也只是提示的作用。
+### 1.3.1 annotation属性
+在Python中使用__开头的表示符一般被用特殊属性，`__annotation__`存储的就是函数的签名信息
+```python
+In [71]: def add(x: int, y: int) -> int:
+    ...:     return x + y
+    ...:
+
+In [73]: add.__annotations__
+Out[73]: {'x': int, 'y': int, 'return': int}
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当我们使用变量注释时，变量名和类型就会存放在函数的__annotations__属性中。那么即然有变量存储，那么我们是不是只需要获取传入的参数，然后和annotations中存储的变量类型进行比较是不是就达到目的了呢？仔细思考一下：
+1. 参数检查势必要在函数执行前，想要在add执行前添加参数判断那么就需要使用装饰器了
+2. __annotations__的值是一个字典，字典是无序的，用户按照位置传进来参数是有序的，如何让它们形成对应关系方便我们检测呢？  
+
+下面我们来了解一下inspect模块，它可以帮我们完成这个事情。
 ## 1.4 inspect模块
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;官方解释如下：inspect模块提供了几个有用的函数来帮助获取关于活动对象的信息，例如模块、类、方法、函数、回溯、框架对象和代码对象。例如，它可以帮助您检查类的内容、检索方法的源代码、提取并格式化函数的参数列表，或者获取显示详细回溯所需的所有信息。
+### 1.4.1 常用方法
+|分类|方法名称|功能|
+|:--|:--|:--|
+|判断|inspect.getmodulename(path)|获取模块名称
+||inspect.ismodule(object)|是不是个模块
+||inspect.isclass(object)|是不是个类
+||inspect.ismethod(object)|是不是一个方法
+||inspect.isfunction(object)|是不是一个函数
+||inspect.isgeneratorfunction(object)|是不是一个生成器函数
+||inspect.isgenerator(object)|是不是一个生成器
+||inspect.iscoroutinefunction(object)|是不是一个协程函数
+|获取信息|inspect.getmodulename(path)|获取模块名称
+||inspect.getsource(object)|获取对象的原码(并不会解析装饰器原码)
+### 1.4.2 signature类
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;首先我们要说的是函数的签名信息：它包含了了函数的函数名、它的参数类型，它所在的类和名称空间及其他信息，签名对象(signature object)表示可调用对象的调用签名信息和它的注解信息，当我们使用signature()时，它会重新返回一个包含可调用对象信息的签名对象。
+### 1.4.3 parameters属性
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signature类的`parameters`属性，它里面存放的是函数的参数注解和返回值注解，组成的有序字典，其中参数注解的格式为：参数名称，使用inspect.Parameters类包装的参数注解，这个参数注解很强大，它包含如下常用的方法：
+|方法名称|含义|
+|:--|:--|
+empty|等同于inspect._empty表示一个参数没有被类型注释
+name|参数的名称
+default|参数的默认值，如果一个参数没有默认值，这个属性的值为inspect.empty
+annotation|参数的注解类型，如果参数没有定义注解，这个属性的值为inspect.empty
+kind|参数的类型  
+这里的参数类型表示的是inspect内置参数类型(其实就是几个常用的函数参数定义类型而已，只是换个名字而已)
+```python
+_POSITIONAL_ONLY         = _ParameterKind.POSITIONAL_ONLY       # 位置参数_only
+_POSITIONAL_OR_KEYWORD   = _ParameterKind.POSITIONAL_OR_KEYWORD # 位置或关键字参数
+_VAR_POSITIONAL          = _ParameterKind.VAR_POSITIONAL        # 可变位置参数
+_KEYWORD_ONLY            = _ParameterKind.KEYWORD_ONLY          # keyword-only参数
+_VAR_KEYWORD             = _ParameterKind.VAR_KEYWORD           # 可变关键字参数
+```
+> 其中POSITIONAL_ONLY，Python中没有被实现。  
+
+通过它的属性，搭配`有序字典`这个特性,有没有很兴奋？参数有序，传入的实参有序，还能获取参数注解的类型，那么就可以开工进行参数检查了！
+### 1.4.3 获取对象的参数签名
+```python
+In [11]: import inspect
+    ...:
+    ...: def add(x: int, y: int) -> int:
+    ...:     return x + y
+    ...:
+    ...: sig = inspect.signature(add)
+    ...: params = sig.parameters
+    ...: print(params)
+OrderedDict([('x', <Parameter "x:int">), ('y', <Parameter "y:int">)])
+
+In [12]:
+```
+
+
+
+
+
+
+
+
+
+
 
 ## 1.5 业务应用
