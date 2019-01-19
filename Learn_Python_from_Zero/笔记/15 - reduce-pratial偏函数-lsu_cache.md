@@ -144,7 +144,33 @@ def update_wrapper(wrapper,
 ```
 - update_wrapper在外层被wraps包装，实际上只需要传入wrapper即可
 - 后面的代码可以理解为是通过反射获取wrapped的属性值，然后update到wrapper中(拷贝属性的过程)
-- 最后返回包装好的函数wrapper
+- 最后返回包装好的函数wrapper  
+
+update_wrapper返回的就是我们的wrapper对象，所以如果不想用wraps，我们可以直接使用update_wrapper
+```python
+import time
+import datetime
+import functools
+
+def logger(fn):
+    # @functools.wraps(fn)  # wrapper = functools.wraps(fn)(wrapper)
+    def wrapper(*args, **kwargs):
+        start = datetime.datetime.now()
+        res = fn(*args, **kwargs)
+        total_seconds = (datetime.datetime.now() - start).total_seconds()
+        print('函数：{} 执行用时：{}'.format(wrapper.__name__,total_seconds))
+        return res
+
+    wrapper = functools.update_wrapper(wrapper, fn)  # 这里进行调用，但是很难看有木有？
+    return wrapper
+
+@logger
+def add(x, y):
+    time.sleep(2)
+    return x + y
+
+add(4,5)
+```
 > 这里之所以使用偏函数实现，是因为对于拷贝这个过程来说，要拷贝的属性一般是不会改变的，那么针对这些不长改变的东西进行偏函数包装，那么在使用起来会非常方便，我觉得这就是偏函数的精髓吧。  
 
 结合前面参数检查的例子，来加深functools.wraps的实现过程理解。
