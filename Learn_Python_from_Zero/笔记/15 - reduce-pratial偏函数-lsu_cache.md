@@ -1,5 +1,19 @@
 <font size=5 face='微软雅黑'>__文章目录__</font>
+<!-- TOC -->
 
+- [介绍](#介绍)
+- [1 reduce方法](#1-reduce方法)
+- [2 partial方法(偏函数)](#2-partial方法偏函数)
+    - [2.1 partial方法基本使用](#21-partial方法基本使用)
+    - [2.2 partial原码分析](#22-partial原码分析)
+    - [2.3 functools.warps实现分析](#23-functoolswarps实现分析)
+- [3 lsu_cache方法](#3-lsu_cache方法)
+    - [3.1 基本使用](#31-基本使用)
+    - [3.2 lru_cache原码分析](#32-lru_cache原码分析)
+    - [3.3 斐波那契序列的lru改造](#33-斐波那契序列的lru改造)
+    - [3.4 lsu_cache的总结](#34-lsu_cache的总结)
+
+<!-- /TOC -->
 # 介绍
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;functools模块存放着很多工具函数，大部分都是高阶函数，其作用于或返回其他函数的函数。一般来说，对于这个模块，任何可调用的对象都可以被视为函数。
 # 1 reduce方法
@@ -159,5 +173,202 @@ def check(fn):
 
 经过上述数说明 `@functools.wraps(fn)` 就等价于 `wrapper = update_wrapper(wrapper)`，那么再来看拷贝的过程，就很好理解了。
 # 3 lsu_cache方法
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;学习lsu_cache方法，那么不得不提cache，那什么是cache呢？我们说数据是存放在磁盘上的，CPU如果需要提取数据那么需要从磁盘上拿，磁盘速度很慢，直接拿的话，就很耗时间，所以操作系统会把一些数据提前存储到内存中，当CPU需要时，直接从内存中读取即可，但是内存毕竟是有限的，不是所有空间都用来存这些数据，所以内存中的一小部分用来存储磁盘上读写频繁的数据的空间，就可以简单的理解为cache(这里就不提CPU的L1,L2,L3 cache了).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lsu_cache方法简单来说，就是当执行某一个函数时，把它的计算结果缓存到cache中，当下次调用时，就直接从缓存中拿就可以了，不用再次进行计算。这种特性对于那种计算非常耗时的场景时非常友好的。
+> 把函数的计算结果缓存，需要的时候直接调用，这种模式该如何实现呢？简单来讲就是通过一个东西来获取它对应的值，是不是和字典的元素很像？通过一个key获取它对应的value！实际上大多数缓存软件都是这种key-value结构！！！
+## 3.1 基本使用
+它作为装饰器作用于需要缓存的函数，用法格式如下：
+```python
+functools.lru_cache(maxsize=128, typed=False)
+```
+- `maxsize`:限制不同参数和结果缓存的总量，如果设置为`None`，则`禁用LRU功能`，并且缓存可以无限制增长，当maxsize是二的幂时，LRU功能执行的最好，当超过maxsize设置的总数量时，LRU会把最近最少用的缓存弹出的。
+- `typed`:如果设置为True，则不同类型的函数参数将单独缓存，例如f(3)和f(3.0)将被视为具有不同结果的不同调用
+> 使用`被装饰的函数.cache_info()`来查看缓存命中的次数，以及结果缓存的数量。
+```python
+In [33]: import functools
+
+In [34]: @functools.lru_cache()
+    ...: def add(x: int, y: int) -> int:
+    ...:     time.sleep(2)
+    ...:     return x + y
+    ...:
+
+In [35]: import time
+
+In [36]: add.cache_info()   # 没有执行，没有缓存，也就没有命中了
+Out[36]: CacheInfo(hits=0, misses=0, maxsize=128, currsize=0)
+
+In [37]: add(4,5)    # 执行一次，缓存中不存在，所以miss1次，本次结果将会被缓存
+Out[37]: 9
+
+In [38]: add.cache_info()   # 验证缓存信息，currsize表示当前缓存1个，misses表示错过1次
+Out[38]: CacheInfo(hits=0, misses=1, maxsize=128, currsize=1)
+
+In [39]: add(4,5)  # 本次执行速度很快，因为读取的是缓存，被命中一次，所以瞬间返回
+Out[39]: 9
+
+In [40]: add.cache_info()  # 命中加1次
+Out[40]: CacheInfo(hits=1, misses=1, maxsize=128, currsize=1)
+```
+cache_info各参数含义：
+- hits: 缓存命中次数。当次传入计算的参数，如果在缓存中存在，则表示命中
+- misses: 未命中次数。当次传入计算的参数，如果在缓存中存在，则表示未命中
+- maxsize：表示缓存的key最大数量
+- currsize：已经缓存的key的数量
+## 3.2 lru_cache原码分析
+```python
+
+def lru_cache(maxsize=128, typed=False):
+    if maxsize is not None and not isinstance(maxsize, int):
+        raise TypeError('Expected maxsize to be an integer or None')
+
+    def decorating_function(user_function):
+        wrapper = _lru_cache_wrapper(user_function, maxsize, typed, _CacheInfo)
+        return update_wrapper(wrapper, user_function)
+
+    return decorating_function
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这里的返回的 `decorating_function` 函数中返回的 `update_wrapper` 是不是看起来很熟悉，没错，这里同样利用了偏函数对被包装函数的属性签名信息进行了拷贝，而传入的wrapper是才是缓存的结果，所以我们进一步查看_lru_cache_wrapper到底是怎么完成缓存的。
+```python
+def _lru_cache_wrapper(user_function, maxsize, typed, _CacheInfo):
+    ... ...
+
+    cache = {}
+    hits = misses = 0
+    full = False
+
+    ... ...
+
+    def wrapper(*args, **kwds):
+        # Size limited caching that tracks accesses by recency
+        nonlocal root, hits, misses, full
+        key = make_key(args, kwds, typed)
+        with lock:
+       
+    ... ...
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这里截取部分代码进行简要说明：cache是个字典，那么就印证了之前我们的设想，的确是使用字典key-value的形式进行缓存的。字典的key是来自于make_key函数的，那么我们接下来看一看这个函数都做了哪些事
+```python
+def _make_key(args, kwds, typed,
+             kwd_mark = (object(),),
+             fasttypes = {int, str, frozenset, type(None)},
+             tuple=tuple, type=type, len=len):
+    key = args
+    if kwds:     # 在使用关键字传参时，遍历kwds
+        key += kwd_mark  # 使用一个特殊的对象obkect() 来 作为位置传参和关键字传参的'分隔符'
+        for item in kwds.items():
+            key += item
+    if typed:
+        key += tuple(type(v) for v in args)
+        if kwds:
+            key += tuple(type(v) for v in kwds.values())
+    elif len(key) == 1 and type(key[0]) in fasttypes:
+        return key[0]
+    return _HashedSeq(key)
+```
+- args: 是我们给函数进行的位置传参，这里是元组类型（因为不希望被修改）。
+- kwargs: 关键字传参的字典。
+- _HashedSeq: 可以理解为对hash()函数的封装，仅仅是计算构建好的key的hash值，并将这个值作为key进行存储的。
+>注意，这里的函数_make_key是以_开头的函数，目的仅仅是告诉你，不要擅自使用，但是为了学习cache的key是怎么生成的，我们可以直接调用它，来查看生成key的样子(这里只模拟参数的传递，理解过程即可)
+```python
+In [41]: functools._make_key((1,2,3),{'a':1,'b':2},typed=False)  # 不限制类型
+Out[41]: [1, 2, 3, <object at 0x2798734b0b0>, 'a', 1, 'b', 2]    # 缓存的key不带类型
+
+In [49]: functools._HashedSeq(functools._make_key((1,2,3),{'a':1,'b':2},typed=True))     # 限制类型
+Out[49]: [1, 2, 3, <object at 0x2798734b0b0>, 'a', 1, 'b', 2, int, int, int, int, int]  # 缓存的key带类型
+```
+key构建完毕了，_HashedSeq是如何对一个列表进行hash的呢？下面来阅读以下_HashedSeq原码
+```python
+class _HashedSeq(list):
+    __slots__ = 'hashvalue'
+
+    def __init__(self, tup, hash=hash):
+        self[:] = tup
+        self.hashvalue = hash(tup)
+
+    def __hash__(self):
+        return self.hashvalue
+```
+这里发现_HashedSeq，是一个类，当对其进行hash时，实际上调用的就是它的__hash__方法，返回的是hashvalue这个值，而这个值在__init__函数中赋值时，又来自于hash函数(这不是多此一举吗，哈哈)，这里为了测试，我们使用_HashedSeq对象的hashvalue属性和hash函数来对比生成的hash值
+```python
+In [54]: value = functools._HashedSeq(functools._make_key((1,2,3),{'a':1,'b':2},typed=True))
+In [55]: value
+Out[55]: [1, 2, 3, <object at 0x2798734b0b0>, 'a', 1, 'b', 2, int, int, int, int, int]
+
+In [56]: value.hashvalue
+Out[56]: 3337684084446775700
+In [57]: hash(value)
+Out[57]: 3337684084446775700    # 这里两次执行的结果是相同的！
+```
+小结：
+1. 通过对原码分析我们知道，lru_cache是通过构建字典来完成key到value的映射的
+2. 构建字典的key来源于在_make_key函数中处理过得args，kwargs参数列表
+3. 最后对列表进行`hash`，得到key，然后在字典中作为key对应函数的计算机结果
+>由于_make_key在内部是通过args和kwargs拼接来完成key的构建的，也就是说args参数位置不同或者kwargs位置不同，构建出来的key都不相同，那么对应的hash值也就不同了！！！，这一点要特别注意
+```python
+In [60]: add.cache_info()
+Out[60]: CacheInfo(hits=1, misses=1, maxsize=128, currsize=1)
+
+In [61]: add(4,5)
+Out[61]: 9
+
+In [62]: add.cache_info()
+Out[62]: CacheInfo(hits=2, misses=1, maxsize=128, currsize=1)
+
+In [63]: add(4.0,5.0)
+Out[63]: 9
+
+In [64]: add.cache_info()   # 由于我们没有对类型的限制，所以int和float构建的key是相同的，这里就命中了！
+Out[64]: CacheInfo(hits=3, misses=1, maxsize=128, currsize=1)
+
+In [65]: add(5,4) 
+Out[65]: 9
+
+In [66]: add.cache_info()    # 当5，4调换时，key不同，那么就要重新缓存了！
+Out[66]: CacheInfo(hits=3, misses=2, maxsize=128, currsize=2)
+```
+## 3.3 斐波那契序列的lru改造
+前面我们讲递归的时候，使用递归的方法编写fib序列，是非常优美的但是由于每次要重新计很多值，效率非常低，如果把计算过后的值进行缓存，那么会有什么不同的呢？
+```python
+普通版：
+import datetime
 
 
+def fib(n):
+    return 1 if n < 3 else fib(n - 1) + fib(n - 2)
+
+
+start = datetime.datetime.now()
+print(fib(40))
+times = (datetime.datetime.now() - start).total_seconds()
+print(times)  # 31.652353
+
+
+lru_cache加成版本：
+import datetime
+import functools
+
+
+@functools.lru_cache()
+def fib(n):
+    return 1 if n < 3 else fib(n - 1) + fib(n - 2)
+
+
+start = datetime.datetime.now()
+print(fib(40))
+times = (datetime.datetime.now() - start).total_seconds()
+print(times)  # 0.0
+```
+> 速度简直要起飞了！
+## 3.4 lsu_cache的总结
+lru_cache使用的前提是：
+- 同样函数参数一定得到同样的结果
+- 函数执行时间很长，且要多次执行
+- 其本质就是函数调用的参数到函数返回值的映射  
+
+缺点：
+- 不支持缓存过期，key无法过期、失效。
+- 不支持清楚操作
+- 不支持分布式，是一个单机缓存  
+
+适用场景：单机上需要空间换时间的地方，可以用缓存来将计算变成快速查询。
