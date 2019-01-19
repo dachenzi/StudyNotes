@@ -2,21 +2,21 @@
 <!-- TOC -->
 
 - [1 python类型注解](#1-python类型注解)
-    - [1.1 函数定义的弊端](#11-函数定义的弊端)
-    - [1.2 函数文档](#12-函数文档)
-    - [1.3 函数注解](#13-函数注解)
-        - [1.3.1 annotation属性](#131-annotation属性)
-    - [1.4 inspect模块](#14-inspect模块)
-        - [1.4.1 常用方法](#141-常用方法)
-        - [1.4.2 signature类](#142-signature类)
-        - [1.4.3 parameters属性](#143-parameters属性)
-        - [1.4.3 获取对象的参数签名](#143-获取对象的参数签名)
-    - [1.5 检查参数](#15-检查参数)
+- [2 函数定义的弊端](#2-函数定义的弊端)
+- [3 函数文档](#3-函数文档)
+- [4 函数注解](#4-函数注解)
+    - [4.1 annotation属性](#41-annotation属性)
+- [5 inspect模块](#5-inspect模块)
+    - [5.1 常用方法](#51-常用方法)
+    - [5.2 signature类](#52-signature类)
+    - [5.3 parameters属性](#53-parameters属性)
+    - [5.4 获取对象的参数签名](#54-获取对象的参数签名)
+- [6 检查参数](#6-检查参数)
 
 <!-- /TOC -->
 # 1 python类型注解
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;类型注解，即对变量的类型，进行标注或者说明，因为Python是一门动态编译型语言，我们无法在赋值时就定义它的变量类型，所以在`Python3.5`以上版本新增了类型注解，但仅仅是提示作用，并不能严格控制，这是动态编译型语言的通病，下面来仔细看一下什么是Python的类型注解。
-## 1.1 函数定义的弊端
+# 2 函数定义的弊端
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python是动态语言，变量随时可以被赋值，且赋值为不同的类型，这就与静态语言不同了，变量的类型是在运行期决定的，而静态语言事先就已经定义好了变量的类型了。这是动态语言方便之处，但也是一种弊端，我们无法控制变量的类型，也就无法控制异常的产生。举个栗子
 ```python
 def add(x,y):
@@ -28,7 +28,7 @@ print(add(1,'a'))
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当用户传入两个数字时，返回它们的和，但是如果我们传递其他变量呢？比如字符串，因为Python中实现了+号的类型重载，所以说两个字符串的确可以加，但是如果是数字和字符串呢？在Python这种强类型语言中来说，属于非法操作(javascript会隐式转换)，而这时，我们就需要对用户传入的数据进行类型判断，不符合本函数的需求，那么就抛个异常，或者提示等等操作，这样就不会引起后续代码在执行期崩溃。如何解决呢？其实主要有两种方式。
 - 函数文档
 - 函数注解
-## 1.2 函数文档
+# 3 函数文档
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在函数中插入说明性文档的方式成为函数文档。
 ```python
 def add(x, y):
@@ -72,7 +72,7 @@ In [70]: print(add.__doc__)
 In [71]:
 ```
 >每次都要使用help来查看函数的说明，的确可以让使用者了解函数的参数以及返回值的类型，但并不是所有人都愿意写doc的，在这个所谓的敏捷开发时代，人们大多会以敏捷开发为借口没时间写，所以这种方法不是很用。
-## 1.3 函数注解
+# 4 函数注解
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python的函数注解是什么呢？首先来看一下如下代码：
 ```python
 def add(x: int, y: int) -> int:
@@ -92,7 +92,7 @@ def add(x: int, y: int) -> int:
 - 提供给第三方工具，做代码分析，发现隐藏的BUG
 - 函数注解的信息，保存在函数的`__annotation__`属性中。
 > `python3.6` 以上还添加了变量的注解：`i:int = 10`,当然也只是提示的作用。
-### 1.3.1 annotation属性
+## 4.1 annotation属性
 在Python中使用__开头的表示符一般被用特殊属性，`__annotation__`存储的就是函数的签名信息
 ```python
 In [71]: def add(x: int, y: int) -> int:
@@ -107,9 +107,9 @@ Out[73]: {'x': int, 'y': int, 'return': int}
 2. __annotations__的值是一个字典，字典是无序的，用户按照位置传进来参数是有序的，如何让它们形成对应关系方便我们检测呢？  
 
 下面我们来了解一下inspect模块，它可以帮我们完成这个事情。
-## 1.4 inspect模块
+# 5 inspect模块
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;官方解释如下：inspect模块提供了几个有用的函数来帮助获取关于活动对象的信息，例如模块、类、方法、函数、回溯、框架对象和代码对象。例如，它可以帮助您检查类的内容、检索方法的源代码、提取并格式化函数的参数列表，或者获取显示详细回溯所需的所有信息。
-### 1.4.1 常用方法
+## 5.1 常用方法
 |分类|方法名称|功能|
 |:--|:--|:--|
 |判断|inspect.getmodulename(path)|获取模块名称
@@ -122,9 +122,9 @@ Out[73]: {'x': int, 'y': int, 'return': int}
 ||inspect.iscoroutinefunction(object)|是不是一个协程函数
 |获取信息|inspect.getmodulename(path)|获取模块名称
 ||inspect.getsource(object)|获取对象的原码(并不会解析装饰器原码)
-### 1.4.2 signature类
+## 5.2 signature类
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;首先我们要说的是函数的签名信息：它包含了了函数的函数名、它的参数类型，它所在的类和名称空间及其他信息，签名对象(signature object)表示可调用对象的调用签名信息和它的注解信息，当我们使用signature()时，它会重新返回一个包含可调用对象信息的签名对象。
-### 1.4.3 parameters属性
+## 5.3 parameters属性
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signature类的`parameters`属性，它里面存放的是函数的参数注解和返回值注解，组成的有序字典，其中参数注解的格式为：参数名称，使用inspect.Parameters类包装的参数注解，这个参数注解很强大，它包含如下常用的方法：
 |方法名称|含义|
 |:--|:--|
@@ -142,7 +142,7 @@ _KEYWORD_ONLY            = _ParameterKind.KEYWORD_ONLY          # keyword-only�
 _VAR_KEYWORD             = _ParameterKind.VAR_KEYWORD           # 可变关键字参数
 ```
 > 其中POSITIONAL_ONLY，Python中没有被实现。  
-### 1.4.3 获取对象的参数签名
+## 5.4 获取对象的参数签名
 根据上面讲的方法，我们可以通过如下方式，简单的获取参数的签名：
 ```python
 In [11]: import inspect
@@ -159,7 +159,7 @@ In [21]: params['x'].annotation
 Out[21]: int    # 如果没有定义x的参数注解，那么这里就是inspect._empty
 ```
 通过它的属性，搭配`有序字典`这个特性,有没有很兴奋？参数有序，传入的实参有序，还能获取参数注解的类型，那么就可以开工进行参数检查了！
-## 1.5 检查参数
+# 6 检查参数
 以上面函数为例子，当给add函数传入的x，y时进行参数检查，如果x，y不是int类型，那么返回异常，并退出函数
 ```python
 import inspect
