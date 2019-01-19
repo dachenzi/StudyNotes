@@ -289,7 +289,7 @@ class _HashedSeq(list):
     def __hash__(self):
         return self.hashvalue
 ```
-这里发现_HashedSeq，是一个类，当对其进行hash时，实际上调用的就是它的__hash__方法，返回的是hashvalue这个值，而这个值在__init__函数中赋值时，又来自于hash函数(这不是多此一举吗，哈哈)，这里为了测试，我们使用_HashedSeq对象的hashvalue属性和hash函数来对比生成的hash值
+这里发现_HashedSeq，是一个类，当对其进行hash时，实际上调用的就是它的__hash__方法，返回的是hashvalue这个值，而这个值在__init__函数中赋值时，又来自于hash函数(这不是多此一举吗，哈哈)，tup是元组类型，这里还是对元组进行了hash，只是返回了一个list类型而已。这里为了测试，我们使用_HashedSeq对象的hashvalue属性和hash函数来对比生成的hash值
 ```python
 In [54]: value = functools._HashedSeq(functools._make_key((1,2,3),{'a':1,'b':2},typed=True))
 In [55]: value
