@@ -1,4 +1,4 @@
-# 1 Python文件操作
+# 1 文件操作
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;读写文件是最常见的IO操作(一般说IO操作，指的是文件IO，如果是网络，一般都会直接说网络IO)，在磁盘上读写文件的功能都是由操作系统提供的，操作系统不允许普通的程序直接操作磁盘(大部分程序都需要间接的通过操作系统来完成对硬件的操作)，所以，读写文件就是请求操作系统打开一个文件对象（通常称为文件描述符），然后，通过操作系统提供的接口从这个文件对象中读取数据（读文件），或者把数据写入这个文件对象（写文件）。在操作系统中，文件常用的操作有：
 |功能|介绍|
 |--|--|
@@ -334,45 +334,85 @@ fd.writeable()： 判断文件是否可以写
 fd.fileno()：    返回文件在操作系统上的文件描述符（一个进程的运行默认会打开三个特殊的文件描述符：0表示 stdin、1表示 stdout，2表示stderr）
 fd.name：        文件名称 
 ```
-# 2 StringIO 模块
+# 2 StringIO模块
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用于在内存空开辟一个文本模式的buffer,可以像文件对象一样操作它,当close方法被调用时,这个buffer会被释放.
+> 使用前需要先进行导入, from io import StringIO
+```python
+In [106]: from io import StringIO
 
+In [107]: s = StringIO()   # 实例化一个StringIO对象用于读写,相当于 f = open('123.txt','r+')
 
+In [108]: s.write('123')
+Out[108]: 3
 
+In [109]: s.readline()
+Out[109]: ''
 
+In [110]: s.seek(0)
+Out[110]: 0
 
+In [111]: s.readline()
+Out[111]: '123'
+```
+`getvalue()`: 获取全部内容,根文件指针没有关系.
+```python
+In [106]: from io import StringIO
 
+In [107]: s = StringIO()
 
+In [108]: s.write('123')
+Out[108]: 3
 
+In [109]: s.readline()
+Out[109]: ''
 
+In [110]: s.seek(0)
+Out[110]: 0
 
+In [111]: s.readline()    # 指针已经切换到文件末尾
+Out[111]: '123'
 
+In [112]: s.getvalue()    # 无视指针,可以读取所有
+Out[112]: '123'
+```
+> 一般来说,磁盘的操作比内存的操作要慢得多,内存足够的情况下,一般的优化思路是少落地,减少磁盘IO的过程,可以大大提高程序的运行效率.
+# 3 BytesIO模块
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用于在内存中开辟一个二进制模式的buffer,可以像文件对象一样操作它,当close方法被调用时,这个buffer会被释放.
+> 调用前需要先导入: from io import BytesIO
+```python
+In [114]: from io import BytesIO
 
+In [115]: b = BytesIO()  # 实例化一个BytesIO对象用于存储二进制数据
 
+In [116]: b.write(b'abc')
+Out[116]: 3
 
+In [117]: b.seek(0)
+Out[117]: 0
 
+In [118]: b.read()
+Out[118]: b'abc'
 
+In [119]: b.getvalue()   # 同样无视指针的存在
+Out[119]: b'abc'
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;针对StringIO和BytesIO来说,还有如下方法:
+1. readable(): 可读吗?
+2. writeable(): 可写吗?
+3. seekable(): 可以调整指针吗?
+# 4 file-like对象
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;类文件对象,可以向文件对象一个操作,比如socket对象,输入输出对象(stdin,stdout)等都是类文件对象.
+```python
+In [120]: from sys import stdin,stdout
 
+In [122]: stdout.write('123')
+123
+In [123]: type(stdout)
+Out[123]: colorama.ansitowin32.StreamWrapper
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-使用with
-　
-
-with open('/tmp/hello.txt') as fd:
-    while True:
-        line = fd.readline()
-            if not line:
-                break
-            print line,
+In [124]:
+```
+每个程序初始化运行时,都会打开3个文件:
+- stdin: 标准输入
+- stdout: 标准输出
+- stderr: 标准错误输出
