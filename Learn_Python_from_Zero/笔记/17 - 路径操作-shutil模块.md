@@ -162,7 +162,7 @@ In [3]: p.name
 Out[3]: 'mysql.tar.gz'
 
 In [4]: p.suffix                                                             
-Out[4]: '.gz'
+Out[4]: '.gz'  
 
 In [5]: p.stem                                                               
 Out[5]: 'mysql.tar'
@@ -189,6 +189,192 @@ Out[15]: PosixPath('/tmp/mysql.tar.gz')
 
 In [16]: p.with_name('nginx.tar.gz')                                         
 Out[16]: PosixPath('/tmp/nginx.tar.gz')
- 
+```
+#### 全局方法及判断方法
+- `cwd()`: 返回当前工作目录
+- `home()`: 返回当前家目录
+- `is_dir()`: 是否是目录，是目录且存在，则返回True
+- `is_file()`: 是否是普通文件，是文件且存在，则返回True
+- `is_symlink()`: 是否是阮链接
+- `is_socket()`: 是否是socket文件
+- `is_block_device()`: 是否是块设备
+- `is_char_device()`: 是否是字符设备
+- `is_absolute()`: 是否是绝对路径
+```python
+In [34]: p = Path('/etc','sysconfig')                                            
 
+In [35]: p2 = Path('/etc','hosts')                                               
+
+In [36]: p3 = Path('/etc','rc.d','rc3.d','S10network')                           
+
+In [37]: p.is_dir()                                                              
+Out[37]: True
+
+In [38]: p1.is_file()                                                            
+Out[38]: False
+
+In [39]: p2.is_file()                                                            
+Out[39]: True
+
+In [44]: p3.is_symlink()                                                         
+Out[44]: True
+
+In [45]: p.is_absolute()                                                         
+Out[45]: True 
+```
+- `resolve()`: 返回当前Path对象的绝对路径。如果是软连接，则直接被解析
+- `absolute()`: 获取Path对象的绝对路径
+```python
+In [28]: p3 = Path('hosts')                                                      
+
+In [29]: p3                                                                      
+Out[29]: PosixPath('hosts')
+
+In [30]: p3.resolve()          # 软链接的真正路径                                                    
+Out[30]: PosixPath('/etc/hosts')
+
+In [31]: p3.absolute()         # 软链接的绝对路径                                                 
+Out[31]: PosixPath('/home/python/py368/hosts')
+```
+- `exists()`: 文件或者目录是否存在
+- `rmdir()`: 删除空目录(没有提供目录为空的方法)
+- `touch(mode=0o666，exist_ok=False)`: 创建一个文件
+    * `mode`: 文件的属性，默认为666
+    * `exist_ok`: 在3.5版本加入，False时，路径存在，抛出FileExistsError;True时，异常将被忽略
+```python
+In [47]: p = Path('/tmp','hello.py')                                                                                                         
+In [49]: p.exists()                                                              
+Out[49]: False
+
+In [50]: p.touch(mode=0o666,exist_ok=False)                                      
+
+In [51]: p.exists()                                                              
+Out[51]: True
+
+In [52]: p.touch(mode=0o666,exist_ok=False)                                      
+---------------------------------------------------------------------------
+FileExistsError                           Traceback (most recent call last)
+...
+FileExistsError: [Errno 17] File exists: '/tmp/hello.py'
+
+In [53]:  
+```
+- as_uri(): 将路径返回成URI
+```python
+In [56]: p2.as_uri()                                                             
+Out[56]: 'file:///etc/hosts'
+```
+- `mkdir(mode=0o777,parents=False,exist_ok=False)`: 创建一个目录
+    * `parents`：是否创建父目录，True等同于`mkdir -p`, False时，父目录不存在曝出FileNotFoundError
+    * `exist_ok`: 在3.5版本加入，False时，路径存在，抛出FileExistsError;True时，异常将被忽略
+- `iterdir()`: 迭代当前目录，不递归。
+```python
+In [74]: for x in p4.parents[0].iterdir(): 
+    ...:     if x.is_dir(): 
+    ...:         flag = False 
+    ...:         for _ in x.iterdir(): 
+    ...:             flag = True 
+    ...:             break 
+    ...:         print('dir: {} , is {}'.format(x,'not empty ' if flag else 'empt
+    ...: y' )) 
+    ...:     elif x.is_file(): 
+    ...:         print('{} is a file'.format(x)) 
+    ...:     else: 
+    ...:         print('other file')
+```
+> 判断文件类型，当文件为目录时，判断其是否为空目录。
+#### 通配符
+- `glob(partten)`: 在`目录下`通配给定的格式
+- `rglob(partten)`: 在`目录下`递归通配给定的格式(递归目录)  
+- `match(partten)`: 模式匹配(对当前Path对象进行匹配)，成功返回True
+支持的通配符与Linux下相同：
+- ？ 表示一个字符
+- \* 表示任意个字符
+- [abc]或[a-z] 表示区间内的任意一个字符
+```python
+In [84]: p4                                                                      
+Out[84]: PosixPath('/etc/sysconfig/network-scripts')
+
+In [85]: list(p4.glob('ifu?-*'))                                                 
+Out[85]: 
+[PosixPath('/etc/sysconfig/network-scripts/ifup-aliases'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-bnep'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-eth'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-ippp'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-ipv6'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-isdn'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-plip'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-plusb'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-post'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-ppp'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-routes'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-sit'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-tunnel'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-wireless'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-ib'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-Team'),
+ PosixPath('/etc/sysconfig/network-scripts/ifup-TeamPort')]
+
+In [87]: p4.match('/etc/*/network-script?')                                      
+Out[87]: True
+```
+#### 目录属性
+- `stat()`: 查看目录的详细信息，相当于stat命令
+- `lstat()`: 如果是符号链接，则显示符号链接本身的文件信息
+```python
+In [88]: p4.stat()                                                               
+Out[88]: os.stat_result(st_mode=16877, st_ino=67533402, st_dev=2050, st_nlink=2, st_uid=0, st_gid=0, st_size=4096, st_atime=1550229289, st_mtime=1545830238, st_ctime=1545830238)
+```
+### 1.2.2 文件操作
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Path对象同样提供了打开文件的函数，功能类似于内建函数open。返回一个文件对象。当我们创建一个Path对象时，这个文件已经被打开，当我们写入数据时，文件不存在会新建，重名或者是目录，会有相应的异常提示，它的语法是
+```python
+Path.open(mode='r',buffering=-1,encoding=None,errors=None,newline=None)
+```
+例：
+```python
+In [115]: p5                                                                     
+Out[115]: PosixPath('/tmp/123')
+
+In [116]: p = p5.open(mode='r')                                                  
+
+In [117]: p                                                                      
+Out[117]: <_io.TextIOWrapper name='/tmp/123' mode='r' encoding='UTF-8'>
+
+In [118]: p.read()                                                               
+Out[118]: '123'
+
+In [119]: p5.read_text()     # 不存在时报异常，存在则直接打开并读取                                                      
+Out[119]: '123'
+
+```
+3.5以后新增加的函数方法：
+- `Path.read_bytes()`: 以'rb'方式读取路径对应文件，并返回二进制流。
+- `Path.read_text()`: 以'rt'方式读取路径文件， 并返回文件。__无视指针__
+- `Path.write_bytes()`: 以'wb'方式写入数据到路径对应文件中。
+- `Path.write_text()`: 以'wt'方式写入数据到路径对应文件中。
+## 1.3 os 模块
+os模块的常用方法：
+```python
+os.getcwd():        获取当前路径
+os.chdir()：        切换当前目录，当路径中存在\的时候，由于是转意的意思，那么就需要对\进行转意，那么路径就是c:\\User,或者在目录前面加r，表示后面的字符串不进行解释
+os.curdir():        获取当前目录名
+os.pardir():        获取上级目录名
+os.mkdir('dir'):    创建目录，注意只能创建一级目录
+os.makedirs('dir_path'):创建多级目录
+os.rmdir('dir'):    删除一个目录
+os.removedir('dir_path')：删除多级目录（目录为空的话）
+os.listdir('dir'):  显示目录下的所有文件,默认为当前目录,返回的结果为list
+os.remove('file'):  删除一个文件
+os.rename('old_name','new_name'):修改文件名称
+os.stat('file/dir')：获取文件/目录的stat信息
+os.sep:             返回当前操作系统的路径分隔符(Windows下：\\ , Linux下:/）
+os.linesep:         返回当前操作系统的换行符（Windows下:\r\n  ,Linux下:\n）
+os.pathsep:         返回当前操作系统环境变量分隔符（Windows下是; ,Linux下是:）
+os.name:            返回当前系统的类型（nt 表示Windows,  posix表示Linux）
+os.system('Commmand'):执行命令
+os.environ:         获取系统环境变量，使用字典存储
+os.path.abspath('dir/file'):获取dir/file的绝对路径
+os.path.split('path'):把路径分割为目录和文件名组成的元组格式，不管path是否存在
+os.dirname('path')：获取文件的父目录名称，不管path是否存在
+os.basename('path'):获取文件的名称，不管path是否存在
 ```
