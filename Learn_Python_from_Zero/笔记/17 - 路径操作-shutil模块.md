@@ -366,7 +366,7 @@ os.removedir('dir_path')：删除多级目录（目录为空的话）
 os.listdir('dir'):  显示目录下的所有文件,默认为当前目录,返回的结果为list
 os.remove('file'):  删除一个文件
 os.rename('old_name','new_name'):修改文件名称
-os.stat('file/dir')：获取文件/目录的stat信息
+os.stat('file/dir')：获取文件/目录的stat信息(调用的是系统的stat)
 os.sep:             返回当前操作系统的路径分隔符(Windows下：\\ , Linux下:/）
 os.linesep:         返回当前操作系统的换行符（Windows下:\r\n  ,Linux下:\n）
 os.pathsep:         返回当前操作系统环境变量分隔符（Windows下是; ,Linux下是:）
@@ -378,3 +378,174 @@ os.path.split('path'):把路径分割为目录和文件名组成的元组格式�
 os.dirname('path')：获取文件的父目录名称，不管path是否存在
 os.basename('path'):获取文件的名称，不管path是否存在
 ```
+> os.stat(follow_symlinks=True)，返回源文件本身信息，False时，显示链接文件的信息,对于软连接本身，还可以使用os.lstat方法
+```python
+In [133]: os.lstat('hosts')                                                      
+Out[133]: os.stat_result(st_mode=41471, st_ino=2083428, st_dev=2050, st_nlink=1, st_uid=1001, st_gid=1001, st_size=10, st_atime=1550259162, st_mtime=1550259161, st_ctime=1550259161)
+
+In [134]: os.stat('hosts')                                                       
+Out[134]: os.stat_result(st_mode=33188, st_ino=67245317, st_dev=2050, st_nlink=1, st_uid=0, st_gid=0, st_size=158, st_atime=1550229294, st_mtime=1370615492, st_ctime=1545666279)
+
+In [136]: os.stat('hosts',follow_symlinks=False)      # 等同于os.lstat()                            
+Out[136]: os.stat_result(st_mode=41471, st_ino=2083428, st_dev=2050, st_nlink=1, st_uid=1001, st_gid=1001, st_size=10, st_atime=1550259162, st_mtime=1550259161, st_ctime=1550259161)
+
+In [137]:    
+```
+# 2 shutil模块
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据前面所学的知识，我们如果想要进行文件拷贝，需要先打开两个文件对象对象，源文件读取内容，写入到目标文件中去。 这种方式虽然完成了文件的拷贝，但是却丢失了文件的属性信息，比如属组、权限等，因为我们根本没有进行复制。所以，python提供了一个用于高级文件操作的库，它的名字就叫做shutil。
+## 2.1 copy复制
+- `shutil.copyfileobj(fsrc,fdes,length)`: 将文件内容拷贝到另一个文件中，可以只拷贝部分内容，需要我们自行打开文件对象进行copy,length表示buffer的大小，需要注意的是fdes必须可写
+```python
+>>> import os,shutil
+>>> os.system('ls')
+1.txt
+>>> shutil.copyfileobj(open('1.txt'),open('2.txt','w'))
+>>> os.system('ls')
+1.txt  2.txt
+>>> 
+```
+- `shutil.copyfile(fsrc,fdes)`: 复制文件，我们只需要传入文件名称即可进行复制，不用自行预先打开，等于创建一个新的文件，把老文件写入到新文件中然后关闭，新创建的文件权限和属主等信息遵循操作系统规定(本质上还是调用copyfileobj)
+```python
+>>> shutil.copyfile('1.txt','3.txt')
+>>> os.system('ls')
+1.txt  2.txt  3.txt
+```
+- `shutil.copymode(src,des)`: 复制文件权限，既把src文件的权限复制给 des文件，只改变权限，不改变其他比如属组，内容等(des文件必须存在)
+```python
+>>> os.system('ls -l')
+total 12
+-rwxrwxrwx 1 root root 6 Mar  9 18:35 1.txt
+-rw-r--r-- 1 root root 6 Mar  9 18:36 2.txt
+-rw-r--r-- 1 root root 6 Mar  9 18:38 3.txt
+>>> shutil.copymode('1.txt','2.txt')
+>>> os.system('ls -l')
+total 12
+-rwxrwxrwx 1 root root 6 Mar  9 18:35 1.txt
+-rwxrwxrwx 1 root root 6 Mar  9 18:36 2.txt
+-rw-r--r-- 1 root root 6 Mar  9 18:38 3.txt
+>>> 
+```
+- `shutil.copystat(src,des)`: 复制文件的权限，还包括，atime，mtime，flags等信息，不改变文件内容（des需存在）
+```python
+>>> os.system('stat 1.txt')
+  File: `1.txt'
+  Size: 6             Blocks: 8          IO Block: 4096   regular file
+Device: fd00h/64768d    Inode: 926326      Links: 1
+Access: (0777/-rwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2017-03-09 18:36:59.223738919 +0800
+Modify: 2017-03-09 18:35:23.148738381 +0800
+Change: 2017-03-09 18:39:59.061738605 +0800
+
+>>> os.system('stat 3.txt')
+  File: `3.txt'
+  Size: 6             Blocks: 8          IO Block: 4096   regular file
+Device: fd00h/64768d    Inode: 940237      Links: 1
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2017-03-09 18:39:42.214738376 +0800
+Modify: 2017-03-09 18:38:13.862738316 +0800
+Change: 2017-03-09 18:38:13.862738316 +0800
+
+>>> shutil.copystat('1.txt','3.txt')
+>>> os.system('stat 3.txt')
+  File: `3.txt'
+  Size: 6             Blocks: 8          IO Block: 4096   regular file
+Device: fd00h/64768d    Inode: 940237      Links: 1
+Access: (0777/-rwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2017-03-09 18:36:59.223738000 +0800
+Modify: 2017-03-09 18:35:23.148738000 +0800
+Change: 2017-03-09 18:44:33.286738354 +0800
+>>> 
+```
+- `shutil.copy(src,des)`: 复制文件的同时复制权限信息,等同于执行了如下命令:
+    1. __shutil.copyfile(src,dest,follow_symlinks=True)__ 
+    2. __shutil.copymode(src,dest,follow_symlinks=True)__
+- `shutil.copy2(src,des)`: 比copy对了全部原数据，但需要平台支持,等同于执行了如下命令:
+    1. __shutil.copyfile(src,dest,follow_symlinks=True)__ 
+    2. __shutil.copystat(src,dest,follow_symlinks=True)__
+- `shutil.copytree(src,dest,symlinks=False,ignore=None,copy_function=copy2,ignore_dangling_symlinks=False)`: 递归复制文件，类似于copy -r，默认使用copy2
+    - src必须存在，dest必须不存在。
+> ignore = func, 提供一个callable(src,namnes) --> ignoted_names。提供一个函数，它会被调用。src是原目录，names是原目录下的文件列表(os.listdir(src))，返回值是要被过滤的文件名的set类型数据
+```python
+In [146]: def func(src,names): 
+     ...:     ig = filter(lambda x: not x.endswith('conf'),names) 
+     ...:     return set(ig)
+     
+In [164]: os.listdir('old')                                                      
+Out[164]: 
+['123.txt',
+ '456.txt',
+ 'asound.conf',
+ 'brltty.conf',
+ 'chrony.conf',
+ 'dleyna-server-service.conf',
+ 'dnsmasq.conf',
+ 'dracut.conf',
+ 'e2fsck.conf',
+ 'fprintd.conf',
+ 'fuse.conf',
+ 'GeoIP.conf',
+ 'host.conf']
+
+In [161]: shutil.copytree('old','new',ignore=func)                               
+Out[161]: 'new'
+
+In [163]: os.listdir('new')                                                      
+Out[163]: ['123.txt', '456.txt']
+
+
+```
+> 
+
+= shutil.ignore_patterns('*py')
+复制代码
+>>> os.system('ls -l')
+total 4
+drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
+
+>>> shutil.copytree('test','test1')
+>>> os.system('ls -l')
+total 8
+drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
+drwxr-xr-x 2 root root 4096 Mar  9 18:46 test1
+
+>>> os.system('ls -l test1')
+total 12
+-rwxrwxrwx 1 root root 6 Mar  9 18:35 1.txt
+-rwxrwxrwx 1 root root 6 Mar  9 18:36 2.txt
+-rwxrwxrwx 1 root root 6 Mar  9 18:35 3.txt
+>>> 
+复制代码
+shutil.rmtree(des)  递归的删除文件，类似于　rm -rf
+
+
+复制代码
+>>> os.system('ls -l')
+total 8
+drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
+drwxr-xr-x 2 root root 4096 Mar  9 18:46 test1
+
+>>> shutil.rmtree('test1')
+>>> os.system('ls -l')
+total 4
+drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
+>>> 
+复制代码
+shutil.move(src,des)  移动文件/目录，类似于mv 命令
+
+shutil.make_archive('data_bak','gztar',roots_dir = '/data' )  压缩，data_bak 可以写为绝对路径
+
+
+复制代码
+import tarfile
+t = tarfile.open('data_bak.tar.gz') #打开我呢间
+t.extractall('/tmp') #解压缩到某个路径
+t.close()
+
+#tar打包
+t = tarfile.open('data_bak.tar','w')
+t.add(r'/tmp/1.txt') -->　#会把程序的路径也进行打包
+t.close()
+
+#tar打包
+t =tarfile.open('data_bak.tar.gz')
+t.add('/tmp/1.txt',arcname='1.txt_bak') # 打包的时候把 /tmp/1.txt　打包成 1.txt_bak
