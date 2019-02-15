@@ -148,3 +148,47 @@ In [59]:
 ```
 > parent属性，看似支持类js的链式操作，主要还是因为每次使用parent属性时，返回的还是一个Path对象，所以才可以一直parent下去。
 #### 目录的组成部分
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在一个目录的绝对路径中我们可能会单独使用目录的名称、目录的后缀名等等，Path对象提供了专门的属性及方法便于获取或者对它们进行修改。
+- `name`: 目录的最后一个部分
+- `suffix`：目录中最后一个部分的扩展名
+- `stem`：目录中最后一个部分，不包含后缀名
+- `suffixes`: 多个后缀名形成的列表
+```python
+In [1]: from pathlib import Path                                             
+
+In [2]: p = Path('/tmp/mysql.tar.gz')                                        
+
+In [3]: p.name                                                               
+Out[3]: 'mysql.tar.gz'
+
+In [4]: p.suffix                                                             
+Out[4]: '.gz'
+
+In [5]: p.stem                                                               
+Out[5]: 'mysql.tar'
+
+In [6]: p.suffixes                                                           
+Out[6]: ['.tar', '.gz']
+```
+- `with_suffix(suffix)`: 有扩展名则替换，无则补充扩展名(注意后缀名要加点)
+- `with_name(name)`：替换目录最后一个部分并返回一个新的路径
+```python
+In [9]: p                                                                    
+Out[9]: PosixPath('/tmp/mysql.tar.gz')
+
+In [10]: p.with_suffix('.abc')                                               
+Out[10]: PosixPath('/tmp/mysql.tar.abc')
+
+In [11]: p1 = Path('/tmp/nginx')                                             
+
+In [12]: p1.with_suffix('.abc')                                              
+Out[12]: PosixPath('/tmp/nginx.abc')
+
+In [15]: p                                                                   
+Out[15]: PosixPath('/tmp/mysql.tar.gz')
+
+In [16]: p.with_name('nginx.tar.gz')                                         
+Out[16]: PosixPath('/tmp/nginx.tar.gz')
+ 
+
+```
