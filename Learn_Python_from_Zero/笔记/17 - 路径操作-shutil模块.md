@@ -464,7 +464,7 @@ Change: 2017-03-09 18:44:33.286738354 +0800
     2. __shutil.copystat(src,dest,follow_symlinks=True)__
 - `shutil.copytree(src,dest,symlinks=False,ignore=None,copy_function=copy2,ignore_dangling_symlinks=False)`: 递归复制文件，类似于copy -r，默认使用copy2
     - src必须存在，dest必须不存在。
-> ignore = func, 提供一个callable(src,namnes) --> ignoted_names。提供一个函数，它会被调用。src是原目录，names是原目录下的文件列表(os.listdir(src))，返回值是要被过滤的文件名的set类型数据
+    - `ignore = func`, 提供一个callable(src,namnes) --> ignoted_names。提供一个函数，它会被调用。src是原目录，names是原目录下的文件列表(os.listdir(src))，返回值是要被过滤的文件名的set类型数据
 ```python
 In [146]: def func(src,names): 
      ...:     ig = filter(lambda x: not x.endswith('conf'),names) 
