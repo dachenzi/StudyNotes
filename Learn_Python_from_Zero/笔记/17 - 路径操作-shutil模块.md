@@ -469,7 +469,7 @@ Change: 2017-03-09 18:44:33.286738354 +0800
 In [146]: def func(src,names): 
      ...:     ig = filter(lambda x: not x.endswith('conf'),names) 
      ...:     return set(ig)
-     
+
 In [164]: os.listdir('old')                                                      
 Out[164]: 
 ['123.txt',
@@ -491,8 +491,6 @@ Out[161]: 'new'
 
 In [163]: os.listdir('new')                                                      
 Out[163]: ['123.txt', '456.txt']
-
-
 ```
 > 
 
