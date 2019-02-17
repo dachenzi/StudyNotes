@@ -21,6 +21,7 @@
         - [4.4.2 类方法](#442-类方法)
         - [4.4.3 静态方法(用的很少)](#443-静态方法用的很少)
         - [4.4.4 方法的调用](#444-方法的调用)
+- [5 访问控制](#5-访问控制)
 
 <!-- /TOC -->
 
@@ -123,6 +124,18 @@ daxin = Person('daxin',20)    # 实参
 > 注意：`__init__`方法只有在实例化的时候才会被调用。
 ### 4.2.2 实例对象(instance)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;类实例化后一定会获得一个类的实例，就是实例对象。__init__方法的第一个变量self就是实例本身。通过实例化我们可以获得一个实例对象，比如上面的daxin，我们可以通过daxin.sing()来调用sing方法，但是我们并没有传递self参数啊，这是因为类实例化后，得到一个实例对象，实例对象会`绑定`到`方法`上，在使用daxin.sing()进行调用时，会把方法的调用者daxin实例，作为第一个参数self传入。而self.name就是daxin实例的name属性，name保存在daxin实例中，而不是Person类中，所以这里的name被叫做实例变量。
+```python
+class Person:
+    def __init__(self,name):
+        self.name = name
+
+    def sing(self):
+        print('{} is sing'.format(self.name))
+
+daxin = Person('daxin')
+print(daxin.sing)   # <bound method Person.sing of <__main__.Person object at 0x00000198EADD83C8>>  绑定方法
+print(Person.sing)  # <function Person.sing at 0x00000198EADD99D8>  方法函数
+```
 ### 4.2.3 实例变量和类变量
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实例变量是每一个实例自己的变量，是自己独有的。类变量是类的变量，是类的所有实例共享的属性和方法。下面我们从一个例子来看实例变量和类变量
 ```python
@@ -387,30 +400,8 @@ Test.normal_funtion(123)
 a = Test()
 a.normal_funtion()
 ```
-normal_function依旧是一个普通方法而已，加了参数发现类和实例都可以调用了，那是因为之前实例无法调用是因为实例调用时默认传递给函数作为第一个参数，那么我给普通函数加一个形参接受就可以了。没有场景这样使用，这里只做学习了解。
-        
-        实例调用方法和类调用方法，在使用self时的不同之处。
-
-            
-            class Person:
-                def normal_fuction():
-                    print('normal_function') 
-                def normal_method(self):
-                    print('normal_method')
-            
-            调用：Person.normal_fuction()
-            体会：Person.normal_method(Person()) 和 Person.normal_method(123) 的区别
-                p1.normal_function() 绑定方法（会自动将对象注入到self中)
-                Person.normal_function() 普通的函数
-    
-            > 函数默认参数是引用类型时，遵循函数那套关系
-
-            
-            
-            
-            
-2019/02/16 
-    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;normal_function依旧是一个普通方法而已，加了参数发现类和实例都可以调用了，那是因为之前实例无法调用是因为实例调用时默认传递给函数作为第一个参数，那么我给普通函数加一个形参接受就可以了。没有场景这样使用，这里只做学习了解。
+# 5 访问控制
     
     
     
