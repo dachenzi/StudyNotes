@@ -22,6 +22,7 @@
         - [4.4.3 静态方法(用的很少)](#443-静态方法用的很少)
         - [4.4.4 方法的调用](#444-方法的调用)
 - [5 访问控制](#5-访问控制)
+    - [5.1 私有属性](#51-私有属性)
 
 <!-- /TOC -->
 
@@ -402,7 +403,195 @@ a.normal_funtion()
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;normal_function依旧是一个普通方法而已，加了参数发现类和实例都可以调用了，那是因为之前实例无法调用是因为实例调用时默认传递给函数作为第一个参数，那么我给普通函数加一个形参接受就可以了。没有场景这样使用，这里只做学习了解。
 # 5 访问控制
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;封装成类还可以控制什么属性可以让别人访问，什么方法不能让别人访问,这就叫做访问控制。
+## 5.1 私有属性
+使用 __双下划线开头__ 的属性名，就是私有属性，现有如下例子：
+```python
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age 
+
+daxin = Person('daxin', 18)
+print(daxin.age)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们可以在外面直接使用daxin.age来访问daxin的age属性，但是如果这个age是银行卡密码，不能让别人知道该怎么办呢，Python提供了一种私有属性来解决
+```python
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.__age = age 
+        
+daxin = Person('daxin', 20)
+print(daxin.__age)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用__开头的属性被称为私有属性，这种属性在类的外部是无法直接进行访问的，前面所说__dict__中会存放类的属性信息，那么我们来看一下daxin实例的__dict__是怎么样的。
+```
+print(daxin.__dict__)
+
+{'name': 'daxin', '_Person__age': 20}
+```
+所以：私有属性的本质上其实是属性改名，设置self.__age属性时，__age 变为了 _Person__age（_类名__属性名)
+```python
+
+
+```
+    在类中，属性和方法成为类的成员，如果实例或者类的成员使用了双下划线开头，那么就会被改名(不以双下划线结尾), 成为私有成员
+    class Person:
+        def __init__(self, name, age=19):
+            self.name = name
+            self.__age = age     # 私有属性，属性和方法称为成员，定义在类中
+
+        def growup(self, val):    # setattr
+            if not (val < 0 or val > 150):
+                self.__age += val
+
+        def getage(self):     # getattr
+            return self.__age
+
+    p1 = Person('tom')
+    print(p1.__dict__)
+    print(p1._Person__age)
+    p1.__age = 200
+    print(p1.__dict__)
+    print(p1.__age)
+    p1._Person__age = 1000   # 通过改名后的名称来进行修改
     
+    
+    保护成员，protected,Python并不支持，开发者自己的不成文的约定
+    
+    Java等其他语言，比较严格，私有在外面是绝对访问不到的。
+    
+补丁：(黑科技)
+    可以通过修改或替换类的成员。使用者调用的方式没有改变，但是，类提供的功能可能已经改变了。(比如前面的类装饰器)
+    通常称作猴子补丁(Monkey Patch)
+    在运行时
+    
+属性装饰器：
+```python
+class Person:
+
+    def __init__(self, name, age=18):
+        self.name = name
+        self.__age = age
+
+    def age(self):    # 一般称为getter方法
+        return self.__age
+
+    def setage(self, value):  # 一般称为setter方法
+        self.__age = value
+
+daxin = Person('daxin')
+daxin.setage(30)
+print(daxin.age())
+```
+如何能让用户在使用age或者setage时不要认为他们是在调用函数，而是一个属性呢，Python提供了属性装饰器property来完成这个需求
+```python      
+    @property
+    def age(self):    # 一般称为getter方法
+        return self.__age
+        
+daxin = Person('daxin')
+print(daxin.age)
+```
+添加了@property装饰器以后，被他装饰的函数，就可以像普通的属性来访问了(daxin.age，就是daxin.age()的返回值)
+是否可以使用daxin.age=100来设置age属性的值呢
+```python
+daxin.age = 100 
+>> AttributeError: can't set attribute
+```
+无法设置的，是因为property装饰的函数是只读的，如果要使用daxin.age = 100 来赋值时，还需要一个setter装饰器来装饰一个设置属性的函数，并且这个函数必须和property装饰的函数的名称相同。
+```python
+    @property
+    def age(self):    # 一般称为getter方法
+        return self.__age
+    
+    @age.setter    # 被装饰的函数.setter(设置一个属性的值时触发)
+    def age(self,value):
+        self.__age = value 
+    
+    @age.deleter   # 删除一个属性时触发(很不常用)
+    def age(self):
+        del self.__age
+daxin = Person()
+print(daxin.age) # 触发@property装饰过的age
+daxin.age = 200  # 触发age.setter 
+del daxin.age    # 触发age.deleter      
+```
+另一种写法
+```python
+class Person:
+    def __init__(self, name, age=18):
+        self.name = name 
+        self.__age = age 
+    
+    def getage(self):
+        return self.__age 
+        
+    def setage(self, value):
+        self.__age = value 
+    def delage(self):
+        del self.__age 
+        
+    age = property(getage,setage,delage,'age property')
+```
+方法都可以单独使用，只是额外提供了一个快捷的属性来获取。
+快速实现一个只读属性
+```python
+class Person:
+    def __init__(self, name, age=18):
+        self.name = name
+        self.__age = age 
+        
+    age = property(lambda self:self.__age)  # 快捷包装一个只读属性。
+```
+> setter中有赋值等号，所以lambda不支持。
+        
+对象的销毁
+    __init__ 按照其他语言的逻辑，也可以称之为构造器
+    既然有构造器，那么就会有析构器，在对象被销毁时执行
+    在类内使用__del__进行定义
+    
+```python
+class Person:
+    def __init__(self,name):
+        self.name = name
+    
+    def __del__(self):
+        print('del {}'.format(self.name))
+        
+daxin  = Person()
+```
+只有对象引用计数清零时，才会出发__del__函数执行
+一般在析构函数中清理当前实例中申请的内存空间或者某些对象，做一些资源释放的工作。
+
+方法重载(overload)
+    其他语言中：同一个函数名，参数不同(个数、类型不同)，都可以工作
+其他语言中： 
+def test(x:int, y:int):
+    pass
+    
+def test(a:str, b:str, c:str):
+    pass 
+    
+test(4,5)
+test(4,5,6)
+其他语言的重载，当test(4,5)时会调用上面的函数，当test(4,5,6)会调用下面的函数，这就叫做类型重载，而在Python中，后面的会直接覆盖前面的同名函数，但是Python的动态语言的特性，其实悄悄的就实现了其他语言的类型重载
+```python
+def test(x,y):
+    return x + y 
+    
+test(4,5)
+test([1],[2])
+test('a','b')
+```
+在Python中上面是可以执行的，但是在其他语言中，可能就需要对应三个函数处理不同类型的数据，然后通过类型重载来调用。由于Python语言的特性，天生就能实现类型重载的功能
+```python
+void 
+```
+
+封装小结：
+1. 将数据和操作组织到类中  
     
     
     
