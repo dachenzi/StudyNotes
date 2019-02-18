@@ -23,6 +23,10 @@
         - [4.4.4 方法的调用](#444-方法的调用)
 - [5 访问控制](#5-访问控制)
     - [5.1 私有属性](#51-私有属性)
+    - [5.2 保护变量](#52-保护变量)
+    - [5.3 私有方法](#53-私有方法)
+    - [5.4 补丁：(黑科技)](#54-补丁黑科技)
+    - [5.5 属性装饰器](#55-属性装饰器)
 
 <!-- /TOC -->
 
@@ -125,6 +129,7 @@ daxin = Person('daxin',20)    # 实参
 > 注意：`__init__`方法只有在实例化的时候才会被调用。
 ### 4.2.2 实例对象(instance)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;类实例化后一定会获得一个类的实例，就是实例对象。__init__方法的第一个变量self就是实例本身。通过实例化我们可以获得一个实例对象，比如上面的daxin，我们可以通过daxin.sing()来调用sing方法，但是我们并没有传递self参数啊，这是因为类实例化后，得到一个实例对象，实例对象会`绑定`到`方法`上，在使用daxin.sing()进行调用时，会把方法的调用者daxin实例，作为第一个参数self传入。而self.name就是daxin实例的name属性，name保存在daxin实例中，而不是Person类中，所以这里的name被叫做实例变量。
+> 类中定义的方法会存放在类中(仅存一份)，而不是实例中，实例直接绑定到方法上。
 ```python
 class Person:
     def __init__(self,name):
@@ -137,6 +142,7 @@ daxin = Person('daxin')
 print(daxin.sing)   # <bound method Person.sing of <__main__.Person object at 0x00000198EADD83C8>>  绑定方法
 print(Person.sing)  # <function Person.sing at 0x00000198EADD99D8>  方法函数
 ```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;上例中，在调用daxin.sing时，daxin实例是被绑定到了sing方法上，当 a = Person('a') 时，a.sing其实也是把a绑定到了sing方法上，仔细看的话，不同实例的sing方法的内存地址是相同的.
 ### 4.2.3 实例变量和类变量
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;实例变量是每一个实例自己的变量，是自己独有的。类变量是类的变量，是类的所有实例共享的属性和方法。下面我们从一个例子来看实例变量和类变量
 ```python
@@ -252,7 +258,7 @@ Out[19]: 'daxin'
 
 ```
 通过观察发现：
-1. Person.__dict__：包含所有类内定义的属性及方法，但不包含实例对象的属性信息
+1. Person.__dict__：包含所有类内定义的属性及方法。
 2. daxin.__dict__ : 只记录实例自己的属性信息。
 > 方法是记录在类的`__dict__`中的  
 
@@ -425,49 +431,98 @@ class Person:
 daxin = Person('daxin', 20)
 print(daxin.__age)
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用__开头的属性被称为私有属性，这种属性在类的外部是无法直接进行访问的，前面所说__dict__中会存放类的属性信息，那么我们来看一下daxin实例的__dict__是怎么样的。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用__开头的属性被称为私有属性，这种属性在类的外部是无法直接进行访问的，前面所说__dict__中会存放类的属性信息，那么我们来看一下daxin实例的`__dict__`是怎么样的。
 ```
 print(daxin.__dict__)
 
 {'name': 'daxin', '_Person__age': 20}
 ```
-所以：私有属性的本质上其实是属性改名，设置self.__age属性时，__age 变为了 _Person__age（_类名__属性名)
+根据上面结果可以得知：私有属性的本质上其实是属性改名，设置self.__age属性时，__age 变为了 _Person__age（_类名__属性名)
 ```python
+class Person:
+    def __init__(self,name, age):
+        self.name = name
+        self.__age = age
 
-
+daxin = Person('daxin',18)
+daxin.__age = 100
+print(daxin.__dict__) # {'name': 'daxin', '_Person__age': 18, '__age': 100}
 ```
-    在类中，属性和方法成为类的成员，如果实例或者类的成员使用了双下划线开头，那么就会被改名(不以双下划线结尾), 成为私有成员
-    class Person:
-        def __init__(self, name, age=19):
-            self.name = name
-            self.__age = age     # 私有属性，属性和方法称为成员，定义在类中
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;只有在类中定义的私有变量才会被改名，上面我们虽然指定了实例的变量__age,但由于是在类外定义的，所以它并不会变形，就真的产生了一个__age属性，而在类内定义的，由于变型了，所以不会覆盖。观察`__dict__`就可以看出结果。  
 
-        def growup(self, val):    # setattr
-            if not (val < 0 or val > 150):
-                self.__age += val
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们知道私有属性在定义时会被改名，并且知道改名后的属性名称，那么我们是否就可以修改了呢？
+```python
+class Person:
+    def __init__(self,name, age):
+        self.name = name
+        self.__age = age
+    def get_age(self):
+        return self.__age
+daxin = Person('daxin',18)
+daxin._Person__age = 100
+print(daxin.get_age())   # 100
+```
+通过结果我们可以知道，只要知道了私有变量的名称，就可以直接从外部访问，并且修改它。但并不建议这么做!
+> Java等其他语言，比较严格，私有在外面是绝对访问不到的。
+## 5.2 保护变量
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;保护变量(protected),其实Python并不支持保护变量，是开发者自己的不成文的约定。那什么是保护变量呢？在变量前使用 __`一个下划线`__ 的变量称为保护变量。
+```python
+class Person:
+    def __init__(self,name):
+        self._name = name
 
-        def getage(self):     # getattr
-            return self.__age
+daxin = Person('daxin')
+print(daxin.__dict__)  # {'_name': 'daxin'}
+print(daxin._name)   # daxin
+```
+注释：
+1. 保护变量不会被改变名称
+2. 外部依旧可以看到并且调用  
+> 如果看见这种变量，就如同私有变量，尽量不要直接使用
+## 5.3 私有方法
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;前面说了私有属性，那么私有方法和私有属性是相似的，使用单/双下划线开头的方法称为私有方法(不能已双下划线结尾)
+```python
+class Person:
+    def __init__(self,name):
+        self._name = name
 
-    p1 = Person('tom')
-    print(p1.__dict__)
-    print(p1._Person__age)
-    p1.__age = 200
-    print(p1.__dict__)
-    print(p1.__age)
-    p1._Person__age = 1000   # 通过改名后的名称来进行修改
-    
-    
-    保护成员，protected,Python并不支持，开发者自己的不成文的约定
-    
-    Java等其他语言，比较严格，私有在外面是绝对访问不到的。
-    
-补丁：(黑科技)
-    可以通过修改或替换类的成员。使用者调用的方式没有改变，但是，类提供的功能可能已经改变了。(比如前面的类装饰器)
-    通常称作猴子补丁(Monkey Patch)
-    在运行时
-    
-属性装饰器：
+    def __age(self):
+        return self._name
+
+print(Person.__dict__)  # {'__module__': '__main__', '__init__': <function Person.__init__ at 0x00000228BCB22158>, '_Person__age': <function Person.__age at 0x00000228BCB221E0>, '__dict__': <attribute '__dict__' of 'Person' objects>, '__weakref__': <attribute '__weakref__' of 'Person' objects>, '__doc__': None}
+```
+通过上面__dict__的内容，我们发现私有方法和私有属性是相同的，都会被改名，所以知道了私有方法真正的名字，我们依旧可以在外部进行调用，但是不建议。
+> 单下划线的方法，也和变量相同，解释器不会做任何变型，只是告诉你，它是一个私有方法，不建议直接使用。
+## 5.4 补丁：(黑科技)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;可以通过修改或替换类的成员。使用者调用的方式没有改变，但是，类提供的功能可能已经改变了。(比如前面的类装饰器)，通常称作猴子补丁(Monkey Patch)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在运行时,对属性、方法、函数等进行动态替换。其目的往往是为了通过替换、修改来增强、扩展原有代码的能力。
+```python
+class Person:
+
+    def __init__(self, name):
+        self.name = name
+
+    def sing(self):
+        print('{} is sing'.format(self.name))
+
+
+def monkeypatch():    # 猴子补丁，用于动态修改Person中某个方法
+    Person.sing = lambda self: print('hello world')    # 可以来自于不同包中的某个函数，这里只是使用lambda举例
+
+monkeypatch()    # 执行后，Person.sing函数就被替换掉了
+
+daxin = Person('daxin')
+daxin.sing()   # 'hello world'
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一般情况下是不建议使用的，但是在某些场景下，比如我替换的方法原来是连接数据库获取数据的，反复连接数据库测试不是很方便，所以在这种情况下，我们使用补丁的方式，返回部分目标数据就好了，不用每次都去数据库取数据。
+## 5.5 属性装饰器
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;被属性装饰器装饰的方法，就变成了属性了。是不是很拗口？简单来说就是：属性装饰器把一个方法变成属性，进行调用。这么做的目的可以把某些属性保护起来，不让外部访问(通过前面私有属性的了解，我们知道这是不可能的，嘿嘿嘿)。它主要由下面三种组成，可以组合使用也可以单独使用。
+1. `@property`：标识下面的方法为属性方法，同时激活setter，deleter 
+2. `@方法.setter`：设置属性时调用方法 
+3. `@方法.deleter`：删除属性时调用方法  
+
+不使用属性装饰器时，我们为了隐藏某个属性可以使用如下方法：
 ```python
 class Person:
 
@@ -485,8 +540,14 @@ daxin = Person('daxin')
 daxin.setage(30)
 print(daxin.age())
 ```
-如何能让用户在使用age或者setage时不要认为他们是在调用函数，而是一个属性呢，Python提供了属性装饰器property来完成这个需求
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用起来很别扭，为什么获取age属性要加括号执行方法呢？如何能让用户在使用age或者setage时不要认为他们是在调用函数，而是一个属性呢，下面使用属性装饰器property来完成这个需求
 ```python      
+class Person:
+
+    def __init__(self, name, age=18):
+        self.name = name
+        self.__age = age
+
     @property
     def age(self):    # 一般称为getter方法
         return self.__age
@@ -494,14 +555,19 @@ print(daxin.age())
 daxin = Person('daxin')
 print(daxin.age)
 ```
-添加了@property装饰器以后，被他装饰的函数，就可以像普通的属性来访问了(daxin.age，就是daxin.age()的返回值)
-是否可以使用daxin.age=100来设置age属性的值呢
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;添加了@property装饰器以后，被他装饰的函数，就可以像普通的属性来访问了(daxin.age，就是daxin.age()的返回值),那是否可以使用daxin.age=100来设置age属性的值呢？
 ```python
 daxin.age = 100 
 >> AttributeError: can't set attribute
 ```
-无法设置的，是因为property装饰的函数是只读的，如果要使用daxin.age = 100 来赋值时，还需要一个setter装饰器来装饰一个设置属性的函数，并且这个函数必须和property装饰的函数的名称相同。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;无法设置的，是因为property装饰的函数是只读的，如果要使用daxin.age = 100 来赋值时，还需要一个setter装饰器来装饰一个设置属性的函数，并且这个函数必须和property装饰的函数的名称相同。
 ```python
+class Person:
+
+    def __init__(self, name, age=18):
+        self.name = name
+        self.__age = age
+        
     @property
     def age(self):    # 一般称为getter方法
         return self.__age
