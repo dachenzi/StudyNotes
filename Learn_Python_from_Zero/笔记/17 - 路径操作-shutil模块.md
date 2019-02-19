@@ -1,3 +1,27 @@
+<font size=5 face='微软雅黑'>__文章目录__</font>
+<!-- TOC -->
+
+- [1 路径操作](#1-路径操作)
+    - [1.1 os.path模块](#11-ospath模块)
+    - [1.2 pathlib模块](#12-pathlib模块)
+        - [1.2.1 目录操作](#121-目录操作)
+            - [初始化(一个路径对象)](#初始化一个路径对象)
+            - [路径拼接和分解](#路径拼接和分解)
+            - [获取路径](#获取路径)
+            - [父目录](#父目录)
+            - [目录的组成部分](#目录的组成部分)
+            - [全局方法及判断方法](#全局方法及判断方法)
+            - [通配符](#通配符)
+            - [目录属性](#目录属性)
+        - [1.2.2 文件操作](#122-文件操作)
+    - [1.3 os 模块](#13-os-模块)
+- [2 shutil模块](#2-shutil模块)
+    - [2.1 copy复制](#21-copy复制)
+    - [2.2 rm删除](#22-rm删除)
+    - [2.3 move移动](#23-move移动)
+    - [2.4 打包](#24-打包)
+
+<!-- /TOC -->
 # 1 路径操作
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用Python操作文件系统时,少不了会对路径进行切换,对目录的遍历,以及获取文件的绝对路径的一系列的操作,Python内置了相关的模块完成对应的功能,其中:
 - 3.4 以前使用os.path模块
@@ -492,31 +516,12 @@ Out[161]: 'new'
 In [163]: os.listdir('new')                                                      
 Out[163]: ['123.txt', '456.txt']
 ```
-> 
-
-= shutil.ignore_patterns('*py')
-复制代码
->>> os.system('ls -l')
-total 4
-drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
-
->>> shutil.copytree('test','test1')
->>> os.system('ls -l')
-total 8
-drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
-drwxr-xr-x 2 root root 4096 Mar  9 18:46 test1
-
->>> os.system('ls -l test1')
-total 12
--rwxrwxrwx 1 root root 6 Mar  9 18:35 1.txt
--rwxrwxrwx 1 root root 6 Mar  9 18:36 2.txt
--rwxrwxrwx 1 root root 6 Mar  9 18:35 3.txt
->>> 
-复制代码
-shutil.rmtree(des)  递归的删除文件，类似于　rm -rf
-
-
-复制代码
+> shutil模块自己也实现了一个过滤某些特征的方法，`shutil.ignore_patterns('*py')`，表示过滤*py的文件。
+## 2.2 rm删除
+- `shutil.rmtree(path, ignore_errors=False, onerror=None)`: 递归的删除文件，类似于rm -rf，需要注意的是它不是原子操作，如果删除错误，就会中断，已经删除的就删除了。
+    - ignore_errors：为True时，忽略错误。 为omitted/False时，onerror生效
+    - onerror为callabe，接受三个参数function、path和sys.exc_info。(不常用)
+```python
 >>> os.system('ls -l')
 total 8
 drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
@@ -527,23 +532,34 @@ drwxr-xr-x 2 root root 4096 Mar  9 18:46 test1
 total 4
 drwxr-xr-x 2 root root 4096 Mar  9 18:46 test
 >>> 
-复制代码
-shutil.move(src,des)  移动文件/目录，类似于mv 命令
+```
+## 2.3 move移动
+- `shutil.move(src,des,copy_function=copy2)`: 递归移动文件、目录到目标、返回目标，类似于mv 命令，本身使用的是os.rename方法，如果不支持rename，如果是目录则copytree再删除原目录。
+```python
+In [3]: import shutil                                                                                                            
+In [4]: ls                                                                                                                       
+new/  old/
 
-shutil.make_archive('data_bak','gztar',roots_dir = '/data' )  压缩，data_bak 可以写为绝对路径
+In [5]: shutil.move('new','/tmp/new')                                                                                            
+Out[5]: '/tmp/new'
 
+In [6]: ls                                                                                                                       
+old/
 
-复制代码
-import tarfile
-t = tarfile.open('data_bak.tar.gz') #打开我呢间
-t.extractall('/tmp') #解压缩到某个路径
-t.close()
+In [7]: shutil.move('old','new_old')                                                                                             
+Out[7]: 'new_old'
+```
+## 2.4 打包
+- `shutil.make_archive(base_name, format, root_dir=None, base_dir=None, verbose=0, owner=None, group=None, )`: 打包压缩,支持"zip", "tar", "gztar","bztar", or "xztar"
+    - base_name: 打包后的包名
+    - format：打包/压缩的格式，gztar就是tar.gz
+    - root_dir: 要打包的目录
+    - owner：包的属主
+    - group：包的属组
+```python
+In [14]: shutil.make_archive('abc','gztar',root_dir='new_old')                                                                   
+Out[14]: '/home/python/py368/abc.tar.gz'
 
-#tar打包
-t = tarfile.open('data_bak.tar','w')
-t.add(r'/tmp/1.txt') -->　#会把程序的路径也进行打包
-t.close()
-
-#tar打包
-t =tarfile.open('data_bak.tar.gz')
-t.add('/tmp/1.txt',arcname='1.txt_bak') # 打包的时候把 /tmp/1.txt　打包成 1.txt_bak
+In [15]: ls                                                                                                                      
+123/  abc.tar.gz  new_old/
+```
