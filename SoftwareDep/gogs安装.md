@@ -103,32 +103,39 @@ PASSWD = 123456
 INSTALL_LOCK = false  # 首次访问时是否显示配置页面
 SECRET_KEY = daxinGitServer:gogs
 ```
-基础部分配置含义如下：
+基础部分配置含义如下:  
+
 名称|描述
-----|----
+|----|----|
 `APP_NAME`|应用名称，可以改成您的组织或公司名称
 `RUN_USER`|运行应用的用户名称，我们建议您使用 `git`，但如果您在个人计算机上运行 Gogs，请修改为您的系统用户名称。如果没有正确设置这个值，很可能导致您的应用崩溃
-`RUN_MODE`|鉴于性能和其它考虑，建议在部署环境下修改为 `prod` 模式。在您完成安装操作时，该值也会被设置为 `prod`
-服务器(`server`)部分配置含义如下：
-名称|描述
-----|----
-`HTTP_ADDR`|应用 HTTP 监听地址
-`HTTP_PORT`|应用 HTTP 监听端口号
+`RUN_MODE`|鉴于性能和其它考虑，建议在部署环境下修改为 `prod` 模式。在您完成安装操作时，该值也会被设置为 `prod`  
 
-数据库(`database`)部分配置含义如下：
+服务器(`server`)部分配置含义如下：  
+
 名称|描述
-----|----
+|----|----|
+`HTTP_ADDR`|应用 HTTP 监听地址
+`HTTP_PORT`|应用 HTTP 监听端口号  
+
+
+数据库(`database`)部分配置含义如下：  
+
+名称|描述
+|----|----|
 `DB_TYPE`|数据库类型，可以是 `mysql`、`postgres`、`mssql` 或 `sqlite3`
 `HOST`|数据库主机地址与端口
 `NAME`|数据库名称
 `USER`|数据库用户名
-`PASSWD`|数据库用户密码
-安全(`security`)部分配置含义如下
+`PASSWD`|数据库用户密码  
+
+安全(`security`)部分配置含义如下:
 
 名称|描述
-----|----
+|----|----|
 `INSTALL_LOCK`|用于指示是否允许访问安装页面（该页面可以设置管理员帐号，因此该选项非常重要）
-`SECRET_KEY`|全局的加密密钥，**务必修改该值以确保您的服务器安全**（会在每次安装时自动生成随机字符串）
+`SECRET_KEY`|全局的加密密钥，**务必修改该值以确保您的服务器安全**（会在每次安装时自动生成随机字符串）  
+
 [更多配置信息请点击这里哦](https://github.com/gogs/docs/blob/master/zh-CN/advanced/configuration_cheat_sheet.md)
 ## 1.4 启动gogs
 在gogs的安装目录下运行下列命令
