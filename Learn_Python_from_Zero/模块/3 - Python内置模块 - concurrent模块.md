@@ -7,6 +7,7 @@
 - [4 Future对象](#4-future对象)
 - [5 ProcessPoolExecutor对象](#5-processpoolexecutor对象)
 - [6 支持上下文管理](#6-支持上下文管理)
+- [7 异步爬网站的小例子](#7-异步爬网站的小例子)
 
 <!-- /TOC -->
 
@@ -125,3 +126,28 @@ if __name__ == '__main__':
             print(f.result())
 ```
 > 该库统一了线程池，进程池的调用，简化了编程。唯一的缺点是无法设置线程的名称，但这都无所谓了。
+
+# 7 异步爬网站的小例子
+
+```python
+import concurrent.futures
+import requests
+
+
+def get_html(url):
+    response = requests.get(url)
+    length = len(response.text)
+    return length, response.text
+
+
+if __name__ == '__main__':
+    url_list = [
+        'http://www.baidu.com',
+        'http://www.sina.com',
+        'http://www.qq.com',
+    ]
+    with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
+        fs = [executor.submit(get_html, url) for url in url_list]
+        for f in fs:
+            print(f.result())
+```
