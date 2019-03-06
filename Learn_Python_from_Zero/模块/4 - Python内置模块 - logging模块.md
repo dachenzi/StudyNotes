@@ -9,8 +9,15 @@
         - [1.3.1 修改日期格式](#131-修改日期格式)
         - [1.3.2 输出到文件中](#132-输出到文件中)
         - [1.3.3 构建消息](#133-构建消息)
-- [2 层次结构](#2-层次结构)
+- [2 处理流程](#2-处理流程)
 - [3 logger类](#3-logger类)
+    - [3.1 getLogger工厂方法](#31-getlogger工厂方法)
+    - [3.2 实例常用方法](#32-实例常用方法)
+    - [3.3 层次结构](#33-层次结构)
+    - [3.4 为什么是root logger](#34-为什么是root-logger)
+    - [3.5 root logger是啥？](#35-root-logger是啥)
+        - [3.5.1 basicConfig常用参数](#351-basicconfig常用参数)
+    - [3.6 继承关系及信息传递](#36-继承关系及信息传递)
 
 <!-- /TOC -->
 
@@ -112,10 +119,216 @@ logging.error("hello world", extra={'helloworld':'daxin'})
 ```
 在调用时通过extra传递字典来为自定义关键字传值。(很少用)
 
-# 2 层次结构
+# 2 处理流程
 logging模块要输出一个日志要经过以下工序：
 ![loggingflow](../笔记/photo/loggingflow.png)  
 看起来相对比较复杂，那么先从四大组件开始了解
 
 # 3 logger类
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;logger类被称为日志记录器，但从来不直接实例化，总是通过`logging.getLogger(name)`来实例化。对于具有相同名称的getLogger()的多次调用总是返回对同一个Logger对象的引用。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;logger类被称为日志记录器，但从来不直接实例化，总是通过`logging.getLogger(name)`来实例化。对于具有相同名称的getLogger()的多次调用总是返回对同一个Logger对象的引用。它的主要功能有：
+1. 基于日志严重等级（默认的过滤设施）或filter对象(过滤器)来决定要对哪些日志进行后续处理；
+2. 将日志消息传送给所有绑定的日志handlers。  
+
+
+## 3.1 getLogger工厂方法
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;logging模块建议使用getlogger方法，来构建一个新的logger实例，并且当传入的name相同时，多次执行返回的是相同的logger，为什么这样做呢？因为logger本身是跨线程的，并且是线程安全的，我们没必要为每一个线程创建一个用于输出日志的logger，而且这样很浪费内存空间。
+> 习惯上称getLogger为工厂方法
+
+```python
+import logging
+
+mylogger = logging.getLogger('daxin')        # logger的名称必须为str
+print(mylogger)  # <Logger daxin (WARNING)>  
+```
+这样就构建了一个logger，级别为warning，那为什么是warning呢，和logger的父系结构有关。
+
+## 3.2 实例常用方法
+logger类包含如下常用方法：
+|方法|功能|
+|---|----|
+|setLevel(level)|设置logger的日志级别，可以设置为数字或者logging对应的级别|
+|getEffectiveLevel()|获取对应的数字级别显示|
+|addHandler(hdlr)|为logger添加一个Handler，可以添加多个|
+|removeHandler(hdlr)|为logger删除一个Handler|
+|addFilter(filter)|为logger添加一个Filter，可以添加多个|
+|removeFilter(filter)|为logger删除一个Filter|
+
+以及对应分类的触发日志的方法:
+|方法|功能|
+|---|----|
+|debug(msg, *args, **kwargs)|标识消息为 `debug/10` 级别|
+|info(msg, *args, **kwargs)|标识消息为 `info/20` 级别|
+|warning(msg, *args, **kwargs)|标识消息为 `warning/30` 级别|
+|error(msg, *args, **kwargs)|标识消息为 `error/40` 级别|
+|critical(msg, *args, **kwargs)|标识消息为 `critical/50` 级别|
+
+举个栗子：
+```python
+import logging
+
+FORMAT = '%(asctime)s %(name)s [%(message)s]'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+mylogger.info("from mylogger level is info")  # 2019-03-06 11:10:47,000 daxin [from mylogger level is info]
+print(mylogger.getEffectiveLevel())  # 20(和继承关系有关)
+
+# 设置logger的级别
+mylogger.setLevel(logging.CRITICAL)
+mylogger.info("from mylogger level is Critical")  # 没办法输出，因为logger的级别是50，而我们输入的是级别为10的日志。
+print(mylogger.getEffectiveLevel())  # 50
+```
+
+## 3.3 层次结构
+logger是层次结构的，使用.号分割，如'a','a.b'或'a.b.c'。
+- a.b: a是b的parent，b是a的child
+- 对于a来说，a.main和a.main.one，都是a的后代。
+
+```python
+import logging
+
+FORMAT = '%(asctime)s %(name)s [%(message)s]'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+mylogger.setLevel(40)
+
+# 构建一个子的logger
+newlogger = logging.getLogger('daxin.new')
+print(newlogger.parent)  # <Logger daxin (ERROR)>
+
+# 再构建一个子logger
+endlogger = logging.getLogger('daxin.new.end')
+print(endlogger.parent)         # <Logger daxin.new (ERROR)>
+print(endlogger.parent.parent)  # <Logger daxin (ERROR)>
+print(endlogger.parent.parent.parent)  # <RootLogger root (INFO)> 为什么？
+```
+
+明明没有为mylogger指定parent，那么为什么他的parent会是root logger？ root logger是啥？
+
+## 3.4 为什么是root logger
+我们没有定义过，那么肯定是logging模块中定义的，那么来看一下logging的源码。大约在logging的1731行有如下代码:
+```python
+root = RootLogger(WARNING)
+Logger.root = root
+Logger.manager = Manager(Logger.root)
+```
+我们发现logging帮我们实例化了一个logger，名字叫root，接下来查看RootLogger发现(1585行)
+```python
+class RootLogger(Logger):
+    def __init__(self, level):
+        Logger.__init__(self, "root", level)
+```
+RootLogger继承自Logger类，它为我们创建了一个logger，且级别为Warning(20)，那为什么我们创建的logger会关联root logger呢？继续来看源码
+```python
+# 1837行
+def getLogger(name=None):
+    if name:
+        # 如果指定了logger名称
+        return Logger.manager.getLogger(name)   
+    else:
+        # 如果没有指定logger名称，默认返回构建好的root logger
+        return root    
+
+# 1160行，Logger.manager.getLogger
+def getLogger(self, name):
+
+    rv = None
+    if not isinstance(name, str):
+        raise TypeError('A logger name must be a string')
+    _acquireLock()
+    try:
+        # 非初次创建，这里先省略
+        if name in self.loggerDict:    
+            ... ... 
+        # 初次创建，主要看下面的
+        else:   
+            rv = (self.loggerClass or _loggerClass)(name)   # logger(name)
+            rv.manager = self   # 为logger的实例，构建manager属性
+            self.loggerDict[name] = rv  # 在manager属性的字典中，新增{name:loggerobj},通过key来获取对应的logger，所以当传入的name相同时，多次执行返回的是相同的logger。
+            self._fixupParents(rv)  # 看看这里做了什么？
+    finally:
+        _releaseLock()
+    return rv
+
+# 1211行  _fixupParents()
+def _fixupParents(self, alogger):
+    name = alogger.name
+    i = name.rfind(".")
+    rv = None
+    ... ... 
+    if not rv:
+         # 这里定义了：如果名字中，没有点(没有parent)，那么他的parent就是root
+        rv = self.root   
+    alogger.parent = rv
+```
+## 3.5 root logger是啥？
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;现在想一想为什么我们一开始可以直接使用logging.basicConfig来设置日志的输出格式？根据我们上面的日志处理流程图，我们知道：没有logger，没有handler，没有format，它是怎么输出的呢。那么下面来看一下basicConfig的原码
+```python
+def basicConfig(**kwargs):
+    _acquireLock()
+    try:  
+        # 我们发现这里其实是针对root logger 的定义及操作
+        if len(root.handlers) == 0:
+            handlers = kwargs.pop("handlers", None)
+            ... ...
+            if handlers is None:
+                filename = kwargs.pop("filename", None)
+                mode = kwargs.pop("filemode", 'a')
+                if filename:
+                    h = FileHandler(filename, mode)
+                else:
+                    stream = kwargs.pop("stream", None)
+                    # 这里会为root logger创建一个Handler，这里stream为None，在StreamHandler中，会设置为stderr
+                    h = StreamHandler(stream)    
+                 # 在handlers中添加 这个新的 handler
+                handlers = [h]  
+            dfs = kwargs.pop("datefmt", None)
+            style = kwargs.pop("style", '%')
+            if style not in _STYLES:
+                raise ValueError('Style must be one of: %s' % ','.join(
+                                 _STYLES.keys()))
+            # 如果没有给定format，这里定义了默认的格式，在 _STYLES[style][1]中，我们发现默认格式为 {levelname}:{name}:{message}
+            fs = kwargs.pop("format", _STYLES[style][1])  
+            # 构建Formatter
+            fmt = Formatter(fs, dfs, style)  
+            for h in handlers:
+                if h.formatter is None:
+                    h.setFormatter(fmt)  # 把formatter绑定在了handler上
+                
+                # 把上面创建的handler，绑定到root logger上
+                root.addHandler(h)
+            level = kwargs.pop("level", None)
+            if level is not None:
+                root.setLevel(level)
+            if kwargs:
+                keys = ', '.join(kwargs.keys())
+                raise ValueError('Unrecognised argument(s): %s' % keys)
+    finally:
+        _releaseLock()
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;看到这，我们知道logging模块在导入时，就为我们创建了一个root logger，为的是让我们方便的直接进行日志输出，当然root logger也符合日志处理逻辑，只不过它的handler和Formatter是有默认值的，如果没有特殊需求，我们可以直接使用logging.basicConfig，来定制root logger的handler和Formatter等。
+
+### 3.5.1 basicConfig常用参数
+|参数|描述|
+:-------:|-----|
+filename|指定日志输出目标文件的文件名，指定该设置项后日志信心就不会被输出到控制台了
+filemode|指定日志文件的打开模式，默认为'a'。需要注意的是，该选项要在filename指定时才有效
+format|指定日志格式字符串，即指定日志输出时所包含的字段信息以及它们的顺序。logging模块定义的格式字段下面会列出。
+datefmt|指定日期/时间格式。需要注意的是，该选项要在format中包含时间字段%(asctime)s时才有效
+level|指定日志器的日志级别
+stream|指定日志输出目标stream，如sys.stdout、sys.stderr以及网络stream。需要说明的是，stream和filename不能同时提供，否则会引发 ValueError异常
+style|Python 3.2中新添加的配置项。指定format格式字符串的风格，可取值为'%'、'{'和'$'，默认为'%'
+handlers|Python 3.3中新添加的配置项。该选项如果被指定，它应该是一个创建了多个Handler的可迭代对象，这些handler将会被添加到root logger。需要说明的是：filename、stream和handlers这三个配置项只能有一个存在，不能同时出现2个或3个，否则会引发ValueError异常。
+
+## 3.6 继承关系及信息传递
+logger是层级结构，不同的logger实例存在继承和传递关系。看下面的例子：
+```python
+import logging
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+print(mylogger.getEffectiveLevel())
+```
