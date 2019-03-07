@@ -25,6 +25,8 @@
     - [4.4 handler的常用方法](#44-handler的常用方法)
 - [5 Formatter类](#5-formatter类)
 - [6 Filter类](#6-filter类)
+- [7 信息传递](#7-信息传递)
+- [8 过程分析](#8-过程分析)
 
 <!-- /TOC -->
 
@@ -162,6 +164,8 @@ logger类包含如下常用方法：
 |removeHandler(hdlr)|为logger删除一个Handler|
 |addFilter(filter)|为logger添加一个Filter，可以添加多个|
 |removeFilter(filter)|为logger删除一个Filter|
+|getChild(suffix)|为logger创建一个子logger|
+|
 
 以及对应分类的触发日志的方法:
 
@@ -172,6 +176,17 @@ logger类包含如下常用方法：
 |warning(msg, *args, **kwargs)|标识消息为 `warning/30` 级别|
 |error(msg, *args, **kwargs)|标识消息为 `error/40` 级别|
 |critical(msg, *args, **kwargs)|标识消息为 `critical/50` 级别|
+
+logger对象具有的属性：
+
+|属性|含义|
+|----|----|
+|handlers|所有绑定的handler列表|
+|level|当前logger的级别|
+|name|当前logger的名称|
+|parent|当前logger的父logger，根节点为root|
+|filters|所有绑定的filter列表|
+|propagate|是否进行消息传递(默认为True，表示传递) -- 后面会说|
 
 举个栗子：
 ```python
@@ -491,17 +506,76 @@ mylogger.warning('hello world ')  # 2019/03/06 22:16:58 hello world
 需要注意的是：`一个handler只能绑定一个Formatter`，如果不指定Formatter的格式，那么默认为:`%(message)s`
 
 # 6 Filter类
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Filter可以被Handler和Logger用来做比level更细粒度的、更复杂的过滤功能。Filter是一个过滤器基类，它只允许某个logger层级下的日志事件通过过滤。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Filter可以被Handler和Logger用来做比level更细粒度的、更复杂的过滤功能。Filter是一个过滤器基类，它只允许某个logger层级下的日志事件通过过滤。比如指定了过滤器fliter('daxin')，那么当这个过滤器绑定在logger或者handler上时，会只允许'daxin','daxin.A','daxin.B','daxin.A.B'这种name的日志信息通过，而'daxindaxin.a'就不行。
+```python
+import logging
 
+# 构建logger
+mylogger = logging.getLogger('daxin')
+newlogger = logging.getLogger('daxin.new')
 
+# 构建filter
+myfilter = logging.Filter('daxin.new')
 
+# 绑定fliter
+mylogger.addFilter(myfilter)
+newlogger.addFilter(myfilter)
 
+mylogger.warning('mylogger  ~~~ hello world')
+newlogger.warning('newlogger ~~~ hello world')
 
-比如，一个filter实例化时传递的name参数值为'A.B'，那么该filter实例将只允许名称为类似如下规则的loggers产生的日志记录通过过滤：'A.B'，'A.B,C'，'A.B.C.D'，'A.B.D'，而名称为'A.BB', 'B.A.B'的loggers产生的日志则会被过滤掉。如果name的值为空字符串，则允许所有的日志事件通过过滤。
+# newlogger ~~~ hello world
+```
+我们看到只有newlogger输出了，因为mylogger的name为daxin，不匹配filter的daxin.new的过滤，所以被阻塞了。
 
-filter方法用于具体控制传递的record记录是否能通过过滤，如果该方法返回值为0表示不能通过过滤，返回值为非0表示可以通过过滤。
+在logging.Filter类的filter方法中，我们看到
 
-说明：
+```python
+def filter(self, record):
+    if self.nlen == 0:
+        return True
+    elif self.name == record.name:
+        return True
+    elif record.name.find(self.name, 0, self.nlen) != 0:
+        return False
+    return (record.name[self.nlen] == ".")
+```
+其本质上其实就等于name.startswith(filter.name)
 
-如果有需要，也可以在filter(record)方法内部改变该record，比如添加、删除或修改一些属性。
-我们还可以通过filter做一些统计工作，比如可以计算下被一个特殊的logger或handler所处理的record数量等。
+# 7 信息传递
+当我们使用子定义的logger时，我们会发现很好玩的事情，请看如下代码：
+```python
+import logging
+import sys
+
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+# 构建logger
+mylogger = logging.getLogger('daxin')
+
+# 构建handler
+myhandler = logging.StreamHandler(stream=sys.stdout)
+
+# 绑定handler
+mylogger.addHandler(myhandler)
+
+mylogger.info('mylogger  ~~~ hello world')
+
+# mylogger  ~~~ hello world
+# 2019-03-07 19:42:57,556 mylogger  ~~~ hello world
+```
+为什么会出现两一个条记录？这是因为logger的`propagate属性`。
+- 在logger初始化时，propagate属性的`默认值为True`
+- 为True时，当logger收到日志消息后通过level和fliter后，发送给所有绑定的handlers，还会继续传递给自己的父logger。
+- 父logger重复这个过程。
+
+# 8 过程分析
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据上面的的四大类，那么我们再来看一下流程图，下面以一个logger为参照，当一个日志消息需要进行输出，那么它会经过以下步骤：
+1. 如果消息在某一个logger对象上产生，这个logger就是当前logger，首先消息level要和当前logger的Effectivelevel比较，如果低于当前logger的EffectiveLevel，则流程结束；否则生成log记录。
+2. 日志记录会交给当前logger的所有handler处理，记录还要和每一个handler的级别分别比较，低的不处理，否则按照handler输出日志记录
+3. 当前logger的所有handler处理完毕后，查看自己的propagate属性，如果是True表示向父logger传递这个日志记录，否则到此流程结束
+4. 如果日志记录传递到父logger，`不需要和父logger的level比较`，而是直接交给父的所有handler，父logger成为当前logger，重复2、3步骤，直到当前logger的父logger是None退出，也就是说当前logger最后一般是root logger(是否能到root logger要看中间的logger是否允许propagate)
+> logger实例初始的propagate属性为True，即允许向父logger传递消息
+
+PS：如果root没有handler，就默认创建一个StreamHandler，如果设置了filename，就创建一个FileHandler。如果设置了format参数，就会用它生成一个Formatter对象，否则会生成缺省的Formattrt，并把这个Formatter加入到刚才创建的handler上，然后把这些handler加入到root.handlers列表上，level是设置给root logger的，如果root.handlers列表不为空，logging.basicConfig的调用什么都不做。
