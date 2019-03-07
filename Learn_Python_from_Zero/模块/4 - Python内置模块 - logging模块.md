@@ -17,7 +17,14 @@
     - [3.4 为什么是root logger](#34-为什么是root-logger)
     - [3.5 root logger是啥？](#35-root-logger是啥)
         - [3.5.1 basicConfig常用参数](#351-basicconfig常用参数)
-    - [3.6 继承关系及信息传递](#36-继承关系及信息传递)
+    - [3.6 继承关系](#36-继承关系)
+- [4 handler类](#4-handler类)
+    - [4.1 StreamHandler](#41-streamhandler)
+    - [4.2 FileHandler](#42-filehandler)
+    - [4.3 多个Handler](#43-多个handler)
+    - [4.4 handler的常用方法](#44-handler的常用方法)
+- [5 Formatter类](#5-formatter类)
+- [6 Filter类](#6-filter类)
 
 <!-- /TOC -->
 
@@ -26,6 +33,7 @@
 
 ## 1.1 日志级别
 下面是日志级别以及对应的数字值表：
+
 |Level|Numeric value|
 |-----|----------|
 |CRITICAL|50| 
@@ -45,6 +53,7 @@
 
 ## 1.2 日志格式字符串
 logging模块中定义好的可以用于format格式字符串常用的如下：
+
 字段/属性名称|使用格式|描述|
 |--------|-----|----|
 asctime|%(asctime)s|日志事件发生的时间--人类可读时间，如：2003-07-08 16:49:45,896
@@ -128,7 +137,7 @@ logging模块要输出一个日志要经过以下工序：
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;logger类被称为日志记录器，但从来不直接实例化，总是通过`logging.getLogger(name)`来实例化。对于具有相同名称的getLogger()的多次调用总是返回对同一个Logger对象的引用。它的主要功能有：
 1. 基于日志严重等级（默认的过滤设施）或filter对象(过滤器)来决定要对哪些日志进行后续处理；
 2. 将日志消息传送给所有绑定的日志handlers。  
-
+> 消息的级别会通过getEffectiveLevel()转换为数字和logger设置的级别想比较，只有大于等于，才会被logger转发至所有绑定的handler
 
 ## 3.1 getLogger工厂方法
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;logging模块建议使用getlogger方法，来构建一个新的logger实例，并且当传入的name相同时，多次执行返回的是相同的logger，为什么这样做呢？因为logger本身是跨线程的，并且是线程安全的，我们没必要为每一个线程创建一个用于输出日志的logger，而且这样很浪费内存空间。
@@ -144,6 +153,7 @@ print(mylogger)  # <Logger daxin (WARNING)>
 
 ## 3.2 实例常用方法
 logger类包含如下常用方法：
+
 |方法|功能|
 |---|----|
 |setLevel(level)|设置logger的日志级别，可以设置为数字或者logging对应的级别|
@@ -154,6 +164,7 @@ logger类包含如下常用方法：
 |removeFilter(filter)|为logger删除一个Filter|
 
 以及对应分类的触发日志的方法:
+
 |方法|功能|
 |---|----|
 |debug(msg, *args, **kwargs)|标识消息为 `debug/10` 级别|
@@ -323,12 +334,174 @@ stream|指定日志输出目标stream，如sys.stdout、sys.stderr以及网络st
 style|Python 3.2中新添加的配置项。指定format格式字符串的风格，可取值为'%'、'{'和'$'，默认为'%'
 handlers|Python 3.3中新添加的配置项。该选项如果被指定，它应该是一个创建了多个Handler的可迭代对象，这些handler将会被添加到root logger。需要说明的是：filename、stream和handlers这三个配置项只能有一个存在，不能同时出现2个或3个，否则会引发ValueError异常。
 
-## 3.6 继承关系及信息传递
+## 3.6 继承关系
 logger是层级结构，不同的logger实例存在继承和传递关系。看下面的例子：
 ```python
 import logging
 
 # 构建一个logger
 mylogger = logging.getLogger('daxin')
-print(mylogger.getEffectiveLevel())
+print(mylogger.getEffectiveLevel())  # 20
 ```
+明明没有定义logger的级别，为什么会打印20？
+- `如果设置了level，就先使用自己的level`。
+- `如果不设置level，继承最近的祖先的level`。
+
+```python
+import logging
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+print(mylogger.getEffectiveLevel())   # 30(root logger 是30)
+
+# 构建一个子logger
+mylogger.setLevel(50)
+newlogger = logging.getLogger('daxin.new')
+print(newlogger.getEffectiveLevel())  # 50,未设置时，继承最近的父类。
+```
+如果所有的父logger则，直接继承root logger，则级别为20.
+
+# 4 handler类
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handler类一般称为日志分发器，它是一个基类，用于控制日志信息输出的目的地，可以是控制台、文件。不要直接对它进行实例化，可以使用它提供的几个子类，可以实现不同的输出功能：
+1. StreamHandler类：
+2. NullHandler类：
+3. FileHandler类：
+
+可以对它进行如下功能的定制：
+1. 可以单独设置level
+2. 可以单独设置formattrt格式
+3. 可以单独设置filter过滤器
+
+__`需要注意的是，我们创建的handler是需要通过绑定在logger上，才可以被触发的。`__
+
+## 4.1 StreamHandler
+流式handler，一般用于输出到屏幕上。它的使用方法为：
+```python
+StreamHandler(stream=None)
+```
+当stream不指定时，默认输出位置为sys.stderr(标准错误输出)
+```python
+import logging
+import sys
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+print(mylogger.getEffectiveLevel())   # 30(root logger 是30)
+
+# 构建一个handler
+myhandler = logging.StreamHandler(stream=sys.stdout)
+
+# 将handler绑定在logger上
+mylogger.addHandler(myhandler) 
+
+mylogger.error('hello world ') # hello world
+# 由于没有定义格式，默认情况下只输出日志内容
+```
+
+## 4.2 FileHandler
+故名思议，用于输出到文件中去。它的使用方法为：
+```python
+FileHandler(filename, mode='a', encoding=None, delay=False)
+```
+- filename：表示日志文件的名称(文件可以不存在)
+- mode：日志文件的打开方式(默认为`追加`模式)
+- encoding: 打开文件的编码格式，不访问的话可以设置为UTF-8
+- delay：是否在保存时额外执行一次flush
+```python
+import logging
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+mylogger.setLevel(10)
+
+# 构建一个handler
+myhandler = logging.FileHandler(filename=r'C:\Users\Dahl\Desktop\access.log')
+
+# 将handler绑定在logger上
+mylogger.addHandler(myhandler)
+
+mylogger.warning('hello world ') # 输出到文件中
+```
+
+## 4.3 多个Handler
+一个logger是可以被添加多个handler的，多个Handler也是按照level进行比较输出的。
+```python
+import logging
+import sys
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+mylogger.setLevel(10)
+
+# 构建一个handler
+myhandler = logging.FileHandler(filename=r'C:\Users\Dahl\Desktop\access.log')
+print(myhandler.level)
+
+# 构建两个handler
+newhandler = logging.StreamHandler(stream=sys.stdout)
+newhandler.setLevel(30)
+print(newhandler.level)
+
+# 将handler绑定在logger上
+mylogger.addHandler(myhandler)
+mylogger.addHandler(newhandler)
+
+mylogger.info('hello world ') 
+```
+上面代码只会输出到文件中去，因为newhandler的级别为30，要高于写入日志的级别20，所以newhandler不会输出这条日志，另外，新建的handler如果不设置Level，那么它的level是0，即只要logger转发过来一条匹配的日志消息，所有为0的handler都会处理。
+
+## 4.4 handler的常用方法
+
+方法|描述
+---|----
+Handler.setLevel()|设置handler将会处理的日志消息的最低严重级别
+Handler.setFormatter()|为handler设置一个格式器对象
+Handler.addFilter()<br>Handler.removeFilter()|为handler添加 和 删除一个过滤器对象
+
+# 5 Formatter类
+Formater对象用于配置日志信息的最终顺序、结构和内容。与logger以及Handler基类不同的是，我们可以直接实例化Formatter类，来构造自己的输出格式。Formatter类的构造方法定义如下：
+```python
+Formatter(fmt=None, datefmt=None, style='%')
+```
+- fmt：表示日志格式字符串
+- datefmt：表示时间格式
+- style：表示风格（%一般为C风格）
+
+```python
+import logging
+import sys
+
+# 构建一个logger
+mylogger = logging.getLogger('daxin')
+
+# 构建一个handler
+myhandler = logging.StreamHandler(stream=sys.stdout)
+
+# 将handler绑定在logger上
+mylogger.addHandler(myhandler)
+
+# 构建一个Formatter
+myformatter = logging.Formatter(fmt='%(asctime)s %(message)s',datefmt="%Y/%m/%d %H:%M:%S")
+
+# 将formatter绑定在handler上
+myhandler.setFormatter(myformatter)
+
+mylogger.warning('hello world ')  # 2019/03/06 22:16:58 hello world 
+```
+需要注意的是：`一个handler只能绑定一个Formatter`，如果不指定Formatter的格式，那么默认为:`%(message)s`
+
+# 6 Filter类
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Filter可以被Handler和Logger用来做比level更细粒度的、更复杂的过滤功能。Filter是一个过滤器基类，它只允许某个logger层级下的日志事件通过过滤。
+
+
+
+
+
+比如，一个filter实例化时传递的name参数值为'A.B'，那么该filter实例将只允许名称为类似如下规则的loggers产生的日志记录通过过滤：'A.B'，'A.B,C'，'A.B.C.D'，'A.B.D'，而名称为'A.BB', 'B.A.B'的loggers产生的日志则会被过滤掉。如果name的值为空字符串，则允许所有的日志事件通过过滤。
+
+filter方法用于具体控制传递的record记录是否能通过过滤，如果该方法返回值为0表示不能通过过滤，返回值为非0表示可以通过过滤。
+
+说明：
+
+如果有需要，也可以在filter(record)方法内部改变该record，比如添加、删除或修改一些属性。
+我们还可以通过filter做一些统计工作，比如可以计算下被一个特殊的logger或handler所处理的record数量等。
