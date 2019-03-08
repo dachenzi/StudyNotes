@@ -4,9 +4,13 @@
 - [1 概述](#1-概述)
 - [2 TCP/IP协议基础](#2-tcpip协议基础)
 - [3 TCP编程](#3-tcp编程)
-    - [3.1 服务端基本使用](#31-服务端基本使用)
-    - [3.2 客户端基本使用](#32-客户端基本使用)
-    - [3.3 通信流程](#33-通信流程)
+    - [3.1 通信流程](#31-通信流程)
+    - [3.2 构建服务端](#32-构建服务端)
+    - [3.3 构建客户端](#33-构建客户端)
+    - [3.4 常用方法](#34-常用方法)
+    - [3.5 makefile方法](#35-makefile方法)
+    - [3.6 聊天室之函数实现](#36-聊天室之函数实现)
+    - [3.7 聊天室之类实现](#37-聊天室之类实现)
 
 <!-- /TOC -->
 
@@ -32,31 +36,59 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;大多数连接都是可靠的TCP连接。创建TCP连接时，主动发起连接的叫客户端，被动响应连接的叫服务器。  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket库是一个底层的用于网络通信的库，使用它我们可以便捷的进行网络交互的开发，下面以socket库为例，想要使用需要先引入`import socket`
 
-## 3.1 服务端基本使用
-根据TCP建立连接的三次握手机制，我们知道服务端想要提供服务，首先需要绑定IP地址，然后启动服务，监听端口等待客户端的连接，一旦有客户端连接访问，那么接下来就可以接受客户端发送的数据了。下面我来捋一下逻辑到代码的步骤：
+
+## 3.1 通信流程
+运行上面的代码我们就可以创建一个TCP服务端，和一个TCP客户端了，并且可以完成一次通讯，下面我们来了解一下，python的socket的通讯流程:  
+![tcp_socket](photo/tcpsocket.png)  
+
+服务端：
+1. 创建Socket对象
+2. 绑定IP地址Address和端口Port，使用bind方法，IPv4地址为一个二元组('IP',Port)，`一个TCP端口只能被绑定一次`
+3. 开始监听，将在指定的IP的端口上监听。listen方法
+4. 获取用于传输数据的Socket对象，accept方法。
+5. 接受数据，recv方法，使用缓冲区接受数据
+6. 发送数据，send方法，类型为bytes
+7. 关闭连接
+> 客户端关闭连接时，服务端只需要关闭与之相连的socket即可，服务端不用关闭，因为还有其他客户端会连接
+
+客户端：
+1. 创建Socket对象
+2. 连接服务端。connect方法
+3. 发送数据，send方法，类型为bytes
+4. 接受数据，recv方法，使用缓冲区接受数据
+5. 关闭连接
+
+
+## 3.2 构建服务端
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;服务端想要提供服务，首先需要绑定IP地址，然后启动服务，监听端口等待客户端的连接，一旦有客户端连接访问，那么接下来就可以接受客户端发送的数据了。根据上图，以及建立服务端的流程，我门来捋一下服务端的逻辑到代码的步骤：
 1. 创建服务端
 ```python
 socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+# socke.AF_INET 指的是使用 IPv4
+# socket.SOCK_STREAM 指定使用面向流的TCP协议
 ```
 2. 绑定IP地址和端口。
 ```python
-socket.bind(('127.0.0.1',999))
+socket.bind(('127.0.0.1',999))  
+# 小于1024的端口只有管理员才可以指定
 ```
 3. 开始监听端口
 ```python
 socket.listen()
 ```
-4. 客户端连接
+4. 客户端连接(阻塞)
 ```python
-sock, client_addr = socket.accept()
+sock, client_addr = socket.accept() 
+# 返回二元组，socket连接和客户端的IP及Port元祖
 ```
-5. 接受数据
+5. 接受数据(阻塞)
 ```python
-sock.recv(1024)
+data = sock.recv(1024) 
+# 接收1024个字节的数据，一般是2的倍数,bytes格式
 ```
 6. 发送数据
 ```python
-sock.send('data')
+sock.send('data'.encode()) # bytes格式
 ```
 7. 关闭连接
 ```python
@@ -77,11 +109,12 @@ sock.close()    # 关闭客户端socket连接
 socket.close()  # 关闭服务器
 ```
 
-## 3.2 客户端基本使用
-根据TCP建立连接的三次握手机制，我们知道客户端想要连接服务端，首先创建TCP连接，使用某个端口号，连接服务端，然后发送/接受数据，然后关闭连接。下面我们来捋一下客户端的逻辑到代码的步骤:
+## 3.3 构建客户端
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据TCP建立连接的三次握手机制，我们知道客户端想要连接服务端，首先创建TCP连接，使用某个端口号，连接服务端，然后发送/接受数据，然后关闭连接。根据上图，以及建立客户端的流程，我们来捋一下客户端的逻辑到代码的步骤:
 1. 创建客户端
 ```python
-socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+# 默认就是socket.AF_INET,socket.SOCK_STREAM，所以TCP时，可以直接socket.socket()
 ```
 2. 连接服务的
 ```python
@@ -89,11 +122,11 @@ socket.connect('127.0.0.1',999)
 ```
 3. 发送数据
 ```python
-socket.send('data')
+socket.send('data'.encode())
 ```
 4. 接受数据
 ```python
-socket.recv(1024)
+data = socket.recv(1024)
 ```
 5. 关闭连接
 ```python
@@ -112,43 +145,183 @@ print(data)
 socket.close()   # 关闭客户端socket连接
 ```
 
-## 3.3 通信流程
-运行上面的代码我们就可以创建一个TCP服务端，和一个TCP客户端了，下面我们来了解一下，python哦socket的通讯流程:  
-![tcp_socket](photo/tcpsocket.png)
+## 3.4 常用方法
+在初始化时，socket方法提供了不同的参数，用于指定不同的链接类型以及不同的IP地址类型。  
+IP协议相关：
+1. AF_INET：IPV4
+2. AF_INET: IPV6
+3. AF_UNIX: Unix Domain Socket(windows没有)
 
+Socket类型：
+1. SOCK_STREM: 面向连接的套接字。TCP协议
+2. SOCK_DGRAM: 无连接的数据报文套接字。UDP协议
 
+> 默认情况下 socket.socket()的参数为AF_INET，SOCK_STREM，所以如果需要的是IPv4的TCP连接，可以直接实例化即可
 
-import  socket
-client = socket.socket(socke.AF_INET，socket.SOCK_STREAM)  #指定这个socket链接的协议，以及指定数据流的类型
-client.connect(('127.0.0.1',8080)) 　#连接server端,需要知道服务端的IP和PORT(元组的形式)
-client.send('hello'.encode='UTF-8')  #发送消息，注意Python3中，传输的数据都是bytes格式的
-server_msg = client.recv(1024)  #接收1024个字节的数据
-print(server_msg)
-socke.AF_INET 指的是使用 IPv4
+服务器端套接字：
+函数|描述
+|-----|-----|
+s.bind()|绑定地址（host,port）到套接字， 在AF_INET下,以元组（host,port）的形式表示地址。
+s.listen()|开始TCP监听。backlog指定在拒绝连接之前，操作系统可以挂起的最大连接数量。该值至少为1，大部分应用程序设为5就可以了。
+s.accept()|被动接受TCP客户端连接,(阻塞式)等待连接的到来
 
-socket.SOCK_STREAM 指定使用面向流的TCP协议
-服务端：
+客户端套接字：
+函数|描述
+|-----|-----|
+s.connect()|主动初始化TCP服务器连接，。一般address的格式为元组（hostname,port），如果连接出错，返回socket.error错误。
+s.connect_ex()|connect()函数的扩展版本,出错时返回出错码,而不是抛出异常
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;和客户端编程相比，服务器编程就要复杂一些。
+公共用途的套接字函数：
+函数|描述
+|-----|-----|
+s.recv()|接收TCP数据，数据以字符串形式返回，bufsize指定要接收的最大数据量。flag提供有关消息的其他信息，通常可以忽略。
+s.send()|发送TCP数据，将string中的数据发送到连接的套接字。返回值是要发送的字节数量，该数量可能小于string的字节大小。
+s.sendall()|完整发送TCP数据，完整发送TCP数据。将string中的数据发送到连接的套接字，但在返回之前会尝试发送所有数据。成功返回None，失败则抛出异常。
+s.recvfrom()|接收UDP数据，与recv()类似，但返回值是（data,address）。其中data是包含接收数据的字符串，address是发送数据的套接字地址。
+s.sendto()|发送UDP数据，将数据发送到套接字，address是形式为（ipaddr，port）的元组，指定远程地址。返回值是发送的字节数。
+s.close()|关闭套接字
+s.getpeername()|返回连接套接字的远程地址。返回值通常是元组（ipaddr,port）。
+s.getsockname()|返回套接字自己的地址。通常是一个元组(ipaddr,port)
+s.setsockopt(level,optname,value)|设置给定套接字选项的值。
+s.getsockopt(level,optname[.buflen])|返回套接字选项的值。
+s.settimeout(timeout)|设置套接字操作的超时期，timeout是一个浮点数，单位是秒。值为None表示没有超时期。一般，超时期应该在刚创建套接字时设置，因为它们可能用于连接的操作（如connect()）
+s.gettimeout()|返回当前超时期的值，单位是秒，如果没有设置超时期，则返回None。
+s.fileno()|返回套接字的文件描述符。
+s.setblocking(flag)|如果flag为0，则将套接字设为非阻塞模式，否则将套接字设为阻塞模式（默认值）。非阻塞模式下，如果调用recv()没有发现任何数据，或send()调用无法立即发送数据，那么将引起socket.error异常。
+s.makefile()|创建一个与该套接字相关连的文件
 
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
+## 3.5 makefile方法
+这里单独把makefile方法抽出来，是因为它可以让我们用操作文件的方式来操作socket。makefile的用法如下：
+```python
+makefile(self, mode="r", buffering=None, *,encoding=None, errors=None, newline=None):
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;看这些参数是不是很眼熟？没错，和open函数的参数差不多是相同的，默认情况下模式为r，如果是socket的话，我们知道可以接受数据，也可以发送数据，对应的文件上的话，就是可以读取也可以写入，所以模式应该为'rw'。
+> makefile的mode模式，只有'rw'，没有'r+'，这点和文件打开方式不同。
+```python
 import socket
-server = socket.socket(socket.AF_INET,socket.SOCK_STREAM) # 实例化一个链接
-server.bind(('127.0.0.1',8080)) #server端监听一个地址，等待client连接
-server.listen(5)  # 指定TCP连接池的可用连接个数，Linux中的backlog概念
-conn,addr = server.accept() # 接收客户端连接，获取客户端的信息，会返回两个元素，连接标识符，和客户端的地址/端口（元组的形式）
-client_msg = conn.recv(1024)   #接收1024个字节的数据
-print(client_msg)
-conn.send(client_msg.upper())   #通过连接标识符发送数据给客户端
-conn.close()  # 关闭连接
-server.close()  # 服务端关闭端口
-小于1024的端口只有管理员才可以指定
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('127.0.0.1', 8080))
+server.listen(5)
+while True:  # 链接循环
+    print('wait for connect')
+    conn, addr = server.accept()
+    print('client connect', addr)
+    f = conn.makefile(mode='rw')   # 创建一个 类file对象
+    while True:
+        try:  # Windows下捕捉客户端异常关闭连接
+            print('~~~~~~~~~')
+            client_msg = f.readline()   # 从缓冲区中读取数据
+            print(client_msg)
+            if not client_msg: break  # Linux下处理客户端异常退出问题
+            print('client msg :', client_msg)
+            f.write(client_msg.upper())  # 向缓冲区写入数据
+            f.flush()
+        except (ConnectionResetError, Exception):  # except可以同时指定多个异常
+            print('1')
+            break
+    conn.close()
+server.close()
+```
+> 直接用不太好用，使用read方法时，由于无法知道要读取多少字节，所以会有各种问题，可以引用封装，将要发送的数据总大小，按照固定4个字节发到服务端，告诉服务端后面的数据有多少，然后服务端动态指定read的字节数即可。
+
+## 3.6 聊天室之函数实现
+服务端代码：
+```python
+import socket
+import threading
+
+
+def recv(s: socket.socket, clients, lock):
+    addr = s.getpeername()   # 获取对端IP地址
+
+    # 通信循环
+    while True:
+        try:
+            data = s.recv(1024)
+            print(data)
+            if not data: break
+
+            # 群发消息，需要加锁，防止在遍历的同时，客户端断开连接时，触发字典修改操作
+            with lock:
+                for conn in clients.values():    
+                    conn.send('{}:{} {}'.format(*addr,data.decode()).encode()) 
+        except (ConnectionResetError, OSError):   # 当客户端断开连接时
+            s.close()
+
+            # 在已连接列表中删除关闭的连接
+            with lock:
+                clients.pop(addr)  
+            break
+
+def accept(server: socket.socket, clients, lock):
+     # 连接循环等待客户端连接
+    while True:
+        conn, addr = server.accept() 
+        print('{} is comming'.format(addr))
+        with lock:
+            clients[addr] = conn
+        threading.Thread(target=recv, name='recv', args=(conn, clients, lock)).start()  # 启动连接线程
+
+
+if __name__ == '__main__':
+
+    # 存放所有client列表，用于消息群发
+    clients = {}  
+
+    # 创建锁文件，在修改clients时加锁
+    lock = threading.Lock()   
+
+    server = socket.socket()
+    server.bind(('127.0.0.1', 9999))
+    server.listen()
+
+    print('start Server!!!')
+    
+    # 启动accept线程
+    threading.Thread(target=accept, name='accept', args=(server, clients, lock), daemon=True).start()   
+    while True:
+        cmd = input('>>>>').strip().lower()
+        if cmd == 'quit':
+            break
+        else:
+            print(threading.enumerate())
+
+    server.close()
+```
+
+客户端代码：
+```python
+import socket
+import threading
+
+def recvdata(s: socket.socket, event: threading.Event):
+    while True:
+        try:
+            data = s.recv(1024)
+            print(data.decode())
+       except (ConnectionResetError, OSError):
+            event.set()   # 如果服务端断开连接，触发事件
+            break
+
+if __name__ == '__main__':
+    event = threading.Event()
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(('127.0.0.1', 9999))
+
+    # 启动接受线程
+    threading.Thread(target=recvdata, name='recv', args=(client, event)).start()
+
+    # 通讯循环，当服务端断开连接时，结束
+    while not event.is_set():  
+
+        msg = input('>>:').strip()
+        if not msg: continue 
+        if msg.upper() == 'quit':
+            break
+        client.send(msg.encode('utf-8'))
+    print('服务端断开')
+    client.close()
+```
+
+## 3.7 聊天室之类实现
