@@ -8,9 +8,14 @@
     - [3.2 构建服务端](#32-构建服务端)
     - [3.3 构建客户端](#33-构建客户端)
     - [3.4 常用方法](#34-常用方法)
-    - [3.5 makefile方法](#35-makefile方法)
-    - [3.6 聊天室之函数实现](#36-聊天室之函数实现)
-    - [3.7 聊天室之类实现](#37-聊天室之类实现)
+        - [3.4.1 makefile方法](#341-makefile方法)
+    - [3.5 socket交互](#35-socket交互)
+        - [3.4.1 通讯循环及客户端发空消息时的问题](#341-通讯循环及客户端发空消息时的问题)
+        - [3.4.2 链接循环及客户端强制退出时的问题](#342-链接循环及客户端强制退出时的问题)
+        - [3.4.3 模拟远程执行命令](#343-模拟远程执行命令)
+    - [3.6 聊天室](#36-聊天室)
+        - [3.6.1 聊天室之函数实现](#361-聊天室之函数实现)
+        - [3.6.2 聊天室之类实现](#362-聊天室之类实现)
 
 <!-- /TOC -->
 
@@ -145,6 +150,11 @@ print(data)
 socket.close()   # 关闭客户端socket连接
 ```
 
+
+
+
+
+
 ## 3.4 常用方法
 在初始化时，socket方法提供了不同的参数，用于指定不同的链接类型以及不同的IP地址类型。  
 IP协议相关：
@@ -158,21 +168,24 @@ Socket类型：
 
 > 默认情况下 socket.socket()的参数为AF_INET，SOCK_STREM，所以如果需要的是IPv4的TCP连接，可以直接实例化即可
 
-服务器端套接字：
-函数|描述
+服务器端套接字:  
+
+|函数|描述|
 |-----|-----|
 `s.bind()`|绑定地址（host,port）到套接字， 在AF_INET下,以元组（host,port）的形式表示地址。
 `s.listen()`|开始TCP监听。backlog指定在拒绝连接之前，操作系统可以挂起的最大连接数量。该值至少为1，大部分应用程序设为5就可以了。
 `s.accept()`|被动接受TCP客户端连接,(阻塞式)等待连接的到来
 
-客户端套接字：
-函数|描述
+客户端套接字:  
+
+|函数|描述|
 |-----|-----|
 `s.connect()`|主动初始化TCP服务器连接，。一般address的格式为元组（hostname,port），如果连接出错，返回socket.error错误。
 s.connect_ex()|connect()函数的扩展版本,出错时返回出错码,而不是抛出异常
 
-公共用途的套接字函数：
-函数|描述
+公共用途的套接字函数:  
+
+|函数|描述|
 |-----|-----|
 `s.recv()`|接收TCP数据，数据以字符串形式返回，bufsize指定要接收的最大数据量。flag提供有关消息的其他信息，通常可以忽略。
 `s.send()`|发送TCP数据，将string中的数据发送到连接的套接字。返回值是要发送的字节数量，该数量可能小于string的字节大小。
@@ -190,7 +203,7 @@ s.fileno()|返回套接字的文件描述符。
 `s.setblocking(flag)`|如果flag为0，则将套接字设为非阻塞模式，否则将套接字设为阻塞模式（默认值）。非阻塞模式下，如果调用recv()没有发现任何数据，或send()调用无法立即发送数据，那么将引起socket.error异常。
 `s.makefile()`|创建一个与该套接字相关连的文件
 
-## 3.5 makefile方法
+### 3.4.1 makefile方法
 这里单独把makefile方法抽出来，是因为它可以让我们用操作文件的方式来操作socket。makefile的用法如下：
 ```python
 makefile(self, mode="r", buffering=None, *,encoding=None, errors=None, newline=None):
@@ -225,7 +238,116 @@ server.close()
 ```
 > 直接用不太好用，使用read方法时，由于无法知道要读取多少字节，所以会有各种问题，可以引用封装，将要发送的数据总大小，按照固定4个字节发到服务端，告诉服务端后面的数据有多少，然后服务端动态指定read的字节数即可。
 
-## 3.6 聊天室之函数实现
+
+## 3.5 socket交互
+上面写的代码只能通讯一次，就结束连接了。正经的socket交互是那种有来有往的，并不是这样这种，所以我们需要进行修改。
+### 3.4.1 通讯循环及客户端发空消息时的问题
+抛出问题：
+1. 通讯不应该是单次的，应该至少是多次的
+2. 如果我们发送的消息为空的时候，就会卡住，服务端无法接受，客户端无法继续发送  
+
+针对问题做如下改进：
+
+服务端：增加循环，完成通信循环，并且把客户端发来的消息转换成大写的并返回。
+```python
+import socket
+
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+server.bind(('127.0.0.1',8080))
+server.listen(5)
+print('wait for connect')
+conn,addr = server.accept()
+print('client connect',addr)
+while True:    #循环的接受消息
+    client_msg = conn.recv(1024)
+    print('client msg :', client_msg)
+    conn.send(client_msg.upper())
+
+conn.close()
+server.close()
+```
+客户端：增加循环，完成通信循环，并且发送的消息由用户来输入，当输入为空的时候，继续循环。
+```ython
+import socket
+
+client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+client.connect(('127.0.0.1',8080))
+while True:    # 通信循环
+    msg = input('>>:').strip()
+    if not msg:continue        # 当用户输入为空的时候，继续循环
+    client.send(msg.encode('utf-8'))
+    server_msg = client.recv(1024)
+    print(server_msg.decode('utf-8'))
+client.close()
+```
+### 3.4.2 链接循环及客户端强制退出时的问题
+抛出问题:  
+1. 当客户端异常关闭一个链接的时候，服务端也会产生异常
+    - windows下会异常退出（由于tcp是双向链接的，客户端异常退出，那么服务端就不能继续循环的收发消息了）
+    - Linux下会进入死循环（收到了空消息）  
+2. 当一个客户端连接断开，服务端应该可以继续接受其它客户端发来的消息  
+
+由于问题集中在服务端，所以对服务端做如下改进：
+1. 添加链接循环，当一个链关闭时，可以继续接受其他链接。
+2. 添加异常处理，当客户端异常关闭时，主动的关闭服务端的链接。
+```python
+import socket
+
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+server.bind(('127.0.0.1',8080))
+server.listen(5)
+while True:     #链接循环
+    print('wait for connect')
+    conn,addr = server.accept()
+    print('client connect',addr)
+    while True:
+        try:       #Windows下捕捉客户端异常关闭连接
+            client_msg = conn.recv(1024)
+            if not client_msg:break     #Linux下处理客户端异常退出问题
+            print('client msg :', client_msg)
+            conn.send(client_msg.upper())
+        except (ConnectionResetError,Exception):   #except可以同时指定多个异常
+            break
+    conn.close()
+server.close()
+```
+客户端异常关闭时，服务端的异常为：ConnectionResetError，我们可以通过捕捉其，来控制服务端的推出，也可以使用 Exception(通用)异常来捕捉。
+### 3.4.3 模拟远程执行命令
+利用socket，远程执行命令，并返回，模拟ssh的效果
+1. 执行命令使用subprocess模块的Popen和PIPE
+2. 注意subprocess的Popen模块执行结果就是bytes格式的str，所以不用转换即可直接发送  
+
+以上需求都针对服务端，那么对服务端做如下修改
+```python
+import socket
+from subprocess import Popen,PIPE
+
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+# server.bind(('192.168.56.200',8080))
+server.bind(('127.0.0.1',8080))
+server.listen(5)
+while True:
+    print('wait for connect')
+    conn,addr = server.accept()
+    print('client connect',addr)
+    while True:
+        try:
+            cmd = conn.recv(1024).strip()
+            if not cmd:break
+            p = Popen(cmd.decode('utf-8'),shell=True,stdout=PIPE,stderr=PIPE)
+            stdout,stderr = p.communicate() 　　#执行的结果就是bytes格式的string
+            if stderr:
+                conn.send(stderr)
+            else:
+                conn.send(stdout)
+        except (ConnectionResetError,Exception):
+            break
+    conn.close()
+server.close()
+```
+## 3.6 聊天室
+下面我们来写一个小项目，聊天室，客户端发送的消息需要转发给所有已在线的客户端，下面是实现方法：
+### 3.6.1 聊天室之函数实现
 服务端代码：
 ```python
 import socket
@@ -324,4 +446,175 @@ if __name__ == '__main__':
     client.close()
 ```
 
-## 3.7 聊天室之类实现
+### 3.6.2 聊天室之类实现
+服务端:
+```python
+import socket
+import threading
+import datetime
+import logging
+
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+
+class ChatTcpServer:
+
+    """
+    self.ip: 服务端地址
+    self.port：服务端端口
+    self.socket：创建一个socket对象，用于socket通信
+    self.event：创建一个事件对象，用于控制链接循环
+    self.clients：记录当前已连接的客户端
+    self.lock：用于多线程添加修改clients对象时的锁
+    """
+
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self.socket = socket.socket()
+        self.event = threading.Event()
+        self.clients = {}
+        self.lock = threading.Lock()
+
+    def start(self):
+        self.socket.bind((self.ip, self.port))
+        self.socket.listen()
+        threading.Thread(target=self.accept, name='accept', daemon=True).start()
+        logging.info('ChatServer Starting!!!')
+
+    def accept(self):
+        while not self.event.is_set():
+            conn, client_addr = self.socket.accept()
+
+            # 把连接的客户端保存，用于广播消息
+            with self.lock:
+                self.clients[client_addr] = conn
+            logging.info('{}:{} is comming'.format(*client_addr))
+            threading.Thread(target=self.recv, name='recv', args=(conn, client_addr), daemon=True).start()
+
+    def recv(self, sock, client_addr):
+        while True:
+            try:
+                data = sock.recv(1024)
+
+            # windows 代码客户端主动关闭时，不会发送b'',服务端会直接异常。这里添加异常捕捉，当客户端强制关闭时，删除socket
+            except (ConnectionResetError, OSError):
+                with self.lock:
+                    self.clients.pop(client_addr)
+                logging.info('{}:{} is down'.format(*client_addr, ))
+                break
+
+            # 某些客户端在强制关闭时会发送b''，这里添加相关判断
+            if data == b'quit' or data == b'':
+                with self.lock:
+                    self.clients.pop(client_addr)
+                logging.info('{}:{} is down'.format(*client_addr, ))
+                break
+
+            # 日志及消息信息
+            logging.info('{}:{} {}'.format(*client_addr, data.decode()))
+            msg = '{} {}:{} {}'.format(datetime.datetime.now(), *client_addr, data.decode()).encode()
+
+            # 广播发送消息
+            with self.lock:
+                for client in self.clients.values():
+                    client.send(msg)
+
+    def stop(self):
+        self.event.set()
+
+        # 关闭所有还在存活的client连接
+        with self.lock:
+            for client in self.clients.values():
+                client.close()
+        self.socket.close()
+
+
+def main():
+    cts = ChatTcpServer('127.0.0.1', 9999)
+    cts.start()
+
+    while True:
+        cmd = input('>>>').strip()
+        if cmd.lower() == 'quit':
+            cts.stop()
+            break
+        else:
+            print(threading.enumerate())
+
+
+if __name__ == '__main__':
+    main()
+```
+客户端:
+```python
+import socket
+import threading
+import datetime
+import logging
+
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+
+class ChatTCPClient:
+
+    """
+    self.ip: 服务端地址
+    self.port：服务端端口
+    self.socket：创建一个socket对象，用于socket通信
+    self.event：创建一个事件对象，用于控制链接循环
+    """
+
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self.socket = socket.socket()
+        self.event = threading.Event()
+
+    def connect(self):
+        self.socket.connect((self.ip, self.port))
+        threading.Thread(target=self.recv, name='recv',daemon=True).start()
+
+    def recv(self):
+        while not self.event.is_set():
+
+            # 某些服务端强制关闭时，会出b''，这里进行判断
+            try:
+                data = self.socket.recv(1024)
+                if data == b'':
+                    self.event.set()
+                    logging.info('{}:{} is down'.format(self.ip, self.port))
+                    break
+                logging.info(data.decode())
+
+            # 有些服务端在关闭时不会触发b''，这里会直接提示异常，这里进行捕捉
+            except (ConnectionResetError,OSError):
+                self.event.set()
+                logging.info('{}:{} is down'.format(self.ip, self.port))
+
+    def send(self, msg):
+        self.socket.send(msg.encode())
+
+    def stop(self):
+        self.socket.close()
+
+
+if __name__ == '__main__':
+    ctc = ChatTCPClient('127.0.0.1', 9999)
+    ctc.connect()
+
+    while True:
+        info = input('>>>>:').strip()
+        if not info: continue
+        if info.lower() == 'quit':
+            logging.info('bye bye')
+            ctc.stop()
+            break
+        if not ctc.event.is_set():
+            ctc.send(info)
+        else:
+            logging.info('Server is down...')
+            break
+```
