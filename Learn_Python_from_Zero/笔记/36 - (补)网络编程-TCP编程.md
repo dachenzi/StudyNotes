@@ -13,6 +13,10 @@
         - [3.4.1 通讯循环及客户端发空消息时的问题](#341-通讯循环及客户端发空消息时的问题)
         - [3.4.2 链接循环及客户端强制退出时的问题](#342-链接循环及客户端强制退出时的问题)
         - [3.4.3 模拟远程执行命令](#343-模拟远程执行命令)
+    - [3.6 粘包问题](#36-粘包问题)
+        - [3.6.1 struct模块](#361-struct模块)
+        - [3.6.2 通过struct传递包头解决粘包问题](#362-通过struct传递包头解决粘包问题)
+        - [3.6.3 大并发时的问题](#363-大并发时的问题)
     - [3.6 聊天室](#36-聊天室)
         - [3.6.1 聊天室之函数实现](#361-聊天室之函数实现)
         - [3.6.2 聊天室之类实现](#362-聊天室之类实现)
@@ -344,6 +348,223 @@ while True:
             break
     conn.close()
 server.close()
+```
+
+## 3.6 粘包问题
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;由于我们在接受和发送数据的时候，都指定了每次接收1024个字节的数据，而发送的数据我们是不可估量的，如果发送的时候超过1024字节，那么在接收端就无法一次收取完毕，这些数据会存放在操作系统缓存中，那么下次再接收1024字节的数据的时候，会从缓存中继续读取，那么就会发生粘包现象。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所谓粘包问题主要还是因为接收方不知道消息之间的界限，不知道一次性提取多少字节的数据所造成的。  
+__只有TCP有粘包现象，UDP永远不会粘包__
+1. UDP是面向报文的，发送方的UDP对应用层交下来的报文，不合并，不拆分，只是在其上面加上首部后就交给了下面的网络层，也就是说无论应用层交给UDP多长的报文，它统统发送，一次发送一个。而对接收方，接到后直接去除首部，交给上面的应用层就完成任务了。因此，它需要应用层控制报文的大小
+2. TCP是面向字节流的，它把上面应用层交下来的数据看成无结构的字节流来发送，可以想象成流水形式的，发送方TCP会将数据放入“蓄水池”（缓存区），等到可以发送的时候就发送，不能发送就等着，TCP会根据当前网络的拥塞状态来确定每个报文段的大小。  
+
+__不是server端直接发送，client端直接接收__  
+1. 服务端  
+    - 应用程序是运行在用户态的，发送数据的时候，需要去调用物理网卡，而这个操作是不许允许的，必须预先将运行状态切换为内核态才可以操作网卡发送数据，所以引入操作系统缓存的概念。
+    - 应用程序把需要进行系统调用（用户态-->内核态的切换）的指令放入操作系统缓存，然后由操作系统统一去执行。  
+2. 客户端  
+    - 操作系统把从网卡接收到的数据存入操作系统缓存中去，供应用程序读取
+    - 应用程序直接从操作系统缓存中将数据读出，然后进行处理  
+    
+整个过程如图：  
+![nianbao](photo/nianbao.png)  
+
+__`发生黏包的本质问题是对端不知道我们发送数据的总长度，如果能否让对方提前知道，那么就不会发生粘包现象`__。根据TCP报文的格式得到启发：
+1. 发送真正的数据前，需要预先发送本次传送的报文大小（增加报头）
+2. 报头的长度必须是固定的
+
+### 3.6.1 struct模块
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果我们要预先传递数据的大小（int型），那么就需要把它当作数据传输，当服务端收到以后，就知道后续的数据大小了，那么一次传输的数据到底占多少字节呢，Python的struct模块可以帮助我们实现这个过程，当传递诸如int、char之类的基本数据的时候，struct提供了一种机制将这些特定的结构体类型打包成二进制流的字符串然后再网络传输，接收端也应该可以通过struct模块进行解包还原出原始的结构体数据。
+- struct.pack()  打包
+```python
+struct.pack('i'，int)
+# i表示把数字用4个字节进行表示，这样的话就可以表示2的32次方的数字，已经满足需求
+# 后面的int表示要打包的数字（要发送的报文长度）
+# 通过struct.pack 会得到bytes格式的数据，可以直接进行发送
+```
+- struct.unpack() 解包
+```python
+struct.unpack('i',obj)
+# obj表示收取到数据
+# 会返回一个元组，元组的第一个元素为对方传过来的报文长度
+# 可以复制给一个变量来指定接收的报文长度
+```
+> 更多的用法需自行查找struct模块的官方文档。
+### 3.6.2 通过struct传递包头解决粘包问题
+```python
+# 服务端 
+#!/usr/bin/env python
+# Author:Lee Sir 
+#_*_ coding:utf-8 _*_ 
+
+import socket 
+from subprocess import Popen,PIPE 
+import struct 
+
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+server.bind(('127.0.0.1',8000)) 
+server.listen(5) 
+
+while True: 
+    print('等待连接......') 
+    conn,addr = server.accept() 
+    print('客户端地址为：',addr) 
+        while True: 
+            try: 
+                cmd_bytes = conn.recv(1024) 
+                if not cmd_bytes:continue 
+                cmd_str = cmd_bytes.decode('utf-8') 
+                print('执行的命令是：',cmd_str) 
+
+                #执行命令 
+                p = Popen(cmd_str,shell=True,stdout=PIPE,stderr=PIPE) 
+                stdout,stderr = p.communicate() 
+
+                #返回的数据 
+                if stderr: 
+                    send_data = stderr 
+                else: 
+                    send_data = stdout 
+
+                #构建报头并发送报头 
+                conn.send(struct.pack('i',len(send_data))) 
+
+                #发送数据 
+                conn.send(send_data) 
+            except Exception: 
+                break 
+```
+客户端 
+```python
+#!/usr/bin/env python 
+# Author:Lee Sir 
+#_*_ coding:utf-8 _*_ 
+
+import socket 
+import struct 
+
+client = socket.socket(socket.AF_INET,socket.SOCK_STREAM) client.connect(('127.0.0.1',8000)) 
+
+while True: 
+    msg = input('Please input msg: ') 
+    if not msg:continue 
+    client.send(msg.encode('utf-8')) 
+
+    #接收报头,服务端使用i模式,所以固定是4个字节 
+    server_data_head = client.recv(4) 
+    server_data_len = struct.unpack('i',server_data_head)[0] 
+
+    #根据传递的报头长度接收报文 
+    server_data = client.recv(server_data_len) 
+    print(server_data.decode('gbk'))
+```
+### 3.6.3 大并发时的问题
+当数据量比较大以及需要额外其他数据的场合下，以上的解决方案就有问题
+1. 数据量非常大，上百T，在打包的时候有可能struct.pack的i模式无法满足需求，因为只能打长度为2的32次方的数据，虽然可以使用Q模式，支持2的64次方，但是也不能准确的预测是否满足数据的最大长度，另外客户端直接接受那么大的数据就显得非常笨拙，也很吃力
+2. 在下载的场景下，我们可能需要的数据还有文件名、以及hash值  
+
+针对上面的问题有以下解决方案：
+1. 客户端接收的时候分段接收
+2. 定义字典记录报文的长度，以及其他需求：比如filename，hash值等其他信息  
+
+服务端
+```python
+#!/usr/bin/env python
+# Author:Lee Sir
+#_*_ coding:utf-8 _*_
+
+import socket
+from subprocess import Popen,PIPE
+import struct
+import json
+
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+server.bind(('127.0.0.1',8080))
+server.listen(5)
+
+while True:
+    print('等待连接......')
+    conn,addr = server.accept()
+    print('客户端地址为：',addr)
+    while True:
+        try:
+            cmd_bytes = conn.recv(1024)
+            if not cmd_bytes:continue
+            cmd_str = cmd_bytes.decode('utf-8')
+            print('执行的命令是：',cmd_str)
+
+            #执行命令
+            p = Popen(cmd_str,shell=True,stdout=PIPE,stderr=PIPE)
+            stdout,stderr = p.communicate()
+
+            #返回的数据
+            if stderr:
+                send_data = stderr
+            else:
+                send_data = stdout
+
+            #创建报头内容及获取包头长度
+            file_dict = {'filename':None,'hash':None,'size':len(send_data)}
+            file_json = json.dumps(file_dict).encode('utf-8')
+            file_json_len = len(file_json)
+
+            #构建报头
+            file_head = struct.pack('i',file_json_len)
+
+            #发送报头长度
+            conn.send(file_head)
+
+            #发送报头
+            conn.send(file_json)
+
+            #发送数据
+            conn.send(send_data)
+
+        except Exception:
+            break
+```
+客户端:
+```python
+#!/usr/bin/env python
+# Author:Lee Sir
+
+
+import socket
+import struct
+import json
+
+client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+client.connect(('127.0.0.1',8080))
+
+while True:
+    msg = input('Please input msg: ')
+    if not msg:continue
+    client.send(msg.encode('utf-8'))
+
+    #接收报头,服务端使用i模式,所以固定是4个字节
+    server_file_head = client.recv(4)
+    server_file_len = struct.unpack('i',server_file_head)[0]
+
+    #接收报文头部信息
+    server_head_file = client.recv(server_file_len)
+
+    #报文头部信息
+    server_head =  json.loads(server_head_file.decode('gbk'))
+
+    #获取报文的头部信息
+    server_file_name = server_head['filename']
+    server_file_hash = server_head['hash']
+    server_file_size = server_head['size']
+
+    #根据传递的报头长度分段接收报文
+    recv_len = 0
+    server_data = b''
+    while recv_len < server_file_size:
+        recv_data = client.recv(1024)
+        server_data += recv_data
+        recv_len += len(recv_data)
+
+    print(server_data.decode('gbk'))
 ```
 ## 3.6 聊天室
 下面我们来写一个小项目，聊天室，客户端发送的消息需要转发给所有已在线的客户端，下面是实现方法：
