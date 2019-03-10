@@ -8,6 +8,7 @@
     - [2.3 RequestHandlerClass是啥](#23-requesthandlerclass是啥)
     - [2.4 编程接口](#24-编程接口)
 - [3 实现EchoServer](#3-实现echoserver)
+- [4 聊天室](#4-聊天室)
 
 <!-- /TOC -->
 
@@ -183,33 +184,137 @@ s.serve_forever()
 4. __调用server_close()方法(关闭服务)__
 
 # 3 实现EchoServer
-
+顾名思义：Echo，即来什么消息就回显什么消息，即客户端发来什么消息，就返回什么消息。
 ```python
 import socketserver
 import logging
+import threading
 
 FORMAT = '%(asctime)s %(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 
-
 class MyRequestHandler(socketserver.BaseRequestHandler):
 
     def setup(self):
-        super(MyRequestHandler, self).setup()
+        
+        # 优先执行父类同名方法是一个很好的习惯，即便是父类不作任何处理
+        super(MyRequestHandler, self).setup() 
+        self.event = threading.Event()
 
     def handle(self):
         super(MyRequestHandler, self).handle()
-        while True:
+        while not self.event.is_set():
             data = self.request.recv(1024)
+            if data == b'quit' or data == b'':
+                self.event.set()
+                break
+
             msg = '{}:{} {}'.format(*self.client_address, data.decode())
             logging.info(msg)
             self.request.send(msg.encode())
 
     def finish(self):
         super(MyRequestHandler, self).finish()
-
+        self.event.set()
 
 if __name__ == '__main__':
     with socketserver.ThreadingTCPServer(('127.0.0.1', 9999), MyRequestHandler) as server:
-        server.serve_forever()
+
+        # 让所有启动的线程都为daemon进程
+        server.daemon_threads = True
+
+        # serve_foreve会阻塞，所以交给子线程运行
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        while True:
+            cmd = input('>>>').strip()
+            if not cmd: continue
+            if cmd == 'quit':
+                server.server_close()
+                break
+            print(threading.enumerate())
+
 ```
+ThreadingTCPServer是TCPServer的子类，它混合了ThreadingMixIn类使用多线程来接受客户端的连接。
+
+# 4 聊天室
+代码如下：
+```python
+import socketserver
+import logging
+import threading
+
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+
+class ChatRequestHandler(socketserver.BaseRequestHandler):
+    clients = set()
+
+    # 每个连接进来时的操作
+    def setup(self):
+        super(ChatRequestHandler, self).setup()
+        self.event = threading.Event()
+        self.lock = threading.Lock()
+        self.clients.add(self.request)
+
+    # 每个连接的业务处理
+    def handle(self):
+        super(ChatRequestHandler, self).handle()
+        while not self.event.is_set():
+            
+            # use Client code except
+            try:
+                data = self.request.recv(1024)
+            except ConnectionResetError:
+                self.clients.remove(self.request)
+                self.event.set()
+                break
+                
+            # use TCP tools except
+            if data.rstrip() == b'quit' or data == b'':
+                with self.lock:
+                    self.clients.remove(self.request)
+                logging.info("{}:{} is down ~~~~~~".format(*self.client_address))
+                self.event.set()
+                break
+
+            msg = "{}:{} {}".format(*self.client_address, data.decode()).encode()
+            logging.info('{}:{} {}'.format(*self.client_address, msg))
+            with self.lock:
+                for client in self.clients:
+                    client.send(msg)
+
+    # 每个连接关闭的时候，会执行
+    def finish(self):
+
+        super(ChatRequestHandler, self).finish()
+        self.event.set()
+        self.request.close()
+
+
+class ChatTCPServer:
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self.sock = socketserver.ThreadingTCPServer((self.ip, self.port), ChatRequestHandler)
+
+    def start(self):
+        self.sock.daemon_threads = True
+        threading.Thread(target=self.sock.serve_forever, name='server', daemon=True).start()
+
+    def stop(self):
+        self.sock.server_close()
+
+
+if __name__ == '__main__':
+    cts = ChatTCPServer('127.0.0.1', 9999)
+    cts.start()
+
+    while True:
+        cmd = input('>>>>:').strip()
+        if cmd == 'quit':
+            cts.stop()
+        if not cmd: continue
+        print(threading.enumerate())
+```
+使用TCP工具强制退出时会发送空串，而使用我们自己写的tcp client，则不会发送，所以这里所了两种异常的处理。socketserver只是用在服务端，客户端使用上一篇TCP client即可。
