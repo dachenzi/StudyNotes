@@ -47,7 +47,7 @@
 
 
 ## 3.1 通信流程
-运行上面的代码我们就可以创建一个TCP服务端，和一个TCP客户端了，并且可以完成一次通讯，下面我们来了解一下，python的socket的通讯流程:  
+我们先来了解一下，python的socket的通讯流程:  
 ![tcp_socket](photo/tcpsocket.png)  
 
 服务端：
@@ -153,11 +153,6 @@ data = socket.recv(1024)
 print(data)
 socket.close()   # 关闭客户端socket连接
 ```
-
-
-
-
-
 
 ## 3.4 常用方法
 在初始化时，socket方法提供了不同的参数，用于指定不同的链接类型以及不同的IP地址类型。  
