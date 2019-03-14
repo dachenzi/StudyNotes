@@ -17,7 +17,7 @@
 5.  所有的目录都是按照一定的类别和规律组成的。
 ## 2.2 目录结构
 FHS规定的/(根)目录下各目录结构，如下图  
-![dir_struct](photo/dir_struct.png)
+![dir_struct](../photo/dir_struct.png)
 ## 2.3 目录说明
 ### 2.3.1 /(根)目录
 每一个文件和目录从根开始，/下的目录有：
@@ -207,11 +207,11 @@ nameserver 4.4.4.4
 ```
 >设置DNS方式：  
 __方法1、使用setup进入图形界面（需要安装setup包）__  
-![dns1](photo/dns1.png)  
+![dns1](../photo/dns1.png)  
 选择Network configuration  
-![dns2](photo/dns2.png)  
+![dns2](../photo/dns2.png)  
 选择 DNS configuration  
-![dns3](photo/dns3.png)  
+![dns3](../photo/dns3.png)  
 填入DNS地址即可。  
 >__方法2、__  
 直接编辑/etc/sysconfig/network-scripts/ifcfg-eth0
@@ -237,7 +237,7 @@ __方法1、使用setup进入图形界面（需要安装setup包）__
 >GATEWAY=10.0.0.2          # 网关
 >DNS1=223.5.5.5            # 添加DNS1配置
 >IPV6_PRIVACY=no
->```  
+>```
 > __方法3__
 >
 >```bash

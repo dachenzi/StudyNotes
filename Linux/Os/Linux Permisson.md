@@ -150,7 +150,7 @@ __磁盘满的一个特征（no space left on device )。__
 - rpm表示rpm安装包文件。  
 
 __Linux中的文件类型主要观察第一列：__  
-![filetype](photo/permission.png)  
+![filetype](../photo/permission.png)  
 __Linux中文件的类型有如下几种：__
 - -：表示普通文件（比如/etc/profile、/bin/cp、/var/log/wtmp）
 - d：表示目录文件 (比如/etc目录)
@@ -254,7 +254,7 @@ lrwxrwxrwx 1 root root 10 Apr 17 16:16 ./oldgirl.txt -> oldboy.txt
 ```
 ## 3.4 文件的权限信息
 我们使用ls –l查看的文件信息中，包涵文件的权限信息。如图  
-![permission](photo/permission-all.png)  
+![permission](../photo/permission-all.png)  
 - 第一组（rwx）表示的是文件的属主信息
 - 第二组（rwx）表示的是文件的属组信息
 - 第三组（rwx）表示的是其他人对文件的权限信息  
@@ -305,7 +305,7 @@ total 0
 2. 没有进程调用该文件或目录  
 
 如下图所示：  
-![delfile](photo/del-file.png)  
+![delfile](../photo/del-file.png)  
 __注意：没有程序调用时：i_link（硬链接数量）为0，文件就被删除。__   
 __当有程序调用时：i_count（进程的引用计数），为0（当进程调用一个文件，那么这个文件的i_count 加1）和i_link同时为0的时候文件才会被删除。__
 # 5 文件归属信息
@@ -369,7 +369,7 @@ sys:x:3:bin,adm
 adm:x:4:adm,daemon
 ……
 [root@lixin ~]#
-```  
+```
 以冒号为分隔符后内容被均分成4列：
 - 第一字段：用户组名称；
 - 第二字段：用户组密码（以存放在/etc/gshadow中，现在以基本不用）；

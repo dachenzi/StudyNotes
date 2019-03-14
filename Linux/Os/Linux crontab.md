@@ -4,7 +4,8 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果我们需要定时执行一些周期性重复性的任务，我们就会用到定时执行任务功能来帮我们自动执行每天、每周等周期性重复性的任务而不需要人为干预即可实现。    
 # 2 Windows的定时任务
 作为使用者最多的操作系统，windows下也有定时任务。依次选择`开始`——>`所有程序`——>`附件`——>`系统工具`——>`任务计划程序`
-![contab](photo/win-contab.jpeg)  
+![contab](../photo/win-contab.jpeg)  
+
 # 3 Linux的定时任务
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Linux中的定时任务主要分为两种:
 1. 系统定时任务
@@ -104,7 +105,7 @@ __小提示：周和日最好不要同时用，可能达不到想要的效果。
 |-|表示范围区间|1-5 * * * *表示每小时的1、2、3、4、5分钟|
 |,|表示分隔时段|1，3 * * * *表示每小时的第1，3分钟|
 |/n|表示每隔n| */5 * * * * 表示每隔5分钟|
- 
+
 __小提示：分位上是* 表示每分钟（一般是不正常的）__
 ## 4.4 配置命令
 __`crontab`__
@@ -112,7 +113,8 @@ __`crontab`__
 |:---:|:---:|:---:|
 |crontab|-l(list)|查看crontab定时任务。功能等同于cat /var/spool/cron/username|
 ||-e(edit) |编辑crontab定时任务。功能等同于 vi /var/spool/cron/username|
-||-u(user)|查看指定用户的crontab信息
+||-u(user)|查看指定用户的crontab信息|
+
 ```bash
 格式：
        crontab –e 直接编辑crontab定时任务
