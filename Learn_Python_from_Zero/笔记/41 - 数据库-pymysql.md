@@ -26,6 +26,15 @@ Type "help", "copyright", "credits" or "license" for more information.
 4. 提交事务
 5. 释放资源
 
+对应到代码上的逻辑为：
+1. 导入相应的Python模块
+2. 使用connect函数连接数据库，并返回一个Connection对象
+3. 通过Connection对象的cursor方法，返回一个Cursor对象
+4. 通过Cursor对象的execute方法执行SQL语句
+5. 如果执行的是查询语句，通过Cursor对象的fetchall语句获取返回结果
+6. 调用Cursor对象的close关闭Cursor
+7. 调用Connection对象的close方法关闭数据库连接
+
 ## 3.1 创建一个连接
 使用`pymysql.connect`方法来连接数据库
 ```python
@@ -196,7 +205,7 @@ select * from test.student where id = 5 or 1=1
 > 永远不要相信客户端传来的数据是规范及安全的。
 
 #### 3.3.3.3 参数化查询
-cursor.execute(sql)方法还额外提供了一个args参数，用于进行参数化查询，它的类型可以为元组、列表、字典。如果查询字符串使用命名关键字(%(name)s)，那么就必须使用字典进行传参。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cursor.execute(sql)方法还额外提供了一个args参数，用于进行参数化查询，它的类型可以为元组、列表、字典。如果查询字符串使用命名关键字(%(name)s)，那么就必须使用字典进行传参。
 ```sql
 sql = 'select * from test.student where id = %s'
 cursor.execute(sql,args=(2,))
@@ -205,9 +214,109 @@ sql = 'select * from test.student where id = %(id)s'
 cursor.execute(sql,args={'id':2})
 ```
 
-我们说使用参数化查询，效率会高一点，为什么呢？因为SQL语句缓存。数据库一般会对SQL语句编译和缓存，编译只对SQL语句部分，所以参数中就算有SQL指令也不会被执行。编译过程，需要此法分析、语法分析、生成AST、优化、生成执行计划等过程，比较耗费资源。服务端会先查找是否是同一条语句进行了缓存，如果缓存未失效，则不需要再次编译，从而降低了编译的成本，降低了内存消耗。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们说使用参数化查询，效率会高一点，为什么呢？因为SQL语句缓存。数据库一般会对SQL语句编译和缓存，编译只对SQL语句部分，所以参数中就算有SQL指令也不会被执行。编译过程，需要此法分析、语法分析、生成AST、优化、生成执行计划等过程，比较耗费资源。服务端会先查找是否是同一条语句进行了缓存，如果缓存未失效，则不需要再次编译，从而降低了编译的成本，降低了内存消耗。
 > 可以认为SQL语句字符串就是一个key，如果使用拼接方案，每次发过去的SQL语句都不一样，都需要编译并缓存。大量查询的时候，首选使用参数化查询，以节省资源。
 
+## 3.4 获取查询结果
+Cursor类提供了三种查询结果集的方法：（返回值为元组，多个值为嵌套元组）
+- `fetchone()`：获取一条
+- `fetchmany(size=None)`：获取多条，当size为None时，返回一个包含一个元素的嵌套元组
+- `fetchall()`：获取所有
+
+```python
+sql = 'select * from test.student'
+cursor.execute(sql)
+print(cursor.fetchall())
+print(cursor.fetchone())  # None
+print(cursor.fetchmany(2))  # None
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fetch存在一个指针，fetchone一次，就读取结果集中的一个结果，如果fetchall，那么一次就会读取完所有的结果。可以通过调整这个指针来重复读取
+- cursor.rownumber: 返回当前行号，可以修改，支持 负数
+- cursor.rowcount: 返回总行数
+
+```python
+sql = 'select * from test.student'
+cursor.execute(sql)
+print(cursor.fetchall())  # ((2, 'dahl', 20), (3, 'dahl', 21), (4, 'daxin', 22), (5, 'dahl', 23), (6, 'dahl', 23), (7, 'daxin', 20), (8, 'daxin', 20), (9, 'daxin', 20))
+cursor.rownumber = 0
+print(cursor.fetchone())  # (2, 'dahl', 20)
+print(cursor.fetchmany()) # ((3, 'dahl', 21),)
+```
+
+> fetch操作的是结果集，结果集是保存在客户端的，也就是说fetch的时候，查询已经结束了。
+
+### 3.4.1 带列明的查询
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;结果中不包含字段名，除非我们记住字段的顺序，不然很麻烦，那么下面来解决这个问题。
+
+观察cursor原码，我们发现，它接受一个参数cursor，有一个参数是：`DictCursor`，查看源码得知，它是Cursor的Mixin子类。
+```python
+def cursor(self, cursor=None):
+    """
+    Create a new cursor to execute queries with.
+
+    :param cursor: The type of cursor to create; one of :py:class:`Cursor`,
+        :py:class:`SSCursor`, :py:class:`DictCursor`, or :py:class:`SSDictCursor`.
+        None means use Cursor.
+    """
+    if cursor:
+        return cursor(self)
+    return self.cursorclass(self)
+```
+观察DictCursor的原码，得知结果集会返回一个字典，一个字段名:值的结果，所以，只需要传入cursor参数即可
+```python
+    from pymysql import cursors  # DictCursor存在与cursors模块中
+    ... ... 
+    cursor = conn.cursor(cursors.DictCursor) 
+    sql = 'select * from test.student'
+    cursor.execute(sql)
+    print(cursor.fetchone())  # {'id': 2, 'name': 'dahl', 'age': 20}
+```
+
+## 3.5 上下文支持
+Connection和Cursor类实现了__enter__和__exit__方法，所以它支持上下文管理。
+- Connection：进入时返回一个cursor，退出时如果有异常，则回滚，否则提交
+- Cursor: 进入时返回cursor本身，退出时，关闭cursor连接
+
+所以利用上下文的特性，我们可以这样使用
+```python
+import pymysql
+
+def connect_mysql():
+    db_config = {
+        'host': '10.0.0.13',
+        'port': 3306,
+        'user': 'dahl',
+        'password': '123456',
+        'charset': 'utf8'
+    }
+
+    return pymysql.connect(**db_config)
+
+if __name__ == '__main__':
+conn = connect_mysql()
+with conn as cursor:
+    sql = 'select * from student'
+    cursor.execute(sql)
+    print(cursor.fetchmany(2))
+
+# conn的exit只是提交了，并没有关闭curosr
+cursor.close()
+conn.close()
+```
+如果要自动关闭cursor,可以进行如下改写
+```python
+if __name__ == '__main__':
+conn = connect_mysql()
+with conn as cursor:
+    with cursor   # curosr的exit会关闭cursor
+        sql = 'select * from student'
+        cursor.execute(sql)
+        print(cursor.fetchmany(2))
+
+conn.close()
+```
+> 多个 cursor共享一个 conn
 
 
 
@@ -229,20 +338,3 @@ cursor.execute(sql,args={'id':2})
 
 
 
-
-
-
-
-
-
-
-
-小结
-　　在Python中操作数据库，基本步骤如下：
-导入相应的Python模块
-使用connect函数连接数据库，并返回一个Connection对象
-通过Connection对象的cursor方法，返回一个Cursor对象
-通过Cursor对象的execute方法执行SQL语句
-如果执行的是查询语句，通过Cursor对象的fetchall语句获取返回结果
-调用Cursor对象的close关闭Cursor
-调用Connection对象的close方法关闭数据库连接
