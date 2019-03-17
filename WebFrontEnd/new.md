@@ -1,38 +1,3 @@
-<font size=5 face='微软雅黑'>__文章目录__</font>
-<!-- TOC -->
-
-- [1 JavaScript概述](#1-javascript概述)
-    - [1.1 Java和JavaScript的区别](#11-java和javascript的区别)
-    - [1.2 什么是JavaScript](#12-什么是javascript)
-    - [1.3 JavaScript的组成](#13-javascript的组成)
-- [2 JavaScript基础](#2-javascript基础)
-    - [2.1 JavaScript调用方式](#21-javascript调用方式)
-    - [2.2 JavaScript的变量标识符](#22-javascript的变量标识符)
-        - [2.2.1 变量的命名](#221-变量的命名)
-        - [2.2.2 标识符](#222-标识符)
-    - [2.3 JS的数据类型](#23-js的数据类型)
-        - [2.3.1 数字(Number)类型](#231-数字number类型)
-        - [2.3.2 字符串(String)类型](#232-字符串string类型)
-        - [2.3.3 布尔(Boolean)类型](#233-布尔boolean类型)
-        - [2.3.4 数组(Array)类型](#234-数组array类型)
-        - [2.3.5 对象(Object)](#235-对象object)
-        - [2.3.6 空(Null)类型和未定义(Undefined)类型](#236-空null类型和未定义undefined类型)
-        - [2.3.7 声明变量类型](#237-声明变量类型)
-    - [2.4 运算符](#24-运算符)
-        - [2.4.1 == 和 === 的区别](#241--和--的区别)
-        - [2.4.2 variable++和++variable的区别](#242-variable和variable的区别)
-    - [2.5 流程控制](#25-流程控制)
-        - [2.5.1 顺序结构](#251-顺序结构)
-        - [2.5.2 分支结构](#252-分支结构)
-            - [2.5.2.1 if - else结构](#2521-if---else结构)
-            - [2.5.2.2 if-else if - else 结构](#2522-if-else-if---else-结构)
-            - [2.5.2.3 switch...case结构](#2523-switchcase结构)
-        - [2.5.3 循环结构](#253-循环结构)
-            - [2.5.3.1 for循环-条件循环](#2531-for循环-条件循环)
-            - [2.5.3.2 for循环-递归循环](#2532-for循环-递归循环)
-            - [2.5.3.3 while循环](#2533-while循环)
-
-<!-- /TOC -->
 # 1 JavaScript概述
 JavaScript 是互联网上最流行的脚本语言，这门语言可用于 HTML 和 web，更可广泛用于服务器、PC、笔记本电脑、平板电脑和智能手机等设备。
 
@@ -106,71 +71,75 @@ Tips：
 - 在一行内定义多个变量需要用逗号隔开：var a = 1, b = 2;
 - 重新声明并不会修改变量的值： var a = 1;  var a      a的值依旧为1
 
-### 2.2.1 变量的命名
+变量的命名
 变量可以使用短名称（比如 x 和 y），也可以使用描述性更好的名称（比如 age, sum, totalvolume）。
-- 变量必须以字母开头
-- 变量也能以 $ 和 _ 符号开头（不过我们不推荐这么做）
-- 变量名称对大小写敏感（y 和 Y 是不同的变量）
 
-主要存在以下写法：
-- Camel 标记法:首字母是小写的，接下来的字母都以大写字符开头。例如：
-```js
+变量必须以字母开头
+变量也能以 $ 和 _ 符号开头（不过我们不推荐这么做）
+变量名称对大小写敏感（y 和 Y 是不同的变量）
+
+复制代码
+Camel 标记法
+首字母是小写的，接下来的字母都以大写字符开头。例如：
 var myTestValue = 0, mySecondValue = "hi";
-```
-- Pascal 标记法:首字母是大写的，接下来的字母都以大写字符开头。例如：
-```js
+Pascal 标记法
+首字母是大写的，接下来的字母都以大写字符开头。例如：
 Var MyTestValue = 0, MySecondValue = "hi";
-```
-- 匈牙利类型标记法:在以 Pascal 标记法命名的变量前附加一个小写字母（或小写字母序列），说明该变量的类型。例如，i 表示整数，s 表示字符串，如下所示“
-```js
+匈牙利类型标记法
+在以 Pascal 标记法命名的变量前附加一个小写字母（或小写字母序列），说明该变量的类型。例如，i 表示整数，s 表示字符串，如下所示“
 Var iMyTestValue = 0, sMySecondValue = "hi";
-```
-
-### 2.2.2 标识符
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;由不以数字开头的字母、数字、下划线(_)、美元符号($)组成,常用于表示函数、变量等的名称,例如：_abc,$abc,abc,abc123是标识符，而1abc不是,JavaScript语言中代表特定含义的词称为保留字，不允许程序再定义为标识符
 
 
-## 2.3 JS的数据类型
+标识符
+由不以数字开头的字母、数字、下划线(_)、美元符号($)组成
+常用于表示函数、变量等的名称
+例如：_abc,$abc,abc,abc123是标识符，而1abc不是
+JavaScript语言中代表特定含义的词称为保留字，不允许程序再定义为标识符
+
+
+JS的数据类型
 数据类型主要有一下几种：字符串（String）、数字(Number)、布尔(Boolean)、数组(Array)、对象(Object)、空（Null）、未定义（Undefined）。
 
-### 2.3.1 数字(Number)类型
+数字(Number)类型
 JavaScript 只有一种数字类型。数字可以带小数点，也可以不带：
-```js
+
 var a = 3.14;
 var b = 10;
-```
 在JS中所有的数字类型均为number，并且都用64位浮点格式来存储。
-- NaN类型: js来做数据转换的时候，比如当字符串转换成数字失效的时候，会返回一个 NaN 的值。类型也是属于number的
-- 在变量前添加 + ，则表示把该变量转换为正数
 
-```js
+扩展：
+
+　　NaN类型: js来做数据转换的时候，比如当字符串转换成数字失效的时候，会返回一个 NaN 的值。类型也是属于number的
+
+　　在变量前添加 + ，则表示把该变量转换为正数
+
+
 var a = 'a456';
 b = Number(a)
 console.log(b)
-```
-
-### 2.3.2 字符串(String)类型
+字符串(String)类型
 字符串是存储字符（比如 "Lee daxin"）的变量。可以是引号中的任意文本。
-> 于没有字符类型，所以在字符串中表达常用的特殊字符，但是在使用特殊字符时必须加上反斜线\；常用的转义字符 \n:换行 \':单引号 \":双引号 \\:右划线
-```js
+
+注意：由于没有字符类型，所以在字符串中表达常用的特殊字符，但是在使用特殊字符时必须加上反斜线\；常用的转义字符 \n:换行 \':单引号 \":双引号 \\:右划线
+
+
 var name = 'dachenzi';
 var job = 'Linux';
-```
+布尔(Boolean)类型
+布尔（逻辑）只能有两个值：true 或 false。也代表1和0，实际运算中true=1,false=0 。这点和shell是不同的。
 
-### 2.3.3 布尔(Boolean)类型
-布尔（逻辑）只能有两个值：true 或 false。也代表1和0，实际运算中true=1,false=0 。这点和shell是不同的。主要用于流程控制
-```js
+主要用于流程控制
+
+
 if (1) {
         alert('True')
  }
  else {
          alert("False")
  }
-```
-
-### 2.3.4 数组(Array)类型
+数组(Array)类型
 类似于其他语言的列表，但是不是一个东西。
-```js
+
 //方式1：
 var arr = new Array(1,2,3,4,5); 
 //方式2:
@@ -180,78 +149,95 @@ var arr = new Array();
 arr[0] = 1;
 arr[1] = 2;
 arr[2] = 3;
-```
 扩展：列表的索引为数字，而数组的索引可以为任意.
-```js
+
 <script>
      var arr = Array();
      arr[0]= 'w';
      arr['index']= 6;
      arr['input'] = 'hello world';
      console.log(arr)
-</script>
-```
-
-### 2.3.5 对象(Object)
+ </script>
+ 
+对象(Object)
 对象由花括号分隔。在括号内部，对象的属性以名称和值对的形式 (name : value) 来定义。属性由逗号分隔：
-```js
+
+
 //方式1：
 var person={firstname:"Bill", lastname:"Gates", id:5566};
  
 //方式2：
 var person={
-    firstname : "Bill",
-    lastname  : "Gates",
-    id        :  5566
+firstname : "Bill",
+lastname  : "Gates",
+id        :  5566
 };
 //声明中的空格和折行无关紧要
-```
-Persion对象有三个属性：firstname、lastname 以及 id。访问属性的两个方式：
-- persion.firstname
-- persion['firstname']
+Persion对象有三个属性：firstname、lastname 以及 id。
 
-### 2.3.6 空(Null)类型和未定义(Undefined)类型
-Undefined 这个值表示变量不含有值,当声明的变量未初始化时，该变量的默认值是 undefined。当函数无明确返回值时，返回的也是值 "undefined。另一种只有一个值的类型是 Null，它只有一个专用值 null，即它的字面量。值 undefined 实际上是从值 null 派生来的,因此 ECMAScript 把它们定义为相等的。可以通过将变量的值设置为 null 来清空变量的值。尽管这两个值相等，但它们的含义不同。undefined 是声明了变量但未对其初始化时赋予该变量的值，null 则用于表示尚未存在的对象。如果函数或方法要返回的是对象，那么找不到该对象时，返回的通常是 null。
+访问属性的两个方式：
 
-### 2.3.7 声明变量类型
+persion.firstname
+persion['firstname']
+空(Null)类型和未定义(Undefined)类型
+Undefined 这个值表示变量不含有值
+
+当声明的变量未初始化时，该变量的默认值是 undefined。
+当函数无明确返回值时，返回的也是值 "undefined。
+另一种只有一个值的类型是 Null，它只有一个专用值 null，即它的字面量。值 undefined 实际上是从值 null 派生来的，因此 ECMAScript 把它们定义为相等的。可以通过将变量的值设置为 null 来清空变量的值。
+
+尽管这两个值相等，但它们的含义不同。undefined 是声明了变量但未对其初始化时赋予该变量的值，null 则用于表示尚未存在的对象。如果函数或方法要返回的是对象，那么找不到该对象时，返回的通常是 null。
+
+声明变量类型
 如果我们只定义变量没有进行赋值，那么默认就是undefined类型的，如果想要声明某个类型的变量：
-```js
+
+
 var name=   new String;
 var x=      new Number;
 var y=      new Boolean;
 var arr=    new Array;
 var person= new Object;
-```
+运算符
 
-## 2.4 运算符
-常用的运算符如下:
-
-类型|包含
----|----|
-算术运算符| +  -   *   /   %    ++   --|
-比较运算符| >   >=   <    <=    !=    ==    ===   !==|
-逻辑运算符| &&   ||   ！|
-赋值运算符| =  +=   -=  *=   /=|
-字符串运算符| +  连接，两边操作数有一个或两个是字符串就做连接运算
-
+算术运算符：
+    +   -    *    /     %       ++        --
+ 
+比较运算符：
+    >   >=   <    <=    !=    ==    ===   !==
+ 
+逻辑运算符：
+     &&   ||   ！
+ 
+赋值运算符：
+    =  +=   -=  *=   /=
+ 
+字符串运算符：
+    +  连接，两边操作数有一个或两个是字符串就做连接运算
 运算符和其他语言概念及应用是相同的这里就不在赘述，需要说明的是===/!== 和 ++/--。
 
-### 2.4.1 == 和 === 的区别
-```js
+== 和 === 的区别
+
 var a = '123';
 var b = 123;
 console.log(a == b);
  
 // JS在做比较运算的时候，会把不同的数据类型进行转换，所以这里a 是等于 b的。
 // 如果不希望JS完成类型转换，那么可以使用===。
-```
-python强类型语言，js属于弱类型语言。
-- 强类型定义语言：一种总是强制类型定义的语言。Java和Python是强制类型定义的。如果你有一个整数，如果不显示地进行转换，你不能将其视为一个字符串。
-- 弱类型定义语言：一种类型可以被忽略的语言，与强类型定义相反。JavaScript是弱类型定义的。在JavaScript中，可以将字符串'12'和整数3进行连接得到字符串'123'，然后可以把它看成整数123，而不需要显示转换。
+扩展：python强类型语言，js属于弱类型语言。
 
-### 2.4.2 variable++和++variable的区别
-假如x=2，那么x++表达式执行后的值为3，x--表达式执行后的值为1；i++相当于i=i+1，i--相当于i=i-1；递增和递减运算符可以放在变量前也可以放在变量后：--i
-```js
+强类型定义语言
+
+一种总是强制类型定义的语言。Java和Python是强制类型定义的。如果你有一个整数，如果不显示地进行转换，你不能将其视为一个字符串。
+
+弱类型定义语言
+
+一种类型可以被忽略的语言，与强类型定义相反。JavaScript是弱类型定义的。在JavaScript中，可以将字符串'12'和整数3进行连接得到字符串'123'，然后可以把它看成整数123，而不需要显示转换。
+
+variable++和++variable的区别
+假如x=2，那么x++表达式执行后的值为3，x--表达式执行后的值为1；i++相当于i=i+1，i--相当于i=i-1；
+递增和递减运算符可以放在变量前也可以放在变量后：--i
+
+
 //区别主要体现在赋值的时候
 var a = 1;
 var b = a++;
@@ -259,30 +245,28 @@ var b = a++;
  
 var b = ++a;
 //这里b的值为3，因为是先a自加后赋值
-```
+流程控制
+ JS中主要有三种流程控制结构：
 
-## 2.5 流程控制
-JS中主要有三种流程控制结构：
-- 顺序结构（从上到下顺序执行）
-- 分支结构（比如if，else；switch case）
-- 循环结构（比如for，while）
-
-### 2.5.1 顺序结构
+顺序结构（从上到下顺序执行）
+分支结构（比如if，else；switch case）
+循环结构（比如for，while）
+顺序结构
 即从上到下按照顺序执行：
-```js
+
+
 <script>
  
 console.log('hello')
 console.log('world')
  
 </script>
-```
-
-### 2.5.2 分支结构
+分支结构
 和python不同的是，条件表达式的and/or是用  && / || 表示的
 
-#### 2.5.2.1 if - else结构
-```
+if - else结构
+
+
 if (条件表达式) {
     语句1；
     ... ... 
@@ -290,9 +274,10 @@ if (条件表达式) {
     语句2;
     ... ...
 }
-```
 注意：只要表达式成立，或者返回值是bool都可，即if(1)也是可以的，因为1的bool类型为true；
-```js
+
+
+复制代码
 <script>
 
 if (1) {
@@ -302,9 +287,9 @@ if (1) {
  }
  
 </scripts>
-```
-#### 2.5.2.2 if-else if - else 结构
-```js
+
+if-else if - else 结构
+
 if (条件表达式1) {
     语句1；
     .... ....
@@ -315,10 +300,10 @@ if (条件表达式1) {
     语句3;
     ... ...
 }
+
+
 <script>
-```
-下面看一个例子
-```js
+
 var a = 10;
 if (a > 10) {
   console.log('bigger than 10')
@@ -327,11 +312,11 @@ if (a > 10) {
 } else {
      console.log('smaller than 5')
  }
-</scripts>
-```
 
-#### 2.5.2.3 switch...case结构
-```js
+</scripts>
+
+switch...case结构
+
 switch  (条件表达式) {
       case 值1:语句1;break;
       case 值2:语句2;break;
@@ -339,9 +324,8 @@ switch  (条件表达式) {
       case 值4:语句4;break;
       default:语句5;
 }
-```
-下面来看一个例子
-```js
+
+复制代码
  <script>
   var a  =  5 ;
   switch (a) {
@@ -354,21 +338,19 @@ switch  (条件表达式) {
      case 6:y = '星期七';break;
  }
  console.log(y) </script>
-```
+
 switch比else if结构更加简洁清晰，使程序可读性更强,效率更高。
 
-### 2.5.3 循环结构
+循环结构
+for循环-条件循环
 
-#### 2.5.3.1 for循环-条件循环
-```js
 for (初始化表达式;条件表达式;自增或自减) {
     执行语句1;
     执行语句2;
     ... ...
 }
-```
-下面来看一个例子：
-```js
+
+复制代码
 <script>
  
  for (var i = 0 ; i < 10; i++) {
@@ -376,37 +358,35 @@ for (初始化表达式;条件表达式;自增或自减) {
  }
  
  </script>
-```
+复制代码
+for循环-递归循环
 
-#### 2.5.3.2 for循环-递归循环
-```js
+
+
+
 for (变量 in 属组或对象) {
     执行语句1;
     执行语句2;
 }
-```
-下面来看一个例子
-```js
+
  <script>
      var arr = [1,2,3,4,5]
           for (var i in arr) {
          console.log(i)
      }
  </script>
-```
 PS：for循环，循环的是对象的索引
 
-#### 2.5.3.3 while循环
-```js
+while循环
+
 <script>
     while (条件表达式) {
         执行语句1；
         执行语句2；
     }
 </script>
-```
-下面来看一个例子:
-```js
+
+复制代码
  <script>
      var sum = 0;
      var i = 1;
@@ -416,4 +396,31 @@ PS：for循环，循环的是对象的索引
      }
      console.log(sum)
  </script>
-```
+
+异常处理
+
+try {
+    //这段代码从上往下运行，其中任何一个语句抛出异常该代码块就结束运行
+}
+catch (e) {
+    // 如果try代码块中抛出了异常，catch代码块中的代码就会被执行。
+    //e是一个局部变量，用来指向Error对象或者其他抛出的对象
+}
+finally {
+     //无论try中代码是否有异常抛出（甚至是try代码块中有return语句），finally代码块中始终会被执行。
+}
+ 注：主动抛出异常 throw Error('xxxx')
+
+
+复制代码
+  <script>
+      try {
+          throw Error('hello world');
+      }
+      catch (e) {
+          console.log(e);
+      }
+      finally {
+          console.log('一切正常')
+     }
+ </script>
