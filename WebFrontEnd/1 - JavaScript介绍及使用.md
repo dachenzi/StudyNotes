@@ -21,6 +21,9 @@
     - [2.4 运算符](#24-运算符)
         - [2.4.1 == 和 === 的区别](#241--和--的区别)
         - [2.4.2 variable++和++variable的区别](#242-variable和variable的区别)
+        - [2.4.3 三元运算符](#243-三元运算符)
+        - [2.4.4 逗号操作符](#244-逗号操作符)
+        - [2.4.5 其他](#245-其他)
     - [2.5 流程控制](#25-流程控制)
         - [2.5.1 顺序结构](#251-顺序结构)
         - [2.5.2 分支结构](#252-分支结构)
@@ -28,9 +31,12 @@
             - [2.5.2.2 if-else if - else 结构](#2522-if-else-if---else-结构)
             - [2.5.2.3 switch...case结构](#2523-switchcase结构)
         - [2.5.3 循环结构](#253-循环结构)
-            - [2.5.3.1 for循环-条件循环](#2531-for循环-条件循环)
-            - [2.5.3.2 for循环-递归循环](#2532-for循环-递归循环)
-            - [2.5.3.3 while循环](#2533-while循环)
+            - [2.5.3.1 for条件循环](#2531-for条件循环)
+            - [2.5.3.2 for-in循环](#2532-for-in循环)
+            - [2.5.3.3 for-of循环](#2533-for-of循环)
+            - [2.5.3.3 while..do循环](#2533-whiledo循环)
+            - [2.5.3.3 do..while循环](#2533-dowhile循环)
+        - [2.5.4 小练习](#254-小练习)
 
 <!-- /TOC -->
 # 1 JavaScript概述
@@ -94,6 +100,8 @@ HTML中引入JS的方式主要有两种:直接嵌入式编写、通过导入JS�
 - 使用let关键字： `let x = 1`; 和var关键字创建的效果大致相同，属于`ES6的新语法`，以大括号为作用域
 - 使用const关键字：`const x = 1`; 声明一个常量x，不允许更改
 
+> `var会把变量提升`到当前全局或函数的作用域的头部先行定义。
+
 ```javascript
 var x = 1;
 console.log(typeof x)  
@@ -133,8 +141,25 @@ Var iMyTestValue = 0, sMySecondValue = "hi";
 ## 2.3 JS的数据类型
 数据类型主要有一下几种：字符串（String）、数字(Number)、布尔(Boolean)、数组(Array)、对象(Object)、空（Null）、未定义（Undefined）。
 
+|名称|说明|
+----|----|
+number|数值型，包括整形和浮点型
+boolean|布尔型, true和false
+string|字符串型
+null|只有一个值null
+undefined|变量声明未赋值的；对象未定义的属性
+symbol|ES6新引入类型
+object|是以上基本类型的复合类型，是容器
+
+javascript的隐式转换
+- 遇到字符串，加号就是拼接字符串，所有非字符和字符串相加，都是是隐式的转换为字符串。
+- 如果没有字符串，加号把其他所有类型都当数字处理，非数字类型隐式转换为数字。undefined特殊，因为它没有定义值，所以转换失败会得到一个特殊值NaN
+- 如果运算符是逻辑运算符，短路符，返回就是短路时的类型。没有隐式转换
+
+> 除非你十分明确，否则不要依赖隐式转换
+
 ### 2.3.1 数字(Number)类型
-JavaScript 只有一种数字类型。数字可以带小数点，也可以不带：
+JavaScript 只有一种数字类型(双精度浮点型)。数字可以带小数点，也可以不带：
 ```js
 var a = 3.14;
 var b = 10;
@@ -145,17 +170,62 @@ var b = 10;
 
 ```js
 var a = 'a456';
-b = Number(a)
+b = Number(a)  // 无法转换，结果为NaN
 console.log(b)
+```
+数字类型还有三种符号值：+Infinity（正无穷）、-Infinity（负无穷）和 NaN (not-a-number非数字)。
+
+常用方法|含义
+----|-----|
+Number.parseFloat()|把字符串参数解析成浮点数，和全局方法 parseFloat() 作用一致
+Number.parseInt()|把字符串解析成特定基数对应的整型数字，和全局方法 parseInt() 作用一致
+Number.isFinite()|判断传递的值是否为有限数字
+Number.isInteger()|判断传递的值是否为整数
+Number.isNaN()|判断传递的值是否为NaN
+
+内置数学对象Math：
+- Math提供了绝对值、对数指数运算、三角函数运算、最大值、最小值、随机数、开方等运算函数，提供了PI值。
+```js
+console.log(Math.PI)
+console.log(Math.abs(-1))
+console.log(Math.log2(16))
+console.log(Math.sqrt(2))
+console.log(Math.random()) // (0, 1)
 ```
 
 ### 2.3.2 字符串(String)类型
 字符串是存储字符（比如 "Lee daxin"）的变量。可以是引号中的任意文本。
-> 于没有字符类型，所以在字符串中表达常用的特殊字符，但是在使用特殊字符时必须加上反斜线\；常用的转义字符 \n:换行 \':单引号 \":双引号 \\:右划线
+> 由于没有字符类型，所以在字符串中表达常用的特殊字符，但是在使用特殊字符时必须加上反斜线\；常用的转义字符 \n:换行 \':单引号 \":双引号 \\:右划线
 ```js
 var name = 'dachenzi';
 var job = 'Linux';
 ```
+ES6还提供了反引号用来定义一个字符串，可以支持多行，还支持插值
+```js
+let name = 'daxin'
+let age = 20
+info = `${name},${age}`
+console.log(info)  // daxin,20
+```
+
+常用方法|含义
+----|-----|
+obj.length|长度
+obj.trim()|移除空白
+obj.trimLeft()|左边移除空白（非ES6官方语法）
+obj.trimRight)|右边移除空白（非ES6官方语法）
+obj.charAt(n)|返回字符串中的第n个字符
+obj.concat(value, ...)|拼接
+obj.indexOf(substring,start)|子序列位置
+obj.lastIndexOf(substring,start)|子序列位置
+obj.substring(from, to)|根据索引获取子序列
+obj.slice(start, end)|切片
+obj.toLowerCase()|大写
+obj.toUpperCase()|小写
+obj.split(delimiter, limit)|分割
+obj.search(regexp)|从头开始匹配，返回匹配成功的第一个位置(g无效)
+obj.match(regexp)|全局搜索，如果正则中有g表示找到全部，否则只找到第一个。
+obj.replace(regexp, replacement)|替换，正则中有g则替换所有，否则只替换第一个匹配项，<br>$数字：匹配的第n个组内容；<br>$&：当前匹配的内容；<br>$`：位于匹配子串左侧的文本；<br>$'：位于匹配子串右侧的文本<br>$$：直接量$符号
 
 ### 2.3.3 布尔(Boolean)类型
 布尔（逻辑）只能有两个值：true 或 false。也代表1和0，实际运算中true=1,false=0 。这点和shell是不同的。主要用于流程控制
@@ -234,8 +304,6 @@ var person= new Object;
 赋值运算符| =  +=   -=  *=   /=|
 字符串运算符| +  连接，两边操作数有一个或两个是字符串就做连接运算
 
-运算符和其他语言概念及应用是相同的这里就不在赘述，需要说明的是===/!== 和 ++/--。
-
 ### 2.4.1 == 和 === 的区别
 ```js
 var a = '123';
@@ -261,6 +329,42 @@ var b = ++a;
 //这里b的值为3，因为是先a自加后赋值
 ```
 
+### 2.4.3 三元运算符
+它的一般格式为：`条件表达式?真值:假值`，等价于简单的if...else结构
+```js
+if (条件表达式) {
+ 真值
+}
+else {
+ 假值
+}
+```
+比如：
+```js
+console.log(('3' > 30)?'真':'假')
+```
+
+### 2.4.4 逗号操作符
+JS允许多个表达式写在一起，最终将返回最后一个逗号表达式的值
+```js
+let a = 4+5, b = true, c=a > 20 ?'t':'f'
+console.log(a) //9
+console.log(c) //f
+function test() {
+ return 3, a + b, c = a++  // 没有有var/let创建的变量为全局变量，直接修改了全局变量
+}
+console.log(test()) // 最终返回的是 c = a++ 的值，为9
+console.log(c) // c为9
+```
+
+### 2.4.5 其他
+名称|说明
+instanceof|判断是否属于指定类型，但是对象必须是new关键字声明创建的。
+typeof|返回类型字符串
+delete|delete操作符, 删除一个对象(an object)或一个对象的属性(an object's property)或者一个数组中某一个键值(an element at a specified index in an array)。
+in|如果指定的属性在对象内，则返回true
+
+
 ## 2.5 流程控制
 JS中主要有三种流程控制结构：
 - 顺序结构（从上到下顺序执行）
@@ -271,10 +375,8 @@ JS中主要有三种流程控制结构：
 即从上到下按照顺序执行：
 ```js
 <script>
- 
 console.log('hello')
 console.log('world')
- 
 </script>
 ```
 
@@ -329,6 +431,16 @@ if (a > 10) {
  }
 </scripts>
 ```
+条件的False等效
+- false
+- undefined
+- null
+- 0
+- NaN
+- 空字符串  
+
+其它值都将被视为True
+
 
 #### 2.5.2.3 switch...case结构
 ```js
@@ -355,11 +467,11 @@ switch  (条件表达式) {
  }
  console.log(y) </script>
 ```
-switch比else if结构更加简洁清晰，使程序可读性更强,效率更高。
+switch比else if结构更加简洁清晰，使程序可读性更强,效率更高。但是一定要注意恰当的时候break语句，否则会继续顺序向下执行。
 
 ### 2.5.3 循环结构
 
-#### 2.5.3.1 for循环-条件循环
+#### 2.5.3.1 for条件循环
 ```js
 for (初始化表达式;条件表达式;自增或自减) {
     执行语句1;
@@ -377,8 +489,14 @@ for (初始化表达式;条件表达式;自增或自减) {
  
  </script>
 ```
+死循环的例子：
+```js
+for(;;){   // 表达式，条件，等全为空
+    console.log('abc')
+}
+```
 
-#### 2.5.3.2 for循环-递归循环
+#### 2.5.3.2 for-in循环
 ```js
 for (变量 in 属组或对象) {
     执行语句1;
@@ -396,7 +514,16 @@ for (变量 in 属组或对象) {
 ```
 PS：for循环，循环的是对象的索引
 
-#### 2.5.3.3 while循环
+#### 2.5.3.3 for-of循环
+for ... of 直接取值，只能用于数组，不能作用于对象。
+```js
+let arry = ['a',1,'c',6]
+for ( let x of arry) {
+    console.log(x)
+}
+```
+#### 2.5.3.3 while..do循环
+先判断条件，满足时，再执行
 ```js
 <script>
     while (条件表达式) {
@@ -416,4 +543,34 @@ PS：for循环，循环的是对象的索引
      }
      console.log(sum)
  </script>
+```
+
+#### 2.5.3.3 do..while循环
+它的一般格式为：
+```js
+do
+ statement
+while (condition);
+```
+先执行语句，然后在进行条件判断。
+
+### 2.5.4 小练习
+打九九乘法表
+```js
+for (let i = 1; i < 10; i++) {
+    str = ''
+    for (let j = 1; j<=i; j++) {
+        str += `${j}*${i}=${i*j>=10?i*j +' ':i*j+'  '} `
+    }
+    console.log(str)
+}
+
+
+for (let i = 1;i < 10;i++) {
+    str = ''
+    for (let j = 1;j<=i;j++){
+        str += `${j} * ${i} = ${(a=i*j)>=10?a:a+' ' }  `
+        }
+console.log(str)
+}
 ```
