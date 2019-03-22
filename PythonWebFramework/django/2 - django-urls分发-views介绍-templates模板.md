@@ -86,3 +86,25 @@ URLconf 不检查使用了哪种请求方法。换句话讲，所有的请求方
 
 ## 1.4 include(路由分发)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当项目中的应用变得越来越多的时候，如果所有的应用的URL都通过项目的urls统一进行分配，那么耦合度会很高，另外也不利于管理，所以这里通过include来交给应用的urls来处理。
+```python
+# 项目的urls.py
+from django.conf.urls import include, url
+ 
+urlpatterns = [
+    url(r'^admin/', admin.site.urls),
+    url(r'^user/', include('user.urls')),
+]
+ 
+# 通过include 来指定交给那个应用的urls来处理
+# include 包涵在 django.conf.urls中
+```
+在应用user下创建urls.py文件，写入
+```python
+from django.conf.urls import url
+from user import views
+
+urlpatterns = [
+    url('^login', views.login)
+]
+```
+注意：路由分发后，子路径的起始位置就从分发的URL开始了。上面匹配到的路径为：`user/login`
