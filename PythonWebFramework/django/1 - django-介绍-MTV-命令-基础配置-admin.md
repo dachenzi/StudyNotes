@@ -1,3 +1,36 @@
+<font size=5 face='微软雅黑'>__文章目录__</font>
+<!-- TOC -->
+
+- [1 什么是web框架](#1-什么是web框架)
+- [2 WSGI](#2-wsgi)
+- [3 MVC与MTV模式](#3-mvc与mtv模式)
+    - [3.1 MVC框架](#31-mvc框架)
+    - [3.2 MTV框架](#32-mtv框架)
+    - [3.3 区别](#33-区别)
+- [4 django介绍](#4-django介绍)
+    - [4.1 Django处理顺序](#41-django处理顺序)
+    - [4.2 创建django站点](#42-创建django站点)
+        - [4.2.1 安装Django](#421-安装django)
+        - [4.2.2 创建一个project](#422-创建一个project)
+        - [4.2.3 创建一个app](#423-创建一个app)
+        - [4.2.3 启动Django项目](#423-启动django项目)
+    - [4.3 Django 版的 hello world](#43-django-版的-hello-world)
+        - [4.3.1 定义URL选择器](#431-定义url选择器)
+        - [4.3.2 定义views函数](#432-定义views函数)
+        - [4.3.3 启动服务](#433-启动服务)
+    - [4.4 基础配置](#44-基础配置)
+        - [4.4.1 配置静态文件存放路径](#441-配置静态文件存放路径)
+        - [4.4.2 配置模板路径](#442-配置模板路径)
+        - [4.4.3 关闭csrftoken](#443-关闭csrftoken)
+        - [4.4.4 连接数据库](#444-连接数据库)
+    - [4.5 django admin配置](#45-django-admin配置)
+        - [4.5.1 创建django-admin用户](#451-创建django-admin用户)
+        - [4.5.2 初始化django-admin需要的表](#452-初始化django-admin需要的表)
+        - [4.5.3 本地化配置(可选)](#453-本地化配置可选)
+        - [4.5.4 注册应用模块](#454-注册应用模块)
+        - [4.5.5 启动django](#455-启动django)
+
+<!-- /TOC -->
 # 1 什么是web框架
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;众所周知，所有的Web应用基本都是基于B/S结构，其本质上其实就是一个socket服务端(web服务器)，一个socket客户端(用户浏览器)。下面的代码就是一个简单的web端，运行后，使用浏览器访问，会打印hello world
 ```python
