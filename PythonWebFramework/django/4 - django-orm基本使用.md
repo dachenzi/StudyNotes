@@ -19,8 +19,18 @@
     - [4.2 orm之删除](#42-orm之删除)
     - [4.3 orm之修改](#43-orm之修改)
     - [4.4 orm之查询](#44-orm之查询)
-        - [4.4.1 限制查询集（切片）](#441-限制查询集切片)
-        - [4.4.2 获取结果集](#442-获取结果集)
+        - [4.4.1 查询过滤方法](#441-查询过滤方法)
+        - [4.4.2 限制查询集（切片）](#442-限制查询集切片)
+        - [4.4.2 字段查询（双下划线）](#442-字段查询双下划线)
+        - [4.4.3 Q对象](#443-q对象)
+- [5 表与表之间的关系](#5-表与表之间的关系)
+    - [5.1 一对多](#51-一对多)
+        - [5.1.1 正向查询](#511-正向查询)
+        - [5.1.2 反向查询](#512-反向查询)
+    - [5.2 多对多](#52-多对多)
+        - [5.2.1 手动创建](#521-手动创建)
+        - [5.2.2 自动创建](#522-自动创建)
+        - [5.2.3 操作关系表](#523-操作关系表)
 
 <!-- /TOC -->
 # 1 数据库与ORM
@@ -103,7 +113,7 @@ from django.db import models     # 导入models,django提供的对象包含很�
  
 class UserInfo(models.Model):    # 需要继承models.Model
     class Meta:
-- db_table = 'userinfo'  # 在数据库中生成的表明
+        db_table = 'userinfo'  # 在数据库中生成的表明
 
     id = models.AutoField(primary_key=True,null=False,verbose_name='ID')
     name = models.CharField(max_length=4,null=False,verbose_name='用户名')
@@ -359,7 +369,74 @@ models.UserInfo.objects.filter(id=1).update(name='dachenzi')
 都会立即求值。
 - 每一个查询集都包含一个缓存，来最小化对数据库的访问。
 
-### 4.4.1 限制查询集（切片）
+### 4.4.1 查询过滤方法
+返回结果集的方法：
+
+名称|说明
+---|----|
+all()| 获取所有
+filter()|过滤，返回满足条件的数据
+exclude()|排除，排除满足条件的数据
+order_by()| 以什么字段排序（在字段前面加`减号`，表示倒序）
+values()|返回一个对象字典的列表，列表的元素是字典，字典内是字段和值的键值对
+values_list()|返回一个对象字典的列表，列表的元素是元组，字典内是字段和值的键值对
+
+```python
+models.Userinfo.object.all().values('id','username')
+# 表示只取指定的id和username列
+ 
+# 结果依旧返回的是QuerySet，但是数据不同，体现的形式是一个字典
+QuerySet({'id':1,'username':'daxin'},{'id':2,'username':'dachenzi'}......)
+ 
+# 使用value_list('id','username')，体现的形式是一个元组
+QuerySet((1,'daxin'),(2,'dachenzi')......)
+```
+
+关于filter：
+- filter(k1=v1).filter(k2=v2) 等价于 filter(k1=v1, k2=v2)
+- filter(pk=10) 这里pk指的就是主键， 不用关心主键字段名，当然也可以使用使用主键名filter(std_id=10)
+
+> 获取结果集的方法通过适当的组合可以链式编写。
+
+返回单个值的方法：
+
+名称|说明
+----|----|
+get()|仅返回单个满足条件的对象<br>如果未能返回对象则抛出DoesNotExist异常；<br>如果能返回多条抛出MultipleObjectsReturned异常
+count()|返回当前查询的总条数
+first()|返回第一个对象
+last()|返回最后一个对象
+exist()|判断查询集中是否有数据，如果有则返回True
+
+```python
+# 获取表里所有的对象
+models.UserInfo.objects.all()    # 结果为一个QuerySet对象(django提供的)，可以理解为一个列表
+ 
+# 获取id为1的对象
+models.UserInfo.objects.filter(id=1)   # 类似于sql中的 where查询条件，结果也是一个QuerySet
+ 
+# 获取name字段包含da的记录
+models.UserInfo.objects.filter(name__contains='da') # 这里涉及了万能的双下划线，在后续会进行说明
+ 
+# get获取一条数据
+models.UserInfo.objects.get(id=1)    # 注意get不到数据，会直接抛出异常
+ 
+# 除了id等于1的其他数据
+models.UserInfo.objects.exclude(id=1)
+```
+
+注意：
+- 查找到的不是想sql语句那样直接列出一行的各个字段及对应的值，而已把改行表示为一个行对象。匹配到一行，就表示1个表中的行对象。
+- 每个对象内才包含了对应的字段和值。
+- 通过 行对象.字段名，来获取对应的数据。
+- filter中包含多个条件，那么它们是and的关系。
+
+PS：由于filter、all取到的数据默认是 `QuerySet` 格式，在某些场景下我们只需要验证是否取到，我们可以直接获取结果中的第一个数据即可，即在最后添加.first()即可，表示取第一个数据，或者使用.count()来统计匹配到的数据的个数。
+```python
+module.UserInfo.filter(username='daxin').first()
+```
+
+### 4.4.2 限制查询集（切片）
 查询集对象可以直接使用索引下标的方式（不支持负索引），相当于SQL语句中的limit和offset子句。
 注意使用索引返回的新的结果集，依然是惰性求值，不会立即查询。
 ```python
@@ -369,4 +446,263 @@ qs = User.objects.all()[20:30]
 # LIMIT 10 OFFSET 20
 ```
 
-### 4.4.2 获取结果集
+### 4.4.2 字段查询（双下划线）
+字段查询表达式可以作为filter()、exclude()、get()的参数，实现where子句。  
+语法：`字段名称__比较运算符=值`,属性名和运算符之间使用`双下划线`
+
+比较运算符如下
+名称|举例|说明
+---|----|----|
+exact<br>filter(isdeleted=False)<br>|filter(isdeleted__exact=False)|严格等于，可省略不写
+contains|exclude(title__contains='天')|是否包含，大小写敏感，等价于like '%天%'
+statswith<br>endswith|filter(title__startswith='天')|以什么开头或结尾，大小写敏感
+isnull<br>isnotnull|filter(title__isnull=False)|是否为null
+iexact<br>icontains<br>istartswith<br>iendswith<br>||i的意思是忽略大小写
+in|filter(pk__in=[1,2,3,100])|是否在指定范围数据中
+gt、gte<br>lt、lte<br>|filter(id__gt=3)<br>filter(pk__lte=6)<br>filter(pub_date__gt=date(2000,1,1))<br>||大于、小于等
+year、month、day<br>week_day、hour<br>minute、second<br>|filter(pub_date__year=2000)|对日期类型属性处理
+
+### 4.4.3 Q对象
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;虽然Django提供传入条件的方式，但是不方便，它还提供了Q对象来解决。Q对象是django.db.models.Q，可以使用&（and）、|（or）操作符来组成逻辑表达式。 ~ 表示not。
+```python
+from django.db.models import Q
+User.objects.filter(Q(pk__lt=6))           # 不如直接写User.objects.filter(pk<6)
+User.objects.filter(pk__gt=6).filter(pk_lt=10)  # 与
+User.objects.filter(Q(pk_gt=6) & Q(pk_lt=10))   # 与
+User.objects.filter(Q(pk=6) | Q(pk=10))         # 或
+User.objects.filter(~Q(pk__lt=6))               # 非
+```
+
+可使用&|和Q对象来构造复杂的逻辑表达式
+- 过滤器函数可以使用一个或多个Q对象
+- 如果混用关键字参数和Q对象，那么Q对象必须位于关键字参数的前面。所有参数都将and在一起
+
+# 5 表与表之间的关系
+我们常说的表与表之间的关系有：一对一、一对多、多对多，下面分别说明
+
+## 5.1 一对多
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;表示当前表的某个字段的值，来自于其他表，比如人员表和部门表，在人员表中利用一对多外键关系标明该员工属于哪个部门。
+```python
+user_type = models.ForeignKey('表名',to_field='字段')       # 默认会自动关联对方表的ID字段(主键)，手动指定的话必须是唯一列才行。
+```
+注意：
+1. 默认情况下，外键字段在数据库中存储的名称为：字段名_id (上面的例子的话，在数据库中的字段名：user_type_id)
+2. 外键字段(user_type_id)存放的是所关连表的id信息
+3. 同时还存在一个字段名(上面的例子就是user_type)对象，这个对象指代的就是所关联的表中的数据对象
+4. 我们可以通过user_type，来跨表获取其关联的信息的某写字段的值(通过.字段名，即可访问)
+
+### 5.1.1 正向查询
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;什么叫正向查询？还是拿人员表和部门表举例，外键关系存在人员表中，那么我们通过人员表利用表中的外键字段就可以查询到该人员的部门信息，我一般称之为正向查询。
+
+一对多跨表查询例子：
+```python
+# -------------------- models.py --------------------
+
+from django.db import models
+
+class Business(models.Model):
+    class Meta:
+        db_table='business'
+    caption = models.CharField(max_length=32)
+    code = models.CharField(max_length=16,default='SA')
+
+class Host(models.Model):
+    class Meta:
+        db_table='host'
+    nid = models.AutoField(primary_key=True)
+    hostname = models.CharField(max_length=16)
+    ip = models.GenericIPAddressField(protocol='ipv4',db_index=True)
+    port = models.IntegerField()
+    b = models.ForeignKey(to='Business',to_field='id')    # 外键关联Business表
+
+#  -------------------- views.py --------------------
+
+def host(request):
+    v1 = models.Host.objects.all()
+    return render(request,'host.html',{'v1':v1})
+
+# -------------------- host.html --------------------
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div>
+        <p>主机信息</p>
+        {% for row in v1 %}
+            <p>{{ row.nid }} - {{ row.hostname }} - {{ row.ip }} - {{ row.port }} - {{ row.b_id }} - {{ row.b.caption }} - {{ row.b.code }}</p>   # 通过b对象，进行跨表查询主机业务线相关信息
+        {% endfor %}
+    </div>
+</body>
+</html>
+```
+> 这里通过row.b_id 和通过b对象来获取 row.b.id 结果是相同的，区别在于使用b对象，会多一次sql查询
+
+PS：当多个表进行及联跨表，那么都可以通过表的外键字段使用点来进行跨表访问(或者使用双下划线)
+双下划线和点跨表的不同之处在于：
+- 双下划线一般用于条件查询(values,values_list)
+- 点则一般用于在结果中利用外键对象进行跨表查询
+
+```python
+# -------------- 利用点进行跨表查询 --------------
+ 
+# 如果我只想获取主机地址和所属业务线使用点跨表的话
+v2 = models.Host.objects.all()
+return render(request,'host.html',{'v2':v2})
+# 前端代码
+{% for row in v2 %}
+    <p>{{ row.hostname }} - {{ row.b.caption }}</p>
+{% endfor %}
+# 我们只用了两个字段，却取出了相关的所有数据。
+ 
+# 是否可以在查询阶段只取出所需字段即可？使用双下划线__即可
+ 
+ 
+# -------------- 利用双下划线跨表查询 --------------
+ 
+v3 = models.Host.object.all().values('hostname','b__caption')
+# 我们可以看到在作为value的条件语句，通过b对象配合双下划线就进行了一次跨表查询
+ 
+# 前端代码
+<div>
+    {%  for row in v2 %}
+        <p>{{ row.hostname }} - {{ row.b__caption }}</p>    # 只需要向字典一样即可。
+    {% endfor  %}
+</div>
+```
+> 在django内部，它之所以能识别__,是因为，它在处理values条件时，会使用__作为分隔符，分隔后再进行相关处理
+
+### 5.1.2 反向查询
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;很多时候我们会有另一种需求，查询一个部门下的所有员工，这时部门表中没有外间字段关联人员表啊，该怎么查？其实是可以的，我把这个查询方式称之为反向查询。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在建立外键关系时，不仅会在外键所在表中产生外键所关联表的对象，在所关联表中也会产生一个关联表的对象(可能有点绕，没找到更好的表达方式)，这个对象一般有两种体现方式：
+1. 关联我的表(小写)：`一般用在values，values_list当作条件做字段过滤`
+2. 关联我的表名(小写)_set：`一般当作对象，当作字段处理`
+
+```python
+def index(request):
+    users = models.User.objects.all()
+    departments = models.Department.objects.values('user__name')   # 跨到管理本表的user表中，查找对应的user的名称，利用的是join 格式
+    for dep in departments:
+        print(dep)
+
+        # {'user__name': 'daxin'}
+        # {'user__name': 'dachenzi'}
+        # {'user__name': 'hello'}
+        # {'user__name': 'xiaoming'}
+        # {'user__name': 'xiaochen'}
+        
+    return HttpResponse('ok')
+```
+对应的sql语句为：
+- SELECT"user"."name"FROM"department"LEFTOUTERJOIN"user"ON("department"."dept_id" = "user"."dept_id");
+
+```python
+def index(request):
+    departments = models.Department.objects.filter(pk=1)
+    for dep in departments:
+        for username in dep.user_set.values('name'):  # user_set指代的是关联的user表对象
+            print(username)
+
+            # {'name': 'daxin'}
+            # {'name': 'dachenzi'}
+            # {'name': 'hello'}
+
+    return HttpResponse('ok')
+```
+对应的sql语句为：  
+- SELECT "department"."dept_id", "department"."dept_name" FROM "department" WHERE "department"."dept_id" = 1;
+- SELECT "user"."name" FROM "user" WHERE "user"."dept_id" = 1;
+
+
+## 5.2 多对多
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;前面说了一对多的情况，这里还有一种情况叫多对对，比如一个主机可以关联多个业务线，不同的业务线可以关联多个主机，所以这里，业务线和主机的关系为多对多，在多对多的情况下，有需要一张额外的表来表示对应关系，这里有两种情况来创建这张关系表。
+
+### 5.2.1 手动创建
+手动创建，故名思议，我们需要手动的创建一张关系表，然后创建两个ForeignKey字段(一对多)，关联两张表即可。
+```python
+# 业务线表
+class Business(models.Model):
+    caption = models.CharField(max_length=32)
+    code = models.CharField(max_length=16,default='SA')
+ 
+# 主机表
+class Host(models.Model):
+    nid = models.AutoField(primary_key=True)
+    hostname = models.CharField(max_length=16)
+    ip = models.GenericIPAddressField(protocol='ipv4',db_index=True)
+    port = models.IntegerField()
+ 
+# 多对多关系表
+class Application(models.Model):
+    h = models.ForeignKey(to='Host',to_field='nid')          # 关联主机id，字段名为h_id，同时存在对象h，存放对应的Host信息
+    b = models.ForeignKey(to='Business',to_field='id')       # 关联业务线id,字段名为b_id，同时存在对象b，存放对应的Business信息
+```
+PS：一共手动创建三张表，可以利用创建的Application关系表来直接操作多对多关系。
+
+### 5.2.2 自动创建
+在Django中，还存在一种方式为自动创建， 通过django提供的ManyToMany关键字创建。
+```python
+# 业务线表
+class Business(models.Model):
+    caption = models.CharField(max_length=32)
+    code = models.CharField(max_length=16,default='SA')
+ 
+# 主机表
+class Host(models.Model):
+    nid = models.AutoField(primary_key=True)
+    hostname = models.CharField(max_length=16)
+    ip = models.GenericIPAddressField(protocol='ipv4',db_index=True)
+    port = models.IntegerField()
+    business = models.ManyToManyField('Business')      # 通过manytomany字段创建多对多关系
+```
+
+注意：
+1. 虽然我们创建了两张表，但是由于我们使用了manytomany关键字创建多对对关系，django还会为我们创建一张表名为当前表名加当前字段名的表(上面的例子就是：app01_host_business)，当作关系表，不会产生business字段。
+2. 由于我们没有关系表这个class类对象，所以我们不能直接操作关系表，需要通过Host对象间接通过business字段来操作关系表。
+3. 虽然利用manytomany关键字，能帮我们创建关系表，节省了很多代码，但是自动生成的表中只会生成两个字段(两张表的主键id字段)，不能定制其他字段，相反手动生成的表可以定制，平时可以根据情况二者混用。
+
+### 5.2.3 操作关系表
+手动创建关系表的情况下，由于含有第三张表对应的class，那么我们可以直接使用这个class对关系表进行操作，但是多对多的情况下没有关系表的class，所以我们需要通过其他办法来操作。
+
+方法|含义
+---|----|
+add()     | 添加关系
+remove()  | 删除关系
+clear()   | 清除所有关系　　
+all()     | 获取对应的所有关系对象(在查询时这里可以使用all,filter,get等，就像查找过滤其他数据一样)
+
+```python 
+models.Host.objects.filter(nid=1).first().business.add(1,2)   # 添加两条多对多关系 1(host) --> 1(business)，1(host) --> 2(business)
+models.Host.objects.filter(nid=1).first().business.remove(2)  # 删除一条多对多关系 1 -x-> 2
+models.Host.objects.filter(nid=1).first().business.clear()    # 清除nid为1的所有的多对多关系
+```
+
+下面是一个小栗子：
+
+```python
+# models.py
+class Bussiness(models.Model):
+    class Meta:
+        db_table = 'bussiness'
+    bus_id = models.AutoField(primary_key=True)
+    bus_name = models.CharField(max_length=64, null=False)
+
+class Host(models.Model):
+    class Meta:
+        db_table = 'host'
+    host_id = models.AutoField(primary_key=True)
+    host_name = models.CharField(max_length=64, null=False)
+    host_ip = models.GenericIPAddressField(protocol='both')
+    bus = models.ManyToManyField(Bussiness)
+
+# views.py
+def index(request):
+    hosts = models.Host.objects.all()
+    for host in hosts:
+        for bus in host.bus.all():   # 通过bus对象获取它关联的所有bussiness实例记录
+            print(host.host_name, host.host_ip, bus.bus_name)
+    return HttpResponse('ok')
+```
