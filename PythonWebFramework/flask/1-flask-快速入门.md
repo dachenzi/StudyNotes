@@ -9,7 +9,7 @@ def application(request):
     return Response("Hello, World!")
 
 if __name__ == "__main__":
-    |启动一个简单的web服务器，监听localhost:5000端口，并绑定给应用程序application
+    # 启动一个简单的web服务器，监听localhost:5000端口，并绑定给应用程序application
     run_simple("localhost", 5000, application)
 ```
 Flask依赖werkzeug提供的WSGI套件，来提供服务。
@@ -18,16 +18,16 @@ Flask依赖werkzeug提供的WSGI套件，来提供服务。
 ```python
 from flask import Flask
 
-|创建一个flask应用
+# 创建一个flask应用
 app = Flask(__name__)
 
 
-@app.route('/')   |设置url与视图函数的映射
+@app.route('/')   # 设置url与视图函数的映射
 def index():
     return 'hello world!'
 
 if __name__ == '__main__':
-    app.run('localhost',8000)   |启动服务
+    app.run('localhost',8000)   # 启动服务
 ```
 
 # 3 静态文件和模板文件配置
@@ -36,6 +36,11 @@ django使用模板语言来渲染页面，flask使用的jinja2来渲染页面的
 app = Flask(__name__, template_folder='templates', static_folder='static')
 ```
 > 创建应用的时候，就可以指定上述文件，其中template_folder='templates', static_folder='static'都为默认参数
+
+需要注意的是：
+1. 指定静态路径为`static_folder='static'`后，静态文件可以通过/static/xxx 来直接进行访问
+2. 如果不想使用static，那么可以使用`static_url_path`来指定静态文件的路径('/static_path')
+3. 注意，路径要从/开始
 
 # 4 用户登录
 下面使用flask来实现一个用户登录的小程序，你会发现其中有很多和django类似的地方，需要注意的是，`flask和其他web框架不一样的地方是，它的request并不是通过参数诸如的，而是通过requst类封装的，想要使用就要先导入`
@@ -69,7 +74,7 @@ if __name__ == '__main__':
     app.run()
 ```
 # 5 session使用
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们知道有些页面需要登录以后才可以查看，那么就需要用到session了，session在flask中也是以对象的方式提供的，但是如果要使用session，那么还需要`配置一个app.secret_key`，因为flask会使用这个key，对发往client的cookie和session进行加密。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们知道有些页面需要登录以后才可以查看，那么就需要用到session了，session在flask中也是以对象的方式提供的，但是如果要使用session，那么还需要`配置一个app.secret_key`，该密钥用于会话 cookie 的安全签名，并可用于应用或者扩展的其他安全需求。本变量应当是一个字节型长随机字符串。
 ```python
 from flask import Flask, request, render_template, redirect, session
 
@@ -78,7 +83,7 @@ app.secret_key = 'adsasd23oy48932yqodqoidh'
 
 @app.route('/index', methods=['GET', 'POST'])
 def index():
-    if session.get('user'):  |获取session
+    if session.get('user'):  # 获取session
         return render_template('index.html')
     return redirect('/login')
 
@@ -90,7 +95,7 @@ def login():
         user = request.form.get('username')
         password = request.form.get('password')
         if user == 'daxin' and password == '123':
-            session['user'] = 'daxin'   |设置session
+            session['user'] = 'daxin'   # 设置session
             return redirect('/index')
         return render_template('login.html', msg='密码或用户名错误')
 
@@ -341,8 +346,8 @@ class DevConfig(Config):
 ```python
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'adsasd23oy48932yqodqoidh'
-app.config.from_object('settings.Config')   |通过object来调用
-print(app.secret_key)  |覆盖前面的同名配置
+app.config.from_object('settings.Config')   # 通过object来调用
+print(app.secret_key)  # 覆盖前面的同名配置
 ```
 
 ## 6.4 动态加载的思想
@@ -422,7 +427,7 @@ from flask import Flask, views
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
-class TestView(views.MethodView):   |最好从views.MethodView继承。
+class TestView(views.MethodView):   # 最好从views.MethodView继承。
     methods = ['get', 'post']
 
     def get(self):
@@ -433,7 +438,7 @@ class TestView(views.MethodView):   |最好从views.MethodView继承。
         print('post 请求')
         return 'Post hello world'
 
-app.add_url_rule('/test', view_func=TestView.as_view(name='test'))  |这里的name，和endpoint 是一样的效果
+app.add_url_rule('/test', view_func=TestView.as_view(name='test'))  # 这里的name，和endpoint 是一样的效果
 
 if __name__ == '__main__':
     app.run()
@@ -552,16 +557,65 @@ def upload():
 注意：
 html中，使用form上传文件时，那么需要设置form的`enctype="multipart/form-data"`
 下面是一个完整的例子：
+```python
+import os
+from flask import Flask, flash, request, redirect
+from werkzeug.utils import secure_filename
 
+UPLOAD_FOLDER = r'E:\Python - base - code\chapter16flask\imgs'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
+app = Flask(__name__, static_folder=UPLOAD_FOLDER, static_url_path='/imgs')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER   # 配置上传文件的路径
 
+def allowed_file(filename):  # 用于限制上传的文件的类型
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
 
-|response = make_response(render_template('index.html'))
-|response是flask.wrappers.Response类型
-|response.delete_cookie('key')
-|response.set_cookie('key', 'value')
-|response.headers['X-Something'] = 'A value'
-|return response
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) 　# 保存文件
+            return redirect('/imgs/{}'.format(filename))
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    <img src=/imgs/head.jpg alt=meinv> </img>
+    '''
 
-        |响应相关信息
+if __name__ == '__main__':
+    app.run()
+```
+`secure_filename`用于对上传的文件名进行安全检查，否则如果用户上传的文件名'../../../usr_host/.bashrc'，那么用户的信息有可能就会被窃取。
+
+## 9.2 构建响应头
+通过make_response来构建一个响应对象，我们可以给他添加一些定制化的信息。一般使用流程是
+```python
+from flask import make_response
+... ...
+
+response = make_response(render_template('index.html'))  # response是flask.wrappers.Response类型
+response.delete_cookie('key')                # 操作1：删除cookie
+response.set_cookie('key', 'value')          # 操作2：设置cookie
+response.headers['X-Something'] = 'A value'  # 操作3：定制headers ... ...
+return response
+```
+make_response可以包装，如下对象（基本上包含所有可以直接返回的信息）
+- 字符串
+- redirect对象
+- render_template
