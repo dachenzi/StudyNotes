@@ -1,3 +1,20 @@
+<font size=5 face='微软雅黑'>__文章目录__</font>
+
+<!-- TOC -->
+
+- [1 flask蓝图](#1-flask蓝图)
+    - [1.1 第一个蓝图](#11-第一个蓝图)
+    - [1.2 before_request/after_request](#12-before_requestafter_request)
+    - [1.3 蓝图配置](#13-蓝图配置)
+- [2 消息闪现](#2-消息闪现)
+- [3 中间件](#3-中间件)
+- [4 flask-session插件](#4-flask-session插件)
+    - [4.1 安装](#41-安装)
+    - [4.2 将session放在redis中](#42-将session放在redis中)
+    - [4.3 为什么可以直接使用](#43-为什么可以直接使用)
+
+<!-- /TOC -->
+
 # 1 flask蓝图
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了在一个或多个应用中，使应用模块化并且支持常用方案，Flask引入了`蓝图`概念。蓝图可以极大地简化大型应用并为扩展提供集中的注册入口。 `Blueprint对象`与 Flask 应用对象的工作方式类似，但不是一 个真正的应用。它更像一个用于构建和扩展应用的蓝图 。
 
