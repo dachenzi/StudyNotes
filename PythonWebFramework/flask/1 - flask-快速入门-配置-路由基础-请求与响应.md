@@ -103,6 +103,7 @@ if __name__ == '__main__':
 ```
 # 5 session使用
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们知道有些页面需要登录以后才可以查看，那么就需要用到session了，session在flask中也是以对象的方式提供的，但是如果要使用session，那么还需要`配置一个app.secret_key`，该密钥用于会话 cookie 的安全签名，并可用于应用或者扩展的其他安全需求。本变量应当是一个字节型长随机字符串。
+> 通过secret_key对session数据进行加密，然后保存在cookie中，返回给客户端
 ```python
 from flask import Flask, request, render_template, redirect, session
 
