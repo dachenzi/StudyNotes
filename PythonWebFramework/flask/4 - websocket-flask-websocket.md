@@ -455,4 +455,4 @@ if __name__ == '__main__':
 </html>
 ```
 
-
+[websocket参考](http://www.cnblogs.com/wupeiqi/p/6558766.html)
