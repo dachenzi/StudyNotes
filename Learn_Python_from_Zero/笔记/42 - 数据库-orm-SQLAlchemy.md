@@ -5,8 +5,10 @@
 - [2 sqlalchemy](#2-sqlalchemy)
 - [3 基本使用](#3-基本使用)
     - [3.1 创建连接](#31-创建连接)
+        - [3.1.1 利用连接池执行sql](#311-利用连接池执行sql)
     - [3.2 创建基类](#32-创建基类)
     - [3.3 创建实体类](#33-创建实体类)
+        - [3.3.1 常用字段](#331-常用字段)
     - [3.4 实例化](#34-实例化)
     - [3.5 创建表](#35-创建表)
     - [3.6 创建会话Session](#36-创建会话session)
@@ -26,7 +28,15 @@
             - [3.7.7.6 关联查询](#3776-关联查询)
                 - [隐式连接](#隐式连接)
                 - [join连接](#join连接)
-            - [3.7.7.7 relationship](#3777-relationship)
+- [4 一对多关系](#4-一对多关系)
+    - [4.1 创建关系表](#41-创建关系表)
+    - [4.2 添加数据](#42-添加数据)
+    - [4.3 relationship](#43-relationship)
+    - [4.4 通过relationship添加数据](#44-通过relationship添加数据)
+- [5 多对多关系](#5-多对多关系)
+    - [5.1 创建多对多关系](#51-创建多对多关系)
+    - [5.2 通过relationship操作数据](#52-通过relationship操作数据)
+- [6 别名](#6-别名)
 
 <!-- /TOC -->
 # 1 ORM
@@ -40,7 +50,7 @@ Object-Relational Mapping，把关系数据库的表结构映射到对象上。�
 - column  -->  property : 字段映射为属性
 
 # 2 sqlalchemy
-SQLAlchemy是一个ORM框架。内部是使用了连接池来管理数据库连接。要使用sqlalchemy，那么需要先进行安装：
+SQLAlchemy是一个ORM框架。内部是使用了`连接池`来管理数据库连接。其本身只是做了关系映射，不能连接数据库，也不能执行sql语句，它在底层需要使用pymysql等模块来连接并执行sql语句，要使用sqlalchemy，那么需要先进行安装：
 ```python
 pip3 install sqlalchemy
 ```
@@ -87,8 +97,44 @@ db_url = 'mysql+pymysql://dahl:123456@10.0.0.13:3306/test'
 engine = sqlalchemy.create_engine(db_url,echo=True)
 ```
 - echo：引擎是否打印执行的sql语句，等于True时，表示打印，便于调试
+- max_overflow=5: 超过连接池大小外最多创建的连接
+- pool_size=1: 连接池大小
+- pool_timeout=30: 池中没有线程最多等待的时间(否则会报错)
+- pool_recycle=-1: 多久之后对线程池中的线程进行一次连接的回收(重置)
 
 > `特别注意`：创建引擎并不会马上连接数据库，直到让数据库执行任务是才连接。
+
+### 3.1.1 利用连接池执行sql
+sqlalchemy内部是原生支持连接池的，我们可以仅仅利用它的连接池功能。通过engie的`raw_connection`方法就可以获取到一个连接，然后就可以执行sql语句了(基本上就是Pymysql+DBUtils的实现)
+```python
+import threading
+import time
+import sqlalchemy
+import pymysql
+
+engine = sqlalchemy.create_engine(
+    'mysql+pymysql://dahl:123456@10.0.0.13:3306/test',
+    max_overflow=5,
+    pool_size=1,
+    pool_timeout=30,
+    pool_recycle=-1
+)
+
+def func():
+    conn = engine.raw_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    time.sleep(2)
+    cursor.execute('select * from employees;')
+    res = cursor.fetchall()
+    print(res)
+    cursor.close()
+    conn.close()
+
+if __name__ == '__main__':
+    for i in range(10):
+        threading.Thread(target=func).start()
+```
+
 
 ## 3.2 创建基类
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用: `sqlalchemy.ext.declarative.declarative_base` 来构造声明性类定义的基类。因为sqlalchemy内部大量使用了元编程，为实例化的子类注入映射所需的属性，所以我们定义的映射要继承自它（必须继承）
@@ -135,13 +181,14 @@ print(Student.__dict__)
 # Column('id', Integer(), table=<student>, primary_key=True, nullable=False), 
 # Column('name', String(), table=<student>, default=ColumnDefault('Null')), 
 # Column('age', Integer(), table=<student>, default=ColumnDefault('Null')), schema=None),
+# Column('data',DateTime,default=datetime.datetime.now)  # 这里不能加括号
 ```
 - \_\_tablename__: 表明，如果表已存在，则必须指定正确的表名
 - Column: 用于构建一个列对象，它的参数一般都和数据库中的列属性是对应的，主要有：
     - name: 数据库中表示的此列的名称
     - `type`：字段类型(比如String、Integer，这里是sqlalchemy包装的类型，对应的是数据库的varchar、int等)，来自TypeEngine的子类
     - `autoincrement`：是否自增
-    - default：默认值，可以是值，可调用对象或者类，当写入数据该字段没有指定时，调用。
+    - default：默认值，可以是值，可调用对象或者类，当写入数据该字段没有指定时，调用。当是可调用对象的时候，建议不要加括号
     - doc：字段说明信息
     - key: 一个可选的字符串标识符，用于标识表上的此Column对象。
     - index: 是否启用索引
@@ -151,6 +198,24 @@ print(Student.__dict__)
     - server_default:它的值是 FetchedValue实例、字符串、Unicode 或者 text()实例，用作DDL语句中该列的default值
 
 注意：Column和String、Integer等都来自于sqlalchemy下的方法，要么直接导入，要么就使用sqlalchemy.String来引用。
+
+### 3.3.1 常用字段
+
+类型名|python中类型|说明|
+|----|------|-------|
+Integer|int|普通整数，一般是32位|
+SmallInteger|int|取值范围小的整数，一般是16位|
+BigInteger|int或long|不限制精度的整数|
+Float|float|浮点数|
+Numeric|decimal.Decimal|普通整数，一般是32位|
+String|str|变长字符串|
+Text|str|变长字符串，对较长或不限长度的字符串做了优化|
+Unicode|unicode|变长Unicode字符串|
+UnicodeText|unicode|变长Unicode字符串，对较长或不限长度的字符串做了优化|
+Boolean|bool|布尔值|
+Date|datetime.date|时间|
+Time|datetime.datetime|日期和时间|
+LargeBinary|str|二进制文件
 
 ## 3.4 实例化
 通过我们构建的类，来实例化的对象，在将来就是数据库中的一条条记录。
@@ -168,6 +233,7 @@ print(student)   # <1 daxin 20>
 - create_all(bind=None, tables=None, checkfirst=True):创建metadata中记录的所有表
 
 ```python
+Base = declarative.declarative_base()  
 Base.metadata.create_all(bind=engine)  # 需要通过引擎去执行
 
 # 下面是engine的echo为true时的输出信息
@@ -196,6 +262,8 @@ Base.metadata.create_all(bind=engine)  # 需要通过引擎去执行
 ```
 - 生产环境很少这样创建表，都是系统上线的时候由脚本生成。
 - 生产环境很少删除表，宁可废除都不能删除。
+
+注意：sqlalchemy 只能创建和删除表，不能修改表结构。只能手动的在数据库中修改然后在代码中添加即可。
 
 ## 3.6 创建会话Session
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在一个会话中操作数据库，绘画建立在连接上，连接被引擎管理，当第一次使用数据库时，从引擎维护的连接池中取出一个连接使用。
@@ -265,9 +333,9 @@ session.commit()
 # <30 daxin 10>
 ```
 结果生成个1条数据，<30 daxin 10>，为什么呢？由于id属于自增列，我们在执行#1时，id是没有固定下来的。
-1. #1执行后，commit，则daxin的id就固定下来了。
-2. #2执行时，由于id没变，所以并不会新增数据，而是使用update语句更新了age字段
-3. #3执行时，由于都是daxin的，id，name，age都没有改变，所以只会执行1条语句
+1. 执行后，commit，则daxin的id就固定下来了。
+2. 执行时，由于id没变，所以并不会新增数据，而是使用update语句更新了age字段
+3. 执行时，由于都是daxin的，id，name，age都没有改变，所以只会执行1条语句
 > 当engine的echo等于true时，看到具体的sql语句，一切就很明白了。
 
 ### 3.7.2 简单查询
@@ -304,15 +372,26 @@ session.add(std)
 session.commit()
 std = session.query(Student).get(30)
 print(std)  # <30 daxin 1000>
+
+# 或者
+std = session.query(Student).filter(Student.id > 10).update({'name':'daxin'})
+std.commit()
 ```
 > 大部分ORM是都是这样，必须先查才能改。
+
+在原有数据的基础上批量修改，比如在所有名称后面添加特定的后缀
+```python
+session.query(Users).filter(Users.id > 0).update({Users.name: Users.name + "099"}, synchronize_session=False)  # 必须为synchronize_session=False
+session.query(Users).filter(Users.id > 0).update({"age": Users.age + 1}, synchronize_session="evaluate")  # 必须synchronize_session="evaluate"，表示要进行计算
+```
+
 
 ### 3.7.4 删除数据(不建议)
 使用session.delete来删除数据
 ```python
 std = session.query(Student).get(30)
 session.delete(std)
-session.commit()
+session.commit()   # 提交删除操作
 std = session.query(Student).get(30)
 print(std)  # None
 ```
@@ -458,6 +537,7 @@ class Student(Base):
 #### 3.7.7.1 where条件查询
 使用filter方法进行条件过滤查询：
 - `session.query(student).filter(student.id > 10)`：相当于select * from student where student.id > 10 
+> 同时还存在一个filter_by，它的不同之处在于括号中的不是表达式，而是参数。比如：filter(user.id == 10) -> filter_by(user.id = 10)
 
 where条件中的关系：
 - `AND`(与) 对应 `and_`
@@ -483,7 +563,6 @@ Base = declarative.declarative_base()
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-
 class Student(Base):
     __tablename__ = 'student'
 
@@ -499,7 +578,6 @@ class Student(Base):
 def getresulte(stds):
     for std in stds:
         print(std)
-
 ```
 条件判断之`AND`(&,and_)
 ```python
@@ -552,6 +630,13 @@ getresulte(std_list)
 std_list = session.query(Student).filter(Student.age.notin_([10,30,50]))
 getresulte(std_list)
 ```
+
+补充：
+```python
+r6 = session.query(Users).filter(text("id<:value and name=:name")).params(value=224, name='fred').order_by(Users.id).all()  # 传参的方式查询
+r7 = session.query(Users).from_statement(text("SELECT * FROM users where name=:name")).params(name='ed').all()  # 用的不多
+```
+[更多](http://www.cnblogs.com/wupeiqi/articles/8259356.html)
 
 #### 3.7.7.2 排序
 - order_by：排序
@@ -737,10 +822,10 @@ getres(emps)
 ```
 
 ##### join连接
-默认情况是是inner join，当然还可以选择outjeroin(left join)。
+使用join()关键字来进行连表查询，其isouter参数用于指定join的类型，默认情况下使用的是inner join,当isouter=True时，就表示是left join(right join没有实现，需要自己交换前面表的顺序)
 ```python
 # join连接
-std_list = session.query(Employees).join(Dept_emp,Employees.emp_no == Dept_emp.emp_no).filter(Employees.emp_no == '10010')
+std_list = session.query(Employees).join(Dept_emp,Employees.emp_no == Dept_emp.emp_no,isouter=True).filter(Employees.emp_no == '10010')
 getres(std_list)
 
 std_list = session.query(Employees).join(Dept_emp).filter((Employees.emp_no == Dept_emp.emp_no) & (Employees.emp_no == '10010'))
@@ -749,45 +834,262 @@ getres(std_list)
 # 如果query中，仅列出一个表明，相当于
 # select employees.* from employees inner join dept_emp on employees.emp_no = dept_emp.emp_no where employees.emp_no = '10010';
 ```
-为什么只显示了员工信息，部门信息呢？
 
-#### 3.7.7.7 relationship
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果没有relationship，我们想要查询一个员工的信息以及他的部门信息，那么只能通过管理的方式将两个表连接起来，并且必须要显示的查询这两个表的所有信息才可以。relationship呢，就是通过在一个映射类中增加一个属性，该属性用于表示连接关系，可以在结果中，访问该属性来访问关联的表信息
-```python
-deparments = relationship('Dept_emp')
-```
-回到刚刚的问题，为employees添加属性后，查询结果如下
-```python
-std_list = session.query(Employees).join(Dept_emp,Employees.emp_no == Dept_emp.emp_no).filter(Employees.emp_no == '10010')
-for std in str_list:
-    print(std)
-```
-我们看到结果，依旧一样，但这时的std会存在一个deparments属性，它里面存放的就是关联的dept_emp的表信息
-```python
-std_list = session.query(Employees).join(Dept_emp,Employees.emp_no == Dept_emp.emp_no).filter(Employees.emp_no == '10010')
-for std in str_list:
-    print(std.deparments)    # [<Dept_emp emp_no=10010 dept_no=d004>, <Dept_emp emp_no=10010 dept_no=d006>]
 
-# 或者
-emp = session.query(Employees).join(Dept_emp,Employees.emp_no == Dept_emp.emp_no).filter(Employees.emp_no == '10010').first()
-print(emp.departments[0].dept_no)  # d004
-print(emp.departments[1].dept_no)  # d006
-``` 
-为什么呢？当我们执行：print(emp.departments) 来获取当前对象的departments时，
-- 会再次执行SQL语句，通过结果集emp的emp_no,在dept表中查找信息
-- 等于 select * from dept_emp where dept_emp.emp_no = 10011
+# 4 一对多关系
+一对多是一种表与表的关系，在orm中创建和使用方式有一写特点，这里单独描述
+## 4.1 创建关系表
+通过ForeignKey来创建一对多关系，需要注意的是它内部需要填写对应的真实的表名和字段（非映射的类对象）
+```python
+class Deptment(base):
 
-relationship为子类添加了一个新的关联属性，可以跨表查询，它还有一个参数用于反向提供服务
-- `backerf`：用于在被关联的表中插入新的字段属性，来反向来接本身
+    __tablename__ = 'deptment'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    dep_name = Column(String(32), nullable=False)
+
+class User(base):
+
+    __tablename__ = 'user'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(32), nullable=False)
+    dept_id = Column(Integer, ForeignKey('deptment.id'))
+
+# CREATE TABLE `user` (
+#   `id` int(11) NOT NULL AUTO_INCREMENT,
+#   `name` varchar(32) NOT NULL,
+#   `dept_id` int(11) DEFAULT NULL,
+#   PRIMARY KEY (`id`),
+#   KEY `dept_id` (`dept_id`),
+#   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`dept_id`) REFERENCES `deptment` (`id`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+# CREATE TABLE `deptment` (
+#   `id` int(11) NOT NULL AUTO_INCREMENT,
+#   `dep_name` varchar(32) NOT NULL,
+#   PRIMARY KEY (`id`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+## 4.2 添加数据
+添加部门数据时，只能使用id来插入，当插入的dept_id在deptment表中不存在时，会直接爆出异常
+```python
+# 批量添加部门数据
+session.add_all([
+    Deptment(dep_name='运维部'),
+    Deptment(dep_name='开发部'),
+    Deptment(dep_name='产品部'),
+    Deptment(dep_name='测试部')]
+)
+
+# 添加用户数据
+session.add_all([
+    User(name='daxin', dept_id=1),
+    User(name='dachenzi', dept_id=2),
+    User(name='dahl', dept_id=3)]
+)
+session.commit()
+```
+
+## 4.3 relationship
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在表中使用relationship来创建一个关联的对象，便于查询（和django的一对多隐含的对象相同，但在sqlalchemy中必须通过relationship才可以生成），并不会生成新的字段，仅仅是产生一个关联关系。
+> 注意relationship对象不能作为条件直接进行表查询：session.query(User.name,User.deptment.dept_name) 这样是不行的。
 
 ```python
-class Employees:
-    ... ...
-    departments = relationship('Dept_emp',backref='employess')
+relationship(obj,backref='')
 ```
-动态的向Dept_emp表中，注入employess属性，用于提供相反的服务，即通过Dept_emp.employess来访问Employees表中的信息
+- obj:表示要关联的ORM对象
+- backref：表示在对方插入一个关键字，用于反向关联relationship所在的表对象的本身。
+
+下面是一个例子：
 ```python
-deps = session.query(Dept_emp).filter(Dept_emp.dept_no == 'd004')
-for dep in deps:
-    print(dep.employees.first_name)
+class Deptment(base):
+    __tablename__ = 'deptment'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    dep_name = Column(String(32), nullable=False)
+
+class User(base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(32), nullable=False)
+    dept_id = Column(Integer, ForeignKey('deptment.id'))
+ 
+    deptment = relationship(Deptment, backref='user')   # 创建relationship关系
+
+# 正向查（通过User查deptment）
+std = session.query(User).filter(User.id == 1).first()
+print(std.name)
+print(std.deptment.dep_name)  # 直接通过deptment对象，读取Deptment表中对于的信息
+
+# 反向查（通过depement查User）
+dep = session.query(Deptment).filter(Deptment.id == 1).first()
+print(dep.user[0].name)   # 反向查，通过user获取到的数据是一个列表
 ```
+
+relationship，就是通过在一个映射类中增加一个属性，该属性用于表示连接关系，可以在结果中，访问该属性来访问关联的表信息
+
+## 4.4 通过relationship添加数据
+存在relationship的映射关系时，我们添加数据时，就可以通过relationship使用对象来添加关联数据了
+```python
+dep = session.query(Deptment).filter(Deptment.id == 3).first()
+session.add_all([
+    User(name='hello', deptment=dep),
+    User(name='world', deptment=dep)]
+)
+session.commit()
+```
+直接创建新的部门对象也是可以的
+```python
+user = User(name='dahlhin',deptment=Deptment(dep_name='管理员'))
+session.add(user)
+session.commit()
+```
+
+# 5 多对多关系
+和django不同sqlalchemy的第三张表需要手动创建。
+
+## 5.1 创建多对多关系
+模拟主机与业务线的归属问题。
+- 主机可以属于多个业务线
+- 一个业务线可以包含多个主机
+
+这是一个典型的多对多关系，需要额外一张关系表来记录。
+
+```python
+class Service2host(base):
+    __tablename__ = 'service_to_host'
+    id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    s_id = Column(Integer, ForeignKey('service.id'))
+    h_id = Column(Integer, ForeignKey('host.id'))
+
+    __table_args__ = (
+        # 联合唯一索引
+        UniqueConstraint('s_id', 'h_id', name='serivce_to_host'),
+    )  # 业务id和主机id不能重复，这里创建唯一索引来约束
+
+
+class Service(base):
+    __tablename__ = 'service'
+    id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    ser_name = Column(String(16), nullable=False)
+
+
+class Host(base):
+    __tablename__ = 'host'
+
+    id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    hostname = Column(String(16), nullable=False)
+    datetime = Column(DateTime, default=datetime.datetime.now, nullable=False)
+
+# CREATE TABLE `host` (
+#   `id` int(11) NOT NULL AUTO_INCREMENT,
+#   `hostname` varchar(16) NOT NULL,
+#   `datetime` date NOT NULL,
+#   PRIMARY KEY (`id`),
+#   UNIQUE KEY `id` (`id`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+# CREATE TABLE `service` (
+#   `id` int(11) NOT NULL AUTO_INCREMENT,
+#   `ser_name` varchar(16) NOT NULL,
+#   PRIMARY KEY (`id`),
+#   UNIQUE KEY `id` (`id`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+# CREATE TABLE `service_to_host` (
+#   `id` int(11) NOT NULL AUTO_INCREMENT,
+#   `s_id` int(11) DEFAULT NULL,
+#   `h_id` int(11) DEFAULT NULL,
+#   PRIMARY KEY (`id`),
+#   UNIQUE KEY `id` (`id`),
+#   UNIQUE KEY `serivce_to_host` (`s_id`,`h_id`),
+#   KEY `h_id` (`h_id`),
+#   CONSTRAINT `service_to_host_ibfk_1` FOREIGN KEY (`s_id`) REFERENCES `service` (`id`),
+#   CONSTRAINT `service_to_host_ibfk_2` FOREIGN KEY (`h_id`) REFERENCES `host` (`id`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+## 5.2 通过relationship操作数据
+如果没有relationship关联对象，那么我们将需要分别操作三张表，使用relationship将会大大简化这个过程，那么在Service中创建关系:
+```python
+hosts = relationship('host', secondary='service_to_host', backref='services')
+```
+创建后：
+- 在Service中存在一个hosts属性，对应host表
+- 在Host中被动注入一个services属性，对应service表
+- secondary='service_to_host' 表示通过第三张表来关联关系
+
+```python
+# 添加一个业务，并创建几台主机
+session.add(
+    Service(ser_name='运营', hosts=[
+        Host(hostname='openstack'),
+        Host(hostname='nginx')
+    ])
+)
+
+# 添加一个主机，并关联几个业务线
+service = session.query(Service).filter(or_(Service.ser_name == '运营', Service.ser_name == '运维')).all()
+session.add(
+    Host(hostname='Tomcat', services=service)
+)
+
+# 查询一个业务线下都有哪些主机
+service = session.query(Service).filter(Service.ser_name == '运营').first()
+for host in service.hosts:
+    print(host.id, host.hostname)
+
+# 查询一台主机都归属哪些业务线
+host = session.query(Host).filter(Host.hostname == 'openstack').first()
+for servcie in host.services:
+    print(service.id, service.ser_name)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 6 别名
+当使用join语句连表查询时，难免会碰到两个表重名的字段，这里就可以使用`label`来对字段进行别名显示。
+```python
+stds = session.query(User.name.label('username'), User.id, Deptment.dep_name).join(Deptment).all()
+for std in stds:
+    print(std.username, std.id, std.dep_name)
+```
+
+
+
+
+
+
+
+
+
+
+
+
