@@ -41,7 +41,7 @@
 <!-- /TOC -->
 # 1 ORM
 Object-Relational Mapping，把关系数据库的表结构映射到对象上。使用面向对象的方式来操作数据库。 
-  
+
 ![orm](photo/orm.png)  
 
 下面是一个关系模型与Python对象之间的映射关系：
@@ -135,6 +135,35 @@ if __name__ == '__main__':
         threading.Thread(target=func).start()
 ```
 
+### 3.1.2 利用session来执行sql
+上面是通过链接池来执行sql的，其实也可以通过session来执行。
+```python
+import threading
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+engine = sqlalchemy.create_engine(
+    'mysql+pymysql://dahl:123456@10.0.0.13:3306/test',
+    max_overflow=5,
+    pool_size=1,
+    pool_timeout=30,
+    pool_recycle=-1
+)
+
+DBsession = sessionmaker(bind=engine)
+
+def func():
+    session = DBsession()
+    cursor = session.execute('select * from employees;')
+    res = cursor.fetchall()
+    print(res)
+    cursor.close()
+    session.close()
+
+if __name__ == '__main__':
+    for i in range(10):
+        threading.Thread(target=func).start()
+```
 
 ## 3.2 创建基类
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用: `sqlalchemy.ext.declarative.declarative_base` 来构造声明性类定义的基类。因为sqlalchemy内部大量使用了元编程，为实例化的子类注入映射所需的属性，所以我们定义的映射要继承自它（必须继承）
@@ -201,7 +230,7 @@ print(Student.__dict__)
 
 ### 3.3.1 常用字段
 
-类型名|python中类型|说明|
+|类型名|python中类型|说明|
 |----|------|-------|
 Integer|int|普通整数，一般是32位|
 SmallInteger|int|取值范围小的整数，一般是16位|
@@ -1049,6 +1078,68 @@ for servcie in host.services:
     print(service.id, service.ser_name)
 ```
 
+# 6 scoped_session
+当我们启动多线程来执行数据库操作时，每个线程都会用到session来执行sql语句，一般情况下，我们会在线程内不创建新的session来执行sql语句,下面是一个利用session完成原生sql的执行。
+```python
+import threading
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine(
+    'mysql+pymysql://dahl:123456@10.0.0.10:3306/test',
+    max_overflow=5,
+    pool_size=1,
+    pool_timeout=30,
+    pool_recycle=-1
+)
+
+DBsession = sessionmaker(bind=engine)
+
+def func():
+    session = DBsession()
+    cursor = session.execute('show tables')
+    res = cursor.fetchall()
+    print(res)
+    cursor.close()
+    session.close()
+
+if __name__ == '__main__':
+    for i in range(10):
+        threading.Thread(target=func).start()
+```
+这里会产生一个问题，每个线程启动时都会创建一个session，用完又会关闭，这样太麻烦了，这里可以使用scoped_session对象来完成，它类似与threading.Local的实现方式。作用是，当线程调用scoped_session对象的功能时，比如各种sql查询，在其内部会为每个线程创建一个新的session对象，让它来使用。
+```python
+# 1 引入scoped_session
+from sqlalchemy.orm import scoped_session
+
+# 2 全局创建session对象
+session = scoped_session(DBsession)
+
+# 3 多进程内直接使用
+def func():
+    cursor = session.execute('show tables')
+    res = cursor.fetchall()
+    print(res)
+    cursor.close()
+    session.remove()   # 使用完毕需要remove
+```
+不需要关闭，直接使用scoped_session对象的remove方法即可。
+
+实现过程：
+1. scoped_session是一个类
+2. 它内部并没有实现所有的Session类的方法
+3. 它只是在内部，把传入的session对象的属性，进行反射获取，并绑定在自己身上。
+
+源码如下：
+```python
+def instrument(name):
+    def do(self, *args, **kwargs):
+        return getattr(self.registry(), name)(*args, **kwargs)
+    return do
+
+for meth in Session.public_methods:
+    setattr(scoped_session, meth, instrument(meth))
+```
 
 
 
