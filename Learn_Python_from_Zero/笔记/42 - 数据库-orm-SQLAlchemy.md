@@ -1078,7 +1078,7 @@ for servcie in host.services:
     print(service.id, service.ser_name)
 ```
 
-# 6 scoped_session
+# 6 scoped_session(推荐)
 当我们启动多线程来执行数据库操作时，每个线程都会用到session来执行sql语句，一般情况下，我们会在线程内不创建新的session来执行sql语句,下面是一个利用session完成原生sql的执行。
 ```python
 import threading
@@ -1129,9 +1129,11 @@ def func():
 1. scoped_session是一个类
 2. 它内部并没有实现所有的Session类的方法
 3. 它只是在内部，把传入的session对象的属性，进行反射获取，并绑定在自己身上。
+4. self.registry() 就是为每个线程创建的Session对象，其内部使用的就是threading.local实现的。
 
 源码如下：
 ```python
+# scoping
 def instrument(name):
     def do(self, *args, **kwargs):
         return getattr(self.registry(), name)(*args, **kwargs)
@@ -1139,6 +1141,24 @@ def instrument(name):
 
 for meth in Session.public_methods:
     setattr(scoped_session, meth, instrument(meth))
+
+# registry是ThreadLocalRegistry对象
+self.registry = ThreadLocalRegistry(session_factory)
+
+
+# ThreadLocalRegistry对象内部通过threading.local实现的
+    def __init__(self, createfunc):
+        self.createfunc = createfunc  # Session对象
+        self.registry = threading.local()
+
+    
+    # registry()其实调用的就是__call__方法
+    def __call__(self):
+        try:
+            return self.registry.value
+        except AttributeError:
+            val = self.registry.value = self.createfunc()   # 第一次执行，就会实例化一个Session对象
+            return val
 ```
 
 
