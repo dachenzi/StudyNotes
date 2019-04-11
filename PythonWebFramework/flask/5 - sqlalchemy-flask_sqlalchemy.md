@@ -5,24 +5,23 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flask-SQLAlchemy 是一个为您的 Flask 应用增加 SQLAlchemy 支持的扩展。它需要 SQLAlchemy 0.6 或者更高的版本。它致力于简化在 Flask 中 SQLAlchemy 的使用，提供了有用的默认值和额外的助手来更简单地完成常见任务。
 [官方文档点这里](http://www.pythondoc.com/flask-sqlalchemy/config.html#id2)
 
-例子：
+下面是一个标准的falsk程序的目录结构：
 ```bash
 cmdb
 ├── cmdb
-│   ├── __init__.py
-│   ├── models.py
+│   ├── __init__.py   # 创建db，create_app函数
+│   ├── models.py   # orm映射文件
 │   ├── static
 │   ├── templates
-│   └── views
+│   └── views   # views视图函数
 │       ├── __init__.py
 │       ├── account.py
 │       └── home.py
 ├── create_table.py   # 用于创建数据库表
-├── manage.py
+├── manage.py    # 管理，启动app
 └── settings.py
 ```
 其内部封装简化了很多sqlalchemy的操作，比如创建session，线程安全的scope_session，链接池等，都被封装好了，直接用就好了。
-
 
 ## 2.1 创建对象
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;新版本需要安装flask_sqlalchemy，并且倒入方式也和老版本有些区别，上面的官方文档我本地无法进行倒入。使用 `pip3 install flask_sqlalchemy` 安装
