@@ -646,6 +646,7 @@ for i in range(1000000):
 ```
 
 when可以指定的类型有：
+
 值|间隔的单位|当atTime参数设定时
 --|-----|------|
 'S'|Seconds|Ignored
@@ -653,4 +654,4 @@ when可以指定的类型有：
 'H'|Hours|Ignored
 'D'|Days|Ignored
 'W0'-'W6'|Weekday (0=Monday)|Used to compute initial rollover time
-'midnight'|Roll over at midnight, if atTime not specified, else at time atTime|Used to compute initial rollover time
+'midnight'|Roll over at midnight, if atTime not specified, else at time atTime|Used to compute initial rollover time|
