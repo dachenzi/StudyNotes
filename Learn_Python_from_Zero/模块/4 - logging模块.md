@@ -27,6 +27,9 @@
 - [6 Filter类](#6-filter类)
 - [7 信息传递](#7-信息传递)
 - [8 过程分析](#8-过程分析)
+- [9 日志切割](#9-日志切割)
+    - [9.1 按照大小切割日志](#91-按照大小切割日志)
+    - [9.2 按照时间切割日志](#92-按照时间切割日志)
 
 <!-- /TOC -->
 
@@ -579,3 +582,75 @@ mylogger.info('mylogger  ~~~ hello world')
 > logger实例初始的propagate属性为True，即允许向父logger传递消息
 
 PS：如果root没有handler，就默认创建一个StreamHandler，如果设置了filename，就创建一个FileHandler。如果设置了format参数，就会用它生成一个Formatter对象，否则会生成缺省的Formattrt，并把这个Formatter加入到刚才创建的handler上，然后把这些handler加入到root.handlers列表上，level是设置给root logger的，如果root.handlers列表不为空，logging.basicConfig的调用什么都不做。
+
+# 9 日志切割
+在生产上，我们不会向上面那样只是定义出日志的格式，就好了，还要考虑很多其他问题
+- 日志可以无限大吗
+- 日志都要存放在一个文件中么
+
+logging.handlers主要包含两个类，用于对日志进行分割处理
+- `RotatingFileHandler`：按照大小来切割日志
+- `TimedRotatingFileHandler`：按照时间来切割日志
+
+## 9.1 按照大小切割日志
+下面是一个例子,其中：
+- maxBytes: 表示单个文件的大小
+- backupCount: 表示切割文件的总个数(超过时，依次覆盖)
+```python
+from logging.handlers import RotatingFileHandler
+import logging
+import time
+
+logger = logging.getLogger('hello')
+logger.setLevel(logging.INFO)
+
+handler = RotatingFileHandler('/Users/lixin/test.log', maxBytes=10 * 1024,backupCount=5, encoding='UTF-8')
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter(fmt='%(asctime)s [ %(levelname)s %(funcName)s ] %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+#################
+
+for i in range(10000):
+    time.sleep(0.01)
+    logger.error('msg = {}'.format(i))
+```
+注意：当maxBytes和backupCount中任意一个参数为0时，切割方式不生效
+
+## 9.2 按照时间切割日志
+下面时一个例子，其中
+- when: 按照什么来切割。
+- interval：间隔多久。
+- backupCount: 切分几个
+```python
+import logging
+from logging.handlers import TimedRotatingFileHandler
+import time
+
+logger = logging.getLogger('hello')
+logger.setLevel(logging.INFO)
+
+handler = TimedRotatingFileHandler('/Users/lixin/text.log',when='S',interval=10,backupCount=5,encoding='UTF-8')
+handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter(fmt='%(asctime)s [ %(levelname)s %(funcName)s ] %(message)s')
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+
+
+for i in range(1000000):
+    time.sleep(1)
+    logger.error('msg = {}'.format(i))
+```
+
+when可以指定的类型有：
+值|间隔的单位|当atTime参数设定时
+--|-----|------|
+'S'|Seconds|Ignored
+'M'|Minutes|Ignored
+'H'|Hours|Ignored
+'D'|Days|Ignored
+'W0'-'W6'|Weekday (0=Monday)|Used to compute initial rollover time
+'midnight'|Roll over at midnight, if atTime not specified, else at time atTime|Used to compute initial rollover time
