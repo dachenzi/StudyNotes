@@ -1161,31 +1161,7 @@ self.registry = ThreadLocalRegistry(session_factory)
             return val
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 6 别名
+# 7 别名
 当使用join语句连表查询时，难免会碰到两个表重名的字段，这里就可以使用`label`来对字段进行别名显示。
 ```python
 stds = session.query(User.name.label('username'), User.id, Deptment.dep_name).join(Deptment).all()
