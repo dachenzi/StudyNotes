@@ -451,6 +451,7 @@ qs = User.objects.all()[20:30]
 语法：`字段名称__比较运算符=值`,属性名和运算符之间使用`双下划线`
 
 比较运算符如下
+
 名称|举例|说明
 ---|----|----|
 exact<br>filter(isdeleted=False)<br>|filter(isdeleted__exact=False)|严格等于，可省略不写
