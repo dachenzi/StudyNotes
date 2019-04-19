@@ -23,6 +23,7 @@
         - [4.4.2 配置模板路径](#442-配置模板路径)
         - [4.4.3 关闭csrftoken](#443-关闭csrftoken)
         - [4.4.4 连接数据库](#444-连接数据库)
+        - [4.4.5 加载静态文件](#445-加载静态文件)
     - [4.5 django admin配置](#45-django-admin配置)
         - [4.5.1 创建django-admin用户](#451-创建django-admin用户)
         - [4.5.2 初始化django-admin需要的表](#452-初始化django-admin需要的表)
@@ -320,6 +321,19 @@ DATABASES = {
 更多的配置方法参考：https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 > 如果安装mysqlclient失败，提示缺少C++，那么不建议安装所有的编译环境，因为即便是安装所以，可能无法编译成功，所以可以在一下网站中直接查找现成的whl包。https://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+### 4.4.5 加载静态文件
+配置模版文件加载静态文件，比如css,js文件
+1. 首先加载静态文件配置（需要先完成4.4.1）
+```html
+{% load static %}
+```
+
+2. 动态获取配置文件的路径
+```html
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+```
+这里的static关键字，标示的就是，当前项目static目录的路径，这样做的好处是，当你修改了static目录在前台的显示路径时，这里的static会自动关联到新的url上。无需修改
 
 ## 4.5 django admin配置
 Django 提供了基于 web 的管理工具即django-admin，它可以通过web页面来管理我们项目中的表，但前提是你已经把表注册给admin管辖了。  
