@@ -9,6 +9,7 @@
         - [1.1.4 内置变量过滤器filter](#114-内置变量过滤器filter)
         - [1.1.5 自定义过滤器之filter](#115-自定义过滤器之filter)
         - [1.1.6 自定义过滤器之simple_tag](#116-自定义过滤器之simple_tag)
+        - [1.1.7 inclusion_tag](#117-inclusion_tag)
     - [1.2 逻辑控制语法](#12-逻辑控制语法)
         - [1.2.1 for标签](#121-for标签)
         - [1.2.2 if标签](#122-if标签)
@@ -146,6 +147,60 @@ return num1 * num2　
 ```python
 {% simple_tag_multi 10 20 %}  # 参数以空格隔开，多个空格效果相同
 ```
+
+### 1.1.7 inclusion_tag 
+存放于：django.template.Library.inclusion_tag()  
+
+主要作用：通过渲染一个模板来显示一些数据。   
+
+> 例如，Django的Admin界面使用自定义模板标签显示"添加/更改"表单页面底部的按钮。这些按钮看起来总是相同，但链接的目标却是根据正在编辑的对象而变化的。 这种类型的标签被称为"Inclusion 标签"，属于自定义标签的一种。
+
+```python
+from django.template import Library
+
+register = Library()
+
+@register.inclusion_tag('menu_tpl.html')
+def menu_dict():
+    menu = {
+        'option1': '首页',
+        'option2': '菜单一',
+        'option3': '菜单二',
+        'option4': '菜单三',
+        'option5': '菜单四'
+    }
+
+    return {'menu_dict': menu}
+
+# 将函数的返回值，使用menu_tpl.html进行渲染，然后将渲染的结果当作menu_dict的返回值，在页面上调用时，整体渲染。
+```
+menu_tpl.html文件如下：（存放于templates目录下)
+```html
+{% for key,value in menu_dict.items %}
+    <a href="" class="{{ key }}">{{ value }}</a>
+{% endfor %}
+```
+在templates模版中调用时
+```html
+{% load rbac %}   我templatestags下存放的名称为 rbac，所以这里写文件名即可。
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>index</h1>
+<div>
+
+    {% menu_dict %}   直接渲染即可
+</div>
+</body>
+</html>
+
+```
+
+
 
 ## 1.2 逻辑控制语法
 循环等逻辑语句需要使用{% %} 来进行渲染
