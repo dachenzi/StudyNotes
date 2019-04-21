@@ -255,6 +255,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR,'static'),    # 添加静态文件路径
 )
 ```
+> 这样配置以后，我们还可以为每个应用创建自己的static目录，在前端渲染方式是相同的（django会为我们优先查找项目下的static目录来加载)
 
 ### 4.4.2 配置模板路径
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用来集中存放用于返回给用户的模板文件（如果是利用pycharm创建的项目，它会自动帮我们创建template目录，并自动进行关联）,创建templates目录（同样存放在django项目的一级子目录下）。
@@ -277,6 +278,7 @@ TEMPLATES = [
     },
 ]
 ```
+> 这样配置以后，我们还可以为每个应用创建自己的templates目录，在前端渲染方式是相同的（django会为我们优先查找项目下的templates目录来加载)
 
 ### 4.4.3 关闭csrftoken
 csrftoken用于防止csrf攻击，csrf的相关配置将在后面进行说明，所以这里可以先关闭csrftoken。
