@@ -264,3 +264,4 @@ def test(request):
     return HttpResponse(200)
 ```
 PS：在html中，通过{% url 'crm:index' %} 也是通过namespace：name来获取url的。
+
