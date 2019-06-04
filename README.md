@@ -7,3 +7,4 @@
 - `Web`：web相关，比如nginx
 - `shell`：shell脚本编程
 - `PythonWebFramework`: Python web框架·
+- `WebFrontEnd`: 前端部分
