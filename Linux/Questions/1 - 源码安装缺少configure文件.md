@@ -4,8 +4,10 @@
 ## 生成configure文件的步骤
 在软件包内执行如下命令：
 - aclocal
-- autoconf
+- autoconf --> 生成configure文件
 - autoheader(出现什么AC_CONFIG_HEADERS not found in configure.ac 可以忽略) 
 - automake --add-missing(出现ltmain.sh not found，需要执行autoreconf  -ivf)  --> 会生成Makefile.in 文件
 
 然后就会生成configure文件，继续按照软件的INSTALL/README文件开始安装即可
+
+参考： [生成configure](https://blog.csdn.net/BabyBirdToFly/article/details/69941756)
