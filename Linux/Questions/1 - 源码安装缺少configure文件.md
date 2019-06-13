@@ -6,6 +6,6 @@
 - aclocal
 - autoconf
 - autoheader(出现什么AC_CONFIG_HEADERS not found in configure.ac 可以忽略) 
-- automake(出现ltmain.sh not found，需要执行autoreconf  -ivf)  --> 会生成Makefile.in 文件
+- automake --add-missing(出现ltmain.sh not found，需要执行autoreconf  -ivf)  --> 会生成Makefile.in 文件
 
 然后就会生成configure文件，继续按照软件的INSTALL/README文件开始安装即可
