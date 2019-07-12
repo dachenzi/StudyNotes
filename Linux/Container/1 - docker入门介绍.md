@@ -7,22 +7,21 @@
 - `Type-I`:直接在硬件设备上安装虚拟机管理器一般叫hypervisor，然后再来创建虚拟机
 - `Type-II`:在宿主机上安装一个宿主机操作系统，再装一个VMM(viurtul Machine Manage) 虚拟机管理器，然后再来创建虚拟机（WMware、virtualbox等) 
 
+没有一个虚拟机是直接跑在硬件设备之上的。所以减少中间层，中间环境，就可以有效的提高效率。
 ![Virtualization](../photo/Virtualization.png)
 
-没有一个虚拟机是直接跑在硬件设备之上的。所以减少中间层，中间环境，就可以有效的提高效率。  容器技术
-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;由图可知，去掉虚拟机的内核以后，就需要直接在主机的用户空间内进行分割，形成多个用户态，在这些独立分割的用户空间内去运行应用程序。
+  
 # 2 容器技术
-
-每一个用户空间都应该存在：
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;不同用户空间内，主机名肯定需要不相同、并且PID号、文件系统等，都应该相对隔离，所以每一个用户空间都应该存在以下七个部分：
 - 主机名/域名（UTS）
-- 文件系统（Mount） - 树形结构
-- 进程间通讯（IPC） - 
-- 进程(PID) - 属性结构（归属与init或者本身就是init)
+- 文件系统（Mount） - `树形结构`
+- 进程间通讯（IPC） 
+- 进程(PID) - `树形结构`（归属与init或者本身就是init)
 - 用户(User)
 - 网络(Network)
 
-Linux在内合层面通过使用名称空间(namespace)对以上六种资源进行的隔离进行直接支持，并通过系统调用直接输出。 
-下面六大资源支持的内核版本
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Linux在内合层面通过使用名称空间(namespace)对以上六种资源进行的隔离进行直接支持，并通过系统调用直接输出。但是不同的内核版本对名称空间的支持不同，下面是六大资源实现的内核版本
 
 |namespace|系统调用参数|隔离内容|内核版本|
 |---|---|---|---|
@@ -33,11 +32,12 @@ Linux在内合层面通过使用名称空间(namespace)对以上六种资源进�
 |Mount|CLONE_NEWNS|挂在点(文件系统)|2.4.19|
 |User|CLONE_NEWUSER|用户和用户组|3.8|
 
-没有User也可以用，但是在某些特殊的地方是有缺失的，CentOS 6 天生被排除在外。
+PS：没有User也可以用，但是在某些特殊的地方是有缺失的，所以 CentOS 6 2.6+内核，天生被排除在外。
 
-那么资源该如何分配呢？内核通过CGroups (Control Groups) 来对资源进行分组，然后将不同的组分配到指定的名称空间中去使用.
+## 2.1 资源如何分配
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;每个名称空间所需要的资源，都是由宿主机提供的，那么该如何限制不同的名称空间的资源配额？内核通过CGroups (Control Groups) 来对资源进行分组，然后将不同的组分配到指定的名称空间中去使用.
 
-cgroups：
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一个cgroups分组中一般包含如下资源：
 - blkio：块设备IO
 - cpu：CPU
 - cpuacct：CPUT资源使用报告
@@ -48,7 +48,7 @@ cgroups：
 - perf_event: 对cgroup中的任务进行统一性能测试
 - net_cls: cgroup中的任务创建的数据报文的类别标识符
 
-所以内核实现容器虚拟化，最重要的三种技术就是 chroot、namespace、cgroups
+所以内核实现容器虚拟化，最重要的三种技术就是 `chroot`、`namespace`、`cgroups`
 
 
 LXC(LinuX Container): 把完整的容器技术用一组简易使用的工具和模版来极大的简化了容器技术使用的方案
