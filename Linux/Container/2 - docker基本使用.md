@@ -87,6 +87,9 @@ docker container 系列命令包含如下命令
 从其他仓库拉去镜像
 - docker pull [仓库][端口(5000)]/[命名空间][镜像名]:[tag]
 
+进入一个docker镜像
+- docker exec -it 容器名称 /bin/bash
+
 docker容器状态转换机制命令：
     图 docker event state
 
