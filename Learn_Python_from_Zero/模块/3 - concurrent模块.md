@@ -22,6 +22,7 @@ conturrent包内只包含了一个future模块，它为异步执行调用提供�
 
 # 3 ThreadPoolExecutor对象
 提供了以下方法用于构建和执行多线程任务：
+
 |方法|含义|
 |-----|----|
 |ThreadpPoolExecutor(max_workers=None, thread_name_prefix='')|池中至多创建max_workers个线程的池来同时异步执行，返回Executor实例，`如果max_workers没有指定，那么会开启cpu核数(或1) * 5 个线程`
@@ -64,6 +65,7 @@ submit返回的是一个Future对象。当执行的任务多余线程池的数�
 
 # 4 Future对象
 包含了许多针对多进程/线程执行的相关结果的方法。
+
 |方法|含义|
 |----|----|
 |done()|如果调用被成功取消或者执行完成，返回True|
